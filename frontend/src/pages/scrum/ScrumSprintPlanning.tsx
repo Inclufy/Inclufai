@@ -1,0 +1,282 @@
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { ProjectHeader } from '@/components/ProjectHeader';
+import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
+import { 
+  Calendar, Clock, Target, CheckCircle, 
+  Play, Save, Loader2, Plus, X, ArrowLeft
+} from 'lucide-react';
+
+const ScrumSprintPlanning = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [planning, setPlanning] = useState({
+    sprint_name: '',
+    scheduled_date: '',
+    duration_minutes: 120,
+    team_capacity: 0,
+    committed_story_points: 0,
+    sprint_goal: '',
+    success_criteria: [] as string[],
+    decisions: [] as string[],
+    notes: ''
+  });
+  const [newCriteria, setNewCriteria] = useState('');
+  const [newDecision, setNewDecision] = useState('');
+
+  const savePlanning = async () => {
+    setSaving(true);
+    try {
+      // TODO: API call to save sprint planning
+      console.log('Saving planning:', planning);
+      setTimeout(() => {
+        setSaving(false);
+        navigate(`/projects/${id}/scrum/overview`);
+      }, 1000);
+    } catch (error) {
+      console.error('Failed to save planning:', error);
+      setSaving(false);
+    }
+  };
+
+  const addCriteria = () => {
+    if (!newCriteria.trim()) return;
+    setPlanning({
+      ...planning,
+      success_criteria: [...planning.success_criteria, newCriteria]
+    });
+    setNewCriteria('');
+  };
+
+  const removeCriteria = (index: number) => {
+    setPlanning({
+      ...planning,
+      success_criteria: planning.success_criteria.filter((_, i) => i !== index)
+    });
+  };
+
+  const addDecision = () => {
+    if (!newDecision.trim()) return;
+    setPlanning({
+      ...planning,
+      decisions: [...planning.decisions, newDecision]
+    });
+    setNewDecision('');
+  };
+
+  const removeDecision = (index: number) => {
+    setPlanning({
+      ...planning,
+      decisions: planning.decisions.filter((_, i) => i !== index)
+    });
+  };
+
+  return (
+    <div className="min-h-full bg-background">
+      <ProjectHeader />
+      <div className="p-6 max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <Link to={`/projects/${id}/scrum/overview`}>
+              <Button variant="ghost" size="sm" className="mb-2">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Terug naar Overview
+              </Button>
+            </Link>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <Calendar className="h-6 w-6 text-purple-600" />
+              Sprint Planning
+            </h1>
+            <p className="text-muted-foreground">Plan je sprint en definieer doelen</p>
+          </div>
+          <Button 
+            onClick={savePlanning} 
+            disabled={saving || !planning.sprint_name}
+            className="bg-purple-600 hover:bg-purple-700"
+          >
+            {saving ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
+            Opslaan
+          </Button>
+        </div>
+
+        {/* Sprint Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Sprint Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Sprint Naam *</label>
+                <Input
+                  value={planning.sprint_name}
+                  onChange={(e) => setPlanning({ ...planning, sprint_name: e.target.value })}
+                  placeholder="bijv. Sprint 5"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Geplande Datum</label>
+                <Input
+                  type="datetime-local"
+                  value={planning.scheduled_date}
+                  onChange={(e) => setPlanning({ ...planning, scheduled_date: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="text-sm font-medium">Duur (minuten)</label>
+                <Input
+                  type="number"
+                  value={planning.duration_minutes}
+                  onChange={(e) => setPlanning({ ...planning, duration_minutes: parseInt(e.target.value) || 0 })}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Team Capaciteit (SP)</label>
+                <Input
+                  type="number"
+                  value={planning.team_capacity}
+                  onChange={(e) => setPlanning({ ...planning, team_capacity: parseInt(e.target.value) || 0 })}
+                  placeholder="Story points"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Toegewezen Punten</label>
+                <Input
+                  type="number"
+                  value={planning.committed_story_points}
+                  onChange={(e) => setPlanning({ ...planning, committed_story_points: parseInt(e.target.value) || 0 })}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Sprint Goal */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Sprint Goal
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Doel Omschrijving</label>
+              <Textarea
+                value={planning.sprint_goal}
+                onChange={(e) => setPlanning({ ...planning, sprint_goal: e.target.value })}
+                placeholder="Wat willen we deze sprint bereiken?"
+                className="mt-1"
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Succescriteria</label>
+              {planning.success_criteria.map((criteria, index) => (
+                <div key={index} className="flex items-center gap-2 mt-2">
+                  <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <span className="flex-1">{criteria}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeCriteria(index)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <div className="flex gap-2 mt-3">
+                <Input
+                  value={newCriteria}
+                  onChange={(e) => setNewCriteria(e.target.value)}
+                  placeholder="Voeg succescriterium toe..."
+                  onKeyPress={(e) => e.key === 'Enter' && addCriteria()}
+                />
+                <Button onClick={addCriteria} size="sm">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Key Decisions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Belangrijke Beslissingen</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {planning.decisions.map((decision, index) => (
+              <div key={index} className="flex items-start gap-2 p-3 bg-muted rounded">
+                <CheckCircle className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                <span className="flex-1">{decision}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeDecision(index)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <div className="flex gap-2 mt-4">
+              <Input
+                value={newDecision}
+                onChange={(e) => setNewDecision(e.target.value)}
+                placeholder="Voeg beslissing toe..."
+                onKeyPress={(e) => e.key === 'Enter' && addDecision()}
+              />
+              <Button onClick={addDecision}>
+                <Plus className="h-4 w-4 mr-2" />
+                Toevoegen
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Meeting Notes */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Meeting Notities</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              value={planning.notes}
+              onChange={(e) => setPlanning({ ...planning, notes: e.target.value })}
+              placeholder="Voeg planning meeting notities toe..."
+              rows={6}
+            />
+          </CardContent>
+        </Card>
+      </div>
+      <MethodologyHelpPanel methodology="agile" />
+    </div>
+  );
+};
+
+export default ScrumSprintPlanning;

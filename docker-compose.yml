@@ -1,0 +1,53 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: projectpal-backend
+    ports:
+      - "8001:8001"
+    environment:
+      - SECRET_KEY=django-insecure-your-secret-key-here
+      - DEBUG=True
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,projectpal-backend,100.119.207.79
+    networks:
+      - projectpal-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_BACKEND_URL=http://localhost:8090/api/v1
+    container_name: projectpal-frontend
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    environment:
+      - VITE_BACKEND_URL=http://localhost:8090/api/v1
+    depends_on:
+      - backend
+    networks:
+      - projectpal-network
+    restart: unless-stopped
+
+  proxy:
+    image: nginx:alpine
+    container_name: projectpal-proxy
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - projectpal-network
+    restart: unless-stopped
+
+networks:
+  projectpal-network:
+    driver: bridge
