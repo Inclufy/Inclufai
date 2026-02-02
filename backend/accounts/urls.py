@@ -25,6 +25,7 @@ from accounts.views import (
     SubscriptionTiersView,
     RegistrationsView,
     AdminStatsView,
+    admin_users_list,
     update_subscription_status,  # ← ADD THIS
 )
 from .two_factor import (
@@ -72,6 +73,7 @@ urlpatterns = [
     # Admin endpoints
     path("admin/stats/", AdminStatsView.as_view(), name="admin_stats"),
     path("registrations/", RegistrationsView.as_view(), name="registrations"),
+    path("admin/users/", admin_users_list, name="admin_users"),
     
     # Subscription Management
     path("subscriptions/", SubscriptionManagementView.as_view(), name="subscriptions"),
