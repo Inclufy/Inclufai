@@ -1,119 +1,145 @@
-# 🚀 ProjeXtPal Production Deployment Checklist
+# 🚀 ProjeXtPal Local Production Deployment
 
-## ✅ Completed
-- [x] Code op master branch met "Vraag Demo Aan" feature
-- [x] GitLab CI/CD pipeline geconfigureerd (.gitlab-ci.yml)
-- [x] Frontend API URLs updated naar https://projextpal.com/api/v1
-- [x] Docker images configuration met GitLab Registry
-- [x] Lokale test succesvol
+## ✅ Setup (One-time)
 
-## ⏳ To Do
+### 1. GitLab CI/CD Variables
+Alleen deze variable nodig: https://gitlab.com/inclufy/projextpal/-/settings/ci_cd
 
-### 1. GitLab CI/CD Variables Setup
-Ga naar: https://gitlab.com/inclufy/projextpal/-/settings/ci_cd
+**CI_REGISTRY_PASSWORD** (Personal Access Token)
+1. Create token: https://gitlab.com/-/user_settings/personal_access_tokens
+   - Name: `projextpal-ci-cd`
+   - Scopes: ✓ `read_registry`, ✓ `write_registry`
+   - Expiration: 1 jaar
+2. Add variable in GitLab:
+   - Key: `CI_REGISTRY_PASSWORD`
+   - Value: [paste token]
+   - Type: Variable
+   - Masked: Yes
 
-**SSH Key genereren:**
-```bash
-ssh-keygen -t ed25519 -C "gitlab-ci-projextpal" -f ~/.ssh/gitlab_ci_projextpal
-ssh-copy-id -i ~/.ssh/gitlab_ci_projextpal.pub root@srv1057200.hstgr.cloud
+### 2. DNS Configuration
+Point `projextpal.com` to this machine's public IP:
+```
+A Record: projextpal.com → [your public IP]
+A Record: www.projextpal.com → [your public IP]
 ```
 
-**Variables toevoegen:**
-1. SSH_PRIVATE_KEY (type: File, protected: yes)
-   - Value: inhoud van `cat ~/.ssh/gitlab_ci_projextpal`
-2. SSH_USER (type: Variable)
-   - Value: `root`
-3. CI_REGISTRY_PASSWORD (type: Variable, masked: yes)
-   - Value: GitLab Personal Access Token
-   - Maak aan: https://gitlab.com/-/user_settings/personal_access_tokens
-   - Scopes: `read_registry`, `write_registry`
+Find your public IP: `curl ifconfig.me`
 
-### 2. Server Setup (srv1057200.hstgr.cloud)
+### 3. Firewall/Router
+Open ports:
+- Port 80 (HTTP)
+- Port 443 (HTTPS)
+- Port 8083 (Frontend - optional, for direct access)
+- Port 8001 (Backend API - optional, for direct access)
 
-**SSH naar server en run:**
+### 4. Environment Variables
+Already configured in `.env` ✅
+
+## 🚀 Deployment Workflow
+
+### Option A: Automatic (Recommended)
+1. **Push code to GitLab:**
 ```bash
-ssh root@srv1057200.hstgr.cloud
-
-# Install Docker
-curl -fsSL https://get.docker.com | sh
-
-# Create project directory
-mkdir -p /var/www/projextpal
-cd /var/www/projextpal
-
-# Clone repository
-git clone https://gitlab.com/inclufy/projextpal.git .
-git checkout master
-
-# Create .env file
-cat > .env << 'ENVFILE'
-POSTGRES_DB=projextpal
-POSTGRES_USER=projextpal
-POSTGRES_PASSWORD=your-secure-postgres-password
-REDIS_PASSWORD=your-secure-redis-password
-DJANGO_SECRET_KEY=your-django-secret-key
-ALLOWED_HOSTS=projextpal.com,srv1057200.hstgr.cloud
-CORS_ALLOWED_ORIGINS=https://projextpal.com,https://srv1057200.hstgr.cloud
-DEBUG=False
-ENVFILE
-
-# Test Docker
-docker --version
-docker-compose --version
-```
-
-### 3. DNS Configuration
-Point `projextpal.com` to server IP:
-- A Record: `projextpal.com` → `[IP of srv1057200.hstgr.cloud]`
-- A Record: `www.projextpal.com` → `[IP of srv1057200.hstgr.cloud]`
-
-### 4. SSL Certificate (Let's Encrypt)
-```bash
-# Install certbot
-apt-get update
-apt-get install -y certbot
-
-# Get certificate
-certbot certonly --standalone -d projextpal.com -d www.projextpal.com
-
-# Certificates at:
-# /etc/letsencrypt/live/projextpal.com/fullchain.pem
-# /etc/letsencrypt/live/projextpal.com/privkey.pem
-```
-
-### 5. Nginx Configuration
-Update nginx config voor SSL en reverse proxy
-
-### 6. First Deployment
-1. Push trigger pipeline:
-```bash
+   git add .
+   git commit -m "your changes"
    git push origin master
 ```
-2. Go to: https://gitlab.com/inclufy/projextpal/-/pipelines
-3. Wait for build stage to complete
-4. Manually trigger deploy-production job
 
-### 7. Post-Deployment
+2. **Wait for pipeline:**
+   - Go to: https://gitlab.com/inclufy/projextpal/-/pipelines
+   - Wait for build to complete (~5 minutes)
+
+3. **Deploy locally:**
 ```bash
-# SSH to server
-ssh root@srv1057200.hstgr.cloud
-cd /var/www/projextpal
-
-# Check containers
-docker-compose -f docker-compose.production.yml ps
-
-# Create superuser
-docker-compose -f docker-compose.production.yml exec backend python manage.py createsuperuser
-
-# Check logs
-docker-compose -f docker-compose.production.yml logs -f
+   ./deploy-local.sh
 ```
 
-## 🌐 Access Points
-- Frontend: https://projextpal.com
-- Backend API: https://projextpal.com/api/v1
-- Admin: https://projextpal.com/admin
+### Option B: Manual Local Build
+```bash
+# Stop containers
+docker-compose -f docker-compose.production.yml down
 
-## 📞 Support
-- GitLab: https://gitlab.com/inclufy/projextpal
-- Server: srv1057200.hstgr.cloud
+# Build locally
+cd frontend
+npm run build
+cd ..
+
+docker build -f frontend/Dockerfile.prod \
+  --build-arg VITE_BACKEND_URL=https://projextpal.com/api/v1 \
+  -t registry.gitlab.com/inclufy/projextpal/frontend:latest \
+  ./frontend
+
+docker build -f backend/Dockerfile.prod \
+  -t registry.gitlab.com/inclufy/projextpal/backend:latest \
+  ./backend
+
+# Start containers
+docker-compose -f docker-compose.production.yml up -d
+```
+
+## 📊 Monitoring
+```bash
+# View all logs
+docker-compose -f docker-compose.production.yml logs -f
+
+# View specific service
+docker-compose -f docker-compose.production.yml logs -f frontend
+docker-compose -f docker-compose.production.yml logs -f backend
+
+# Check status
+docker-compose -f docker-compose.production.yml ps
+
+# Restart services
+docker-compose -f docker-compose.production.yml restart
+```
+
+## 🔧 Maintenance
+
+### Database Backup
+```bash
+# Manual backup
+docker-compose -f docker-compose.production.yml exec postgres \
+  pg_dump -U projextpal projextpal > backup_$(date +%Y%m%d).sql
+
+# Restore
+cat backup_20250202.sql | docker-compose -f docker-compose.production.yml exec -T postgres \
+  psql -U projextpal projextpal
+```
+
+### Update Application
+```bash
+git pull origin master
+./deploy-local.sh
+```
+
+### Clean Up
+```bash
+# Remove old images
+docker image prune -a
+
+# Remove old containers
+docker-compose -f docker-compose.production.yml down --volumes
+```
+
+## 🌐 URLs
+- Frontend: http://localhost:8083 (local) / https://projextpal.com (public)
+- Backend API: http://localhost:8001 (local) / https://projextpal.com/api/v1 (public)
+- Admin: http://localhost:8001/admin
+
+## 🆘 Troubleshooting
+
+### Pipeline fails
+- Check GitLab Runner status
+- Verify CI_REGISTRY_PASSWORD is set correctly
+
+### Containers won't start
+```bash
+docker-compose -f docker-compose.production.yml logs
+docker-compose -f docker-compose.production.yml down
+docker-compose -f docker-compose.production.yml up -d
+```
+
+### Can't access from internet
+- Check DNS: `nslookup projextpal.com`
+- Check firewall/router port forwarding
+- Check if ports are open: `netstat -an | grep LISTEN`
