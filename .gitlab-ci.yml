@@ -20,7 +20,7 @@ build-frontend:
   script:
     - cd frontend
     - docker build -f Dockerfile.prod 
-        --build-arg VITE_BACKEND_URL=https://srv1057200.hstgr.cloud/api/v1
+        --build-arg VITE_BACKEND_URL=https://projextpal.com/api/v1
         -t $FRONTEND_IMAGE:latest
         -t $FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA
         .
