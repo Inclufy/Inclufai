@@ -377,6 +377,7 @@ const App = () => (
                 <Route path="training" element={<AdminTrainingManagement />} />
                 <Route path="invoices" element={<InvoiceManagement />} />
                 <Route path="subscriptions" element={<SubscriptionManagement />} />
+                <Route path="demo-requests" element={<DemoRequests />} />
               </Route>
               
               {/* ============================================ */}
@@ -761,8 +762,6 @@ const App = () => (
               <Route path="/settings" element={<ProtectedPage><Settings /></ProtectedPage>} />
               <Route path="/settings/2fa" element={<ProtectedRoute><TwoFactorAuth /></ProtectedRoute>} />
 
-              {/* 404 Not Found */}
-              <Route path="/admin/demo-requests" element={<ProtectedRoute><DemoRequests /></ProtectedRoute>} />
               <Route path="/admin/demo-requests" element={<ProtectedRoute><DemoRequests /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
