@@ -708,9 +708,9 @@ const App = () => (
               <Route path="/projects/:id/scrum/daily-standup" element={<ProtectedPage><ScrumDailyStandup /></ProtectedPage>} />
               <Route path="/projects/:id/scrum/retrospective" element={<ProtectedPage><ScrumRetrospective /></ProtectedPage>} />
               <Route path="/projects/:id/scrum/definition-of-done" element={<ProtectedPage><ScrumDefinitionOfDone /></ProtectedPage>} />
-              <Route path="/projects/:id/scrum/sprint-planning" element={<ScrumSprintPlanning />} />
-              <Route path="/projects/:id/scrum/sprint-review" element={<ScrumSprintReview />} />
-              <Route path="/projects/:id/scrum/increments" element={<ScrumIncrements />} />
+              <Route path="/projects/:id/scrum/sprint-planning" element={<ProtectedPage><ScrumSprintPlanning /></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/sprint-review" element={<ProtectedPage><ScrumSprintReview /></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/increments" element={<ProtectedPage><ScrumIncrements /></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* Kanban Methodology Routes                    */}
