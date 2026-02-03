@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "communication",
     "newsletters",
     "bot",
+    "deployment",
     "workflow",
     "programs",
     "sixsigma",  # NEW: Lean Six Sigma DMAIC tools
