@@ -762,7 +762,6 @@ const App = () => (
               <Route path="/settings" element={<ProtectedPage><Settings /></ProtectedPage>} />
               <Route path="/settings/2fa" element={<ProtectedRoute><TwoFactorAuth /></ProtectedRoute>} />
 
-              <Route path="/admin/demo-requests" element={<ProtectedRoute><DemoRequests /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
         </TooltipProvider>
