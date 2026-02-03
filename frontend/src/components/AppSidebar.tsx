@@ -5,7 +5,7 @@ import { LayoutDashboard, MessageSquare, FolderKanban, Users,
   GraduationCap, Mail, Activity, CalendarDays, Table, Clock, Target, 
   Columns, Crown, Award, Repeat, Zap, ArrowDown, GitMerge, BarChart3, 
   TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
-  Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock } from "lucide-react";
+  Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock, Package, Presentation } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -310,6 +310,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Sprint Board", url: `/projects/${projectId}/scrum/sprint-board`, icon: Columns },
             { title: "Velocity", url: `/projects/${projectId}/scrum/velocity`, icon: Gauge },
+            { title: "Increments", url: `/projects/${projectId}/scrum/increments`, icon: Package },
           ],
         },
         {
@@ -319,6 +320,8 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Daily Standup", url: `/projects/${projectId}/scrum/daily-standup`, icon: Users },
             { title: "Retrospective", url: `/projects/${projectId}/scrum/retrospective`, icon: Lightbulb },
+            { title: "Sprint Planning", url: `/projects/${projectId}/scrum/sprint-planning`, icon: Calendar },
+            { title: "Sprint Review", url: `/projects/${projectId}/scrum/sprint-review`, icon: Presentation },
           ],
         },
       ];
