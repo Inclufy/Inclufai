@@ -14,7 +14,7 @@ class TestAgileBacklog:
             'title': 'As a user, I want to login',
             'description': 'User authentication story',
             'story_points': 5,
-            'priority': 'high'
+            'priority': 'must_have'
         }
         response = authenticated_client.post(url, data)
         assert response.status_code == 201
@@ -24,9 +24,9 @@ class TestAgileBacklog:
         url = reverse('agile:agile-backlog-list', kwargs={'project_id': agile_project.id})
         
         stories = [
-            {'title': 'Story 1', 'priority': 'high', 'order': 1},
-            {'title': 'Story 2', 'priority': 'medium', 'order': 2},
-            {'title': 'Story 3', 'priority': 'low', 'order': 3}
+            {'title': 'Story 1', 'priority': 'must_have', 'order': 1},
+            {'title': 'Story 2', 'priority': 'should_have', 'order': 2},
+            {'title': 'Story 3', 'priority': 'could_have', 'order': 3}
         ]
         
         for story in stories:
