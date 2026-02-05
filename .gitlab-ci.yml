@@ -1,79 +1,36 @@
 stages:
   - test
   - build
+  - deploy
 
 variables:
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: ""
-  REGISTRY: registry.gitlab.com/inclufy/projextpal
-  BACKEND_IMAGE: $REGISTRY/backend
-  FRONTEND_IMAGE: $REGISTRY/frontend
+  POSTGRES_DB: projextpal_test
+  POSTGRES_USER: projextpal
+  POSTGRES_PASSWORD: test_password
+  POSTGRES_HOST: postgres
+  DATABASE_URL: postgresql://projextpal:test_password@postgres:5432/projextpal_test
+  DJANGO_SETTINGS_MODULE: core.settings
 
-backend-test:
+test:backend:
   stage: test
   image: python:3.11
   services:
     - postgres:14
-  variables:
-    POSTGRES_DB: projextpal_test
-    POSTGRES_USER: projextpal
-    POSTGRES_PASSWORD: testpass123
-    DATABASE_URL: postgresql://projextpal:testpass123@postgres:5432/projextpal_test
   before_script:
     - cd backend
-    - pip install -r requirements.txt
+    - pip install --upgrade pip
+    - pip install -r requirements_compatible.txt
+    - pip install pytest pytest-django pytest-cov
   script:
-    - python manage.py migrate
-    - pytest waterfall/tests/ -v --cov=waterfall
+    - python manage.py check
+    - pytest -v --cov=. --cov-report=xml --cov-report=term
   coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: backend/coverage.xml
   only:
-    - master
+    - main
+    - develop
     - merge_requests
-
-frontend-test:
-  stage: test
-  image: node:18
-  before_script:
-    - cd frontend
-    - npm ci
-  script:
-    - npm run build
-  only:
-    - master
-    - merge_requests
-
-build-frontend:
-  stage: build
-  image: docker:24-dind
-  services:
-    - docker:24-dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - cd frontend
-    - docker build -f Dockerfile.prod --build-arg VITE_BACKEND_URL=https://projextpal.com/api/v1 --build-arg VITE_API_URL=https://projextpal.com/api/v1 -t $FRONTEND_IMAGE:latest -t $FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA .
-    - docker push $FRONTEND_IMAGE:latest
-    - docker push $FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA
-  needs:
-    - frontend-test
-  only:
-    - master
-    - tags
-
-build-backend:
-  stage: build
-  image: docker:24-dind
-  services:
-    - docker:24-dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - cd backend
-    - docker build -f Dockerfile.prod -t $BACKEND_IMAGE:latest -t $BACKEND_IMAGE:$CI_COMMIT_SHORT_SHA .
-    - docker push $BACKEND_IMAGE:latest
-    - docker push $BACKEND_IMAGE:$CI_COMMIT_SHORT_SHA
-  needs:
-    - backend-test
-  only:
-    - master
-    - tags

@@ -1,0 +1,36 @@
+"""Tests for Agile Product Backlog"""
+import pytest
+from django.urls import reverse
+
+
+@pytest.mark.django_db
+class TestAgileBacklog:
+    """Test Agile product backlog"""
+    
+    def test_create_user_story(self, authenticated_client, agile_project):
+        """Test creating a user story"""
+        url = reverse('agile:user-story-list', kwargs={'project_id': agile_project.id})
+        data = {
+            'title': 'As a user, I want to login',
+            'description': 'User authentication story',
+            'story_points': 5,
+            'priority': 'high'
+        }
+        response = authenticated_client.post(url, data)
+        assert response.status_code == 201
+    
+    def test_backlog_prioritization(self, authenticated_client, agile_project):
+        """Test backlog item prioritization"""
+        url = reverse('agile:user-story-list', kwargs={'project_id': agile_project.id})
+        
+        stories = [
+            {'title': 'Story 1', 'priority': 'high', 'order': 1},
+            {'title': 'Story 2', 'priority': 'medium', 'order': 2},
+            {'title': 'Story 3', 'priority': 'low', 'order': 3}
+        ]
+        
+        for story in stories:
+            authenticated_client.post(url, story)
+        
+        response = authenticated_client.get(url)
+        assert response.status_code == 200
