@@ -375,3 +375,35 @@ class ProjectTolerance(models.Model):
 
     class Meta:
         unique_together = ['project', 'tolerance_type']
+
+class Product(models.Model):
+    """PRINCE2 Product - deliverable or output"""
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='prince2_products')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    product_type = models.CharField(max_length=50, choices=[
+        ('specialist', 'Specialist Product'),
+        ('management', 'Management Product'),
+    ], default='specialist')
+    format = models.CharField(max_length=100, blank=True)
+    quality_criteria = models.TextField(help_text='Quality criteria for this product', blank=True)
+    quality_tolerance = models.TextField(help_text='Acceptable deviation from quality criteria', blank=True)
+    quality_method = models.CharField(max_length=200, help_text='How quality will be checked', blank=True)
+    quality_responsibility = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='prince2_quality_products')
+    derivation = models.TextField(help_text='Source/composition of the product', blank=True)
+    status = models.CharField(max_length=50, choices=[
+        ('planned', 'Planned'),
+        ('in_progress', 'In Progress'),
+        ('quality_check', 'Quality Check'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ], default='planned')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='prince2_owned_products')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['title']
+
+    def __str__(self):
+        return f"{self.title} ({self.project.name})"

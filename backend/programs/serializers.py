@@ -21,7 +21,7 @@ class ProgramBenefitSerializer(serializers.ModelSerializer):
             'expected_date', 'realized_date', 'owner', 'owner_name',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['program', 'created_at', 'updated_at']
 
 
 class ProgramRiskSerializer(serializers.ModelSerializer):
@@ -34,7 +34,7 @@ class ProgramRiskSerializer(serializers.ModelSerializer):
             'status', 'mitigation_plan', 'owner', 'owner_name',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['program', 'created_at', 'updated_at']
 
 
 class ProgramMilestoneSerializer(serializers.ModelSerializer):
@@ -44,7 +44,7 @@ class ProgramMilestoneSerializer(serializers.ModelSerializer):
             'id', 'program', 'name', 'description', 'target_date',
             'actual_date', 'status', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['program', 'created_at', 'updated_at']
 
 
 class ProgramListSerializer(serializers.ModelSerializer):

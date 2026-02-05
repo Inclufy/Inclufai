@@ -1,0 +1,50 @@
+/Users/sami/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+django: version: 4.2.28, settings: core.settings (from ini)
+rootdir: /Users/sami/Documents/Software/ProjextPal/backend
+configfile: pytest.ini
+testpaths: agile, waterfall, kanban, prince2, scrum
+plugins: env-1.1.5, cov-4.1.0, anyio-4.10.0, django-4.7.0, langsmith-0.4.27
+collecting ... collected 37 items
+
+agile/tests/test_backlog.py::TestAgileBacklog::test_create_user_story PASSED [  2%]
+agile/tests/test_backlog.py::TestAgileBacklog::test_backlog_prioritization PASSED [  5%]
+agile/tests/test_ceremonies.py::TestAgileCeremonies::test_daily_standup PASSED [  8%]
+agile/tests/test_ceremonies.py::TestAgileCeremonies::test_sprint_retrospective PASSED [ 10%]
+agile/tests/test_definition_of_done_api.py::TestDefinitionOfDoneAPI::test_list_dod_items PASSED [ 13%]
+agile/tests/test_definition_of_done_api.py::TestDefinitionOfDoneAPI::test_create_dod_item PASSED [ 16%]
+agile/tests/test_definition_of_done_api.py::TestDefinitionOfDoneAPI::test_delete_dod_item PASSED [ 18%]
+agile/tests/test_sprints.py::TestAgileSprints::test_create_sprint PASSED [ 21%]
+agile/tests/test_sprints.py::TestAgileSprints::test_sprint_duration PASSED [ 24%]
+waterfall/tests/test_issues_api.py::TestWaterfallIssueAPI::test_list_issues PASSED [ 27%]
+waterfall/tests/test_issues_api.py::TestWaterfallIssueAPI::test_create_issue PASSED [ 29%]
+waterfall/tests/test_issues_api.py::TestWaterfallIssueAPI::test_update_issue_status PASSED [ 32%]
+waterfall/tests/test_issues_api.py::TestWaterfallIssueAPI::test_delete_issue PASSED [ 35%]
+waterfall/tests/test_milestones.py::TestWaterfallMilestones::test_create_milestone PASSED [ 37%]
+waterfall/tests/test_milestones.py::TestWaterfallMilestones::test_milestone_completion PASSED [ 40%]
+waterfall/tests/test_phases.py::TestWaterfallPhases::test_create_phase PASSED [ 43%]
+waterfall/tests/test_phases.py::TestWaterfallPhases::test_list_phases PASSED [ 45%]
+waterfall/tests/test_phases.py::TestWaterfallPhases::test_phase_order PASSED [ 48%]
+waterfall/tests/test_risks_api.py::TestWaterfallRiskAPI::test_list_risks PASSED [ 51%]
+waterfall/tests/test_risks_api.py::TestWaterfallRiskAPI::test_create_risk PASSED [ 54%]
+waterfall/tests/test_risks_api.py::TestWaterfallRiskAPI::test_delete_risk PASSED [ 56%]
+waterfall/tests/test_tasks.py::TestWaterfallTasks::test_create_task FAILED [ 59%]
+
+=================================== FAILURES ===================================
+_____________________ TestWaterfallTasks.test_create_task ______________________
+waterfall/tests/test_tasks.py:20: in test_create_task
+    assert response.status_code == 201
+E   assert 400 == 201
+E    +  where 400 = <Response status_code=400, "application/json">.status_code
+------------------------------ Captured log call -------------------------------
+WARNING  django.request:log.py:246 Bad Request: /api/v1/projects/1/waterfall/tasks/
+--------------------------- Captured stderr teardown ---------------------------
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+=========================== short test summary info ============================
+FAILED waterfall/tests/test_tasks.py::TestWaterfallTasks::test_create_task - assert 400 == 201
+ +  where 400 = <Response status_code=400, "application/json">.status_code
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+======================== 1 failed, 21 passed in 19.44s =========================

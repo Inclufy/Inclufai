@@ -3,6 +3,7 @@ from django.urls import path
 app_name = "prince2"
 
 from .views import (
+    ProductViewSet,
     ProjectBriefViewSet, BusinessCaseViewSet, BusinessCaseBenefitViewSet,
     BusinessCaseRiskViewSet, ProjectInitiationDocumentViewSet,
     StageViewSet, StagePlanViewSet, StageGateViewSet, WorkPackageViewSet,
@@ -308,6 +309,31 @@ urlpatterns = [
         'projects/<int:project_id>/prince2/tolerances/initialize/',
         ProjectToleranceViewSet.as_view({'post': 'initialize'}),
         name='prince2-tolerances-initialize'
+    ),
+
+
+    # =========================================================================
+    # PRODUCTS
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/prince2/products/',
+        ProductViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='prince2-products-list'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/products/<int:pk>/',
+        ProductViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='prince2-products-detail'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/products/<int:pk>/approve/',
+        ProductViewSet.as_view({'post': 'approve'}),
+        name='prince2-products-approve'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/products/<int:pk>/reject/',
+        ProductViewSet.as_view({'post': 'reject'}),
+        name='prince2-products-reject'
     ),
 
     # =========================================================================

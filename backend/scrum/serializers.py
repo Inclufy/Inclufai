@@ -106,7 +106,7 @@ class SprintReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = SprintReview
         fields = '__all__'
-        read_only_fields = ['sprint', 'created_at']
+        read_only_fields = ['created_at']
 
 
 class SprintRetrospectiveSerializer(serializers.ModelSerializer):
@@ -115,7 +115,7 @@ class SprintRetrospectiveSerializer(serializers.ModelSerializer):
     class Meta:
         model = SprintRetrospective
         fields = '__all__'
-        read_only_fields = ['sprint', 'created_at']
+        read_only_fields = ['created_at']
 
 
 class VelocitySerializer(serializers.ModelSerializer):

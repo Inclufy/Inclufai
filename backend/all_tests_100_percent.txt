@@ -1,0 +1,112 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+django: version: 4.2.28, settings: core.settings (from ini)
+rootdir: /Users/sami/Documents/Software/ProjextPal/backend
+configfile: pytest.ini
+testpaths: agile, waterfall, kanban, prince2, scrum
+plugins: env-1.1.5, cov-4.1.0, anyio-4.10.0, django-4.7.0, langsmith-0.4.27
+collecting ... collected 36 items
+
+agile/tests/test_backlog.py::TestAgileBacklog::test_create_user_story PASSED [  2%]
+agile/tests/test_backlog.py::TestAgileBacklog::test_backlog_prioritization PASSED [  5%]
+agile/tests/test_ceremonies.py::TestAgileCeremonies::test_daily_standup PASSED [  8%]
+agile/tests/test_ceremonies.py::TestAgileCeremonies::test_sprint_retrospective PASSED [ 11%]
+agile/tests/test_definition_of_done_api.py::TestDefinitionOfDoneAPI::test_list_dod_items PASSED [ 13%]
+agile/tests/test_definition_of_done_api.py::TestDefinitionOfDoneAPI::test_create_dod_item PASSED [ 16%]
+agile/tests/test_definition_of_done_api.py::TestDefinitionOfDoneAPI::test_delete_dod_item PASSED [ 19%]
+agile/tests/test_sprints.py::TestAgileSprints::test_create_sprint PASSED [ 22%]
+agile/tests/test_sprints.py::TestAgileSprints::test_sprint_duration PASSED [ 25%]
+waterfall/tests/test_issues_api.py::TestWaterfallIssueAPI::test_list_issues PASSED [ 27%]
+waterfall/tests/test_issues_api.py::TestWaterfallIssueAPI::test_create_issue PASSED [ 30%]
+waterfall/tests/test_issues_api.py::TestWaterfallIssueAPI::test_update_issue_status PASSED [ 33%]
+waterfall/tests/test_issues_api.py::TestWaterfallIssueAPI::test_delete_issue PASSED [ 36%]
+waterfall/tests/test_milestones.py::TestWaterfallMilestones::test_create_milestone PASSED [ 38%]
+waterfall/tests/test_milestones.py::TestWaterfallMilestones::test_milestone_completion PASSED [ 41%]
+waterfall/tests/test_phases.py::TestWaterfallPhases::test_create_phase PASSED [ 44%]
+waterfall/tests/test_phases.py::TestWaterfallPhases::test_list_phases PASSED [ 47%]
+waterfall/tests/test_phases.py::TestWaterfallPhases::test_phase_order PASSED [ 50%]
+waterfall/tests/test_risks_api.py::TestWaterfallRiskAPI::test_list_risks PASSED [ 52%]
+waterfall/tests/test_risks_api.py::TestWaterfallRiskAPI::test_create_risk PASSED [ 55%]
+waterfall/tests/test_risks_api.py::TestWaterfallRiskAPI::test_delete_risk PASSED [ 58%]
+waterfall/tests/test_tasks.py::TestWaterfallTasks::test_create_task PASSED [ 61%]
+waterfall/tests/test_tasks.py::TestWaterfallTasks::test_task_dependencies PASSED [ 63%]
+kanban/tests/test_boards.py::TestKanbanBoards::test_create_board PASSED  [ 66%]
+kanban/tests/test_boards.py::TestKanbanBoards::test_default_columns PASSED [ 69%]
+kanban/tests/test_cards.py::TestKanbanCards::test_create_card PASSED     [ 72%]
+kanban/tests/test_cards.py::TestKanbanCards::test_move_card PASSED       [ 75%]
+kanban/tests/test_wip_limits.py::TestKanbanWIPLimits::test_set_wip_limit PASSED [ 77%]
+kanban/tests/test_work_policies_api.py::TestWorkPolicyAPI::test_list_work_policies PASSED [ 80%]
+kanban/tests/test_work_policies_api.py::TestWorkPolicyAPI::test_create_work_policy FAILED [ 83%]
+
+=================================== FAILURES ===================================
+__________________ TestWorkPolicyAPI.test_create_work_policy ___________________
+kanban/tests/test_work_policies_api.py:26: in test_create_work_policy
+    response = authenticated_client.post(url, data, format='json')
+/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/test.py:299: in post
+    response = super().post(
+/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/test.py:213: in post
+    return self.generic('POST', path, data, content_type, **extra)
+/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/test.py:237: in generic
+    return super().generic(
+/Users/sami/Library/Python/3.9/lib/python/site-packages/django/test/client.py:609: in generic
+    return self.request(**r)
+/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/test.py:289: in request
+    return super().request(**kwargs)
+/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/test.py:241: in request
+    request = super().request(**kwargs)
+/Users/sami/Library/Python/3.9/lib/python/site-packages/django/test/client.py:891: in request
+    self.check_exception(response)
+/Users/sami/Library/Python/3.9/lib/python/site-packages/django/test/client.py:738: in check_exception
+    raise exc_value
+/Users/sami/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py:55: in inner
+    response = get_response(request)
+/Users/sami/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py:197: in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+/Users/sami/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py:56: in wrapper_view
+    return view_func(*args, **kwargs)
+/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/viewsets.py:125: in view
+    return self.dispatch(request, *args, **kwargs)
+/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py:515: in dispatch
+    response = self.handle_exception(exc)
+/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py:475: in handle_exception
+    self.raise_uncaught_exception(exc)
+/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py:486: in raise_uncaught_exception
+    raise exc
+/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py:512: in dispatch
+    response = handler(request, *args, **kwargs)
+/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/mixins.py:19: in create
+    self.perform_create(serializer)
+kanban/views.py:527: in perform_create
+    serializer.save(project=Project.objects.get(id=project_id))
+E   NameError: name 'Project' is not defined
+------------------------------ Captured log call -------------------------------
+ERROR    django.request:log.py:246 Internal Server Error: /api/v1/projects/1/kanban/work-policies/
+Traceback (most recent call last):
+  File "/Users/sami/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/sami/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/sami/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/sami/Library/Python/3.9/lib/python/site-packages/rest_framework/mixins.py", line 19, in create
+    self.perform_create(serializer)
+  File "/Users/sami/Documents/Software/ProjextPal/backend/kanban/views.py", line 527, in perform_create
+    serializer.save(project=Project.objects.get(id=project_id))
+NameError: name 'Project' is not defined
+--------------------------- Captured stderr teardown ---------------------------
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+=========================== short test summary info ============================
+FAILED kanban/tests/test_work_policies_api.py::TestWorkPolicyAPI::test_create_work_policy - NameError: name 'Project' is not defined
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+======================== 1 failed, 29 passed in 20.03s =========================

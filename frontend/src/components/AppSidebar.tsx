@@ -338,6 +338,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Budget", url: `/projects/${projectId}/kanban/budget`, icon: DollarSign },
             { title: "Board Configuration", url: `/projects/${projectId}/kanban/board-configuration`, icon: Columns },
             { title: "WIP Limits", url: `/projects/${projectId}/kanban/wip-limits`, icon: Shield },
+            { title: "Work Policies", url: `/projects/${projectId}/kanban/work-policies`, icon: FileText },
           ],
         },
         {
@@ -531,6 +532,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Velocity", url: `/projects/${projectId}/agile/velocity`, icon: TrendingUp },
             { title: "Retrospective", url: `/projects/${projectId}/agile/retrospective`, icon: Lightbulb },
+            { title: "Definition of Done", url: `/projects/${projectId}/agile/definition-of-done`, icon: CheckSquare },
           ],
         },
       ];
@@ -575,6 +577,11 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           icon: Shield,
           items: [
             { title: "Change Requests", url: `/projects/${projectId}/waterfall/change-requests`, icon: FileEdit },
+            { title: "Phase Gates", url: `/projects/${projectId}/waterfall/phase-gate`, icon: CheckCircle },
+            { title: "Baselines", url: `/projects/${projectId}/waterfall/baselines`, icon: Target },
+            { title: "Risks", url: `/projects/${projectId}/waterfall/risks`, icon: Shield },
+            { title: "Issues", url: `/projects/${projectId}/waterfall/issues`, icon: AlertCircle },
+            { title: "Deliverables", url: `/projects/${projectId}/waterfall/deliverables`, icon: Package },
           ],
         },
       ];

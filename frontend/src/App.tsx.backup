@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Moon, Sun, LogOut, Globe, Loader2 } from "lucide-react";
@@ -18,16 +18,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { LanguageProvider, useLanguage, languages } from "@/contexts/LanguageContext";
+import { LanguageProvider, useLanguage, languages } from "./contexts/LanguageContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import FeatureGuard from '@/components/FeatureGuard';
 
-// ... rest of your page imports stay the same ...
+import Registrations from '@/pages/admin-portal/Registrations';
 
 // Existing Page Imports
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
+import DemoRequests from './pages/admin/DemoRequests';
+import DemoRequests from './pages/admin/DemoRequests';
 import Signup from "./pages/Signup"; 
+import TrialPending from "./pages/TrialPending";
+import VerifyEmail from "./pages/VerifyEmail";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import Pricing from "./pages/Pricing";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import AIAssistant from "./pages/AIAssistant";
 import Team from "./pages/Team";
 import PostProject from "./pages/PostProject";
@@ -66,6 +76,9 @@ import MonitoringLessonsSurveys from "./pages/MonitoringLessonsSurveys";
 import TimeTracking from "./pages/TimeTracking";
 import CreateProject from "./pages/CreateProject";
 import NotFound from "./pages/NotFound";
+import IntentSelection from "./pages/IntentSelection";
+import RegistrationConfirmation from "./pages/RegistrationConfirmation";
+import Demo from './pages/Demo';
 
 // Program Page Imports
 import ProgramsOverview from "./pages/ProgramsOverview";
@@ -124,6 +137,9 @@ import ScrumVelocity from './pages/scrum/ScrumVelocity';
 import ScrumDefinitionOfDone from './pages/scrum/ScrumDefinitionOfDone';
 import ScrumDailyStandup from './pages/scrum/ScrumDailyStandup';
 import ScrumRetrospective from './pages/scrum/ScrumRetrospective';
+import ScrumSprintPlanning from '@/pages/scrum/ScrumSprintPlanning';
+import ScrumSprintReview from '@/pages/scrum/ScrumSprintReview';
+import ScrumIncrements from '@/pages/scrum/ScrumIncrements';
 
 // Kanban Pages
 import KanbanOverview from './pages/kanban/KanbanOverview';
@@ -177,22 +193,9 @@ import AuditLogs from './pages/admin-portal/AuditLogs';
 import SystemSettings from './pages/admin-portal/SystemSettings';
 import PlanManagement from '@/pages/admin/PlanManagement';
 import TwoFactorAuth from "./pages/settings/TwoFactorAuth";
-
-
-import TrainingMarketplace from "./pages/TrainingMarketplace";
-import CourseDetail from "./pages/CourseDetail";
-import CourseCheckout from "./pages/CourseCheckout";
-import AcademyCheckoutSuccess from "./pages/AcademyCheckoutSuccess";
-import RequestQuote from "./pages/RequestQuote";
-import CourseLearningPlayer from "./pages/CourseLearningPlayer";
-import AdminTrainingManagement from './pages/admin-portal/AdminTrainingManagement';
-import EnhancedCourseBuilder from './components/course-builder/EnhancedCourseBuilder';
-import AdminTrainingContent from '@/pages/admin/AdminTrainingContent';
-import InvoiceManagement from './pages/admin-portal/InvoiceManagement';
-import Pricing from './pages/Pricing';
-import ManagementMethodieken from "./pages/ManagementMethodieken";
-
-
+import AdminTrainingManagement from '@/pages/admin-portal/AdminTrainingManagement';
+import InvoiceManagement from '@/pages/admin-portal/InvoiceManagement';
+import SubscriptionManagement from '@/pages/admin-portal/SubscriptionManagement';
 
 // ============================================
 // Query Client
@@ -257,7 +260,7 @@ const AppHeader = () => {
           className="gap-2"
         >
           <Globe className="h-4 w-4" />
-          <span className="hidden sm:inline">{t('navigation.home')}</span>
+          <span className="hidden sm:inline">{t.navigation?.home || 'Home'}</span>
         </Button>
         
         {/* Language Selector */}
@@ -270,7 +273,7 @@ const AppHeader = () => {
         </Button>
         
         {/* Logout */}
-        <Button variant="ghost" size="icon" onClick={logout} title={t('auth.logout')}>
+        <Button variant="ghost" size="icon" onClick={logout} title={t.auth?.logout || 'Logout'}>
           <LogOut className="h-5 w-5" />
         </Button>
       </div>
@@ -328,6 +331,7 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   // Show public content for unauthenticated users
   return <>{children}</>;
 };
+
 // ============================================
 // Main App Component
 // ============================================
@@ -338,19 +342,26 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
             <Routes>
               {/* ============================================ */}
               {/* Public Routes - Landing & Login              */}
               {/* ============================================ */}
               <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
               <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+              <Route path="/pricing" element={<PublicRoute><Pricing /></PublicRoute>} />
               <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} /> 
+              <Route path="/trial-pending" element={<PublicRoute><TrialPending /></PublicRoute>} />
+              <Route path="/verify-email/:token" element={<PublicRoute><VerifyEmail /></PublicRoute>} />
+              <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+              <Route path="/reset-password/:token" element={<PublicRoute><ResetPassword /></PublicRoute>} />
               <Route path="/landing" element={<Landing />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/checkout/success" element={<CheckoutSuccess />} />
               <Route path="/checkout/cancel" element={<CheckoutCancel />} />
-              
+              <Route path="/intent-selection" element={<PublicRoute><IntentSelection /></PublicRoute>} />
+              <Route path="/registration-confirmation" element={<PublicRoute><RegistrationConfirmation /></PublicRoute>} />
+              <Route path="/demo" element={<Demo />} />
+
               {/* ============================================ */}
               {/* Admin Portal Routes (SuperAdmin Only)        */}
               {/* ============================================ */}
@@ -359,75 +370,245 @@ const App = () => (
                 <Route path="users" element={<UserManagement />} />
                 <Route path="tenants" element={<TenantManagement />} />
                 <Route path="integrations" element={<IntegrationManagement />} />
-                <Route path="plans" element={<PlanManagement />} />
-                <Route path="invoices" element={<InvoiceManagement />} />
-                <Route path="training" element={<AdminTrainingContent />} />
-                <Route path="course-builder" element={<EnhancedCourseBuilder />} />
+                <Route path="plans" element={<PlanManagement />} /> 
                 <Route path="settings" element={<SystemSettings />} />
                 <Route path="logs" element={<AuditLogs />} />
+                <Route path="registrations" element={<Registrations />} />
+                <Route path="training" element={<AdminTrainingManagement />} />
+                <Route path="invoices" element={<InvoiceManagement />} />
+                <Route path="subscriptions" element={<SubscriptionManagement />} />
+                <Route path="demo-requests" element={<DemoRequests />} />
               </Route>
               
               {/* ============================================ */}
               {/* Protected Routes - Dashboard & Main App      */}
               {/* ============================================ */}
               <Route path="/dashboard" element={<ProtectedPage><Index /></ProtectedPage>} />
-              <Route path="/ai-assistant" element={<ProtectedPage><AIAssistant /></ProtectedPage>} />
-              <Route path="/team" element={<ProtectedPage><Team /></ProtectedPage>} />
-              <Route path="/post-project" element={<ProtectedPage><PostProject /></ProtectedPage>} />
+              
+              {/* AI Assistant - Requires ai_assistant feature */}
+              <Route path="/ai-assistant" element={
+                <FeatureGuard feature="ai_assistant" requiredTier="Starter">
+                  <ProtectedPage><AIAssistant /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              
+              {/* Team - Requires teams feature */}
+              <Route path="/team" element={
+                <FeatureGuard feature="teams" requiredTier="Team">
+                  <ProtectedPage><Team /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              
+              {/* Post Project - Requires post_project feature */}
+              <Route path="/post-project" element={
+                <FeatureGuard feature="post_project" requiredTier="Team">
+                  <ProtectedPage><PostProject /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              
+              {/* Surveys - Always accessible */}
               <Route path="/surveys" element={<ProtectedPage><Surveys /></ProtectedPage>} />
-              <Route path="/time-tracking" element={<ProtectedPage><TimeTracking /></ProtectedPage>} />
+              
+              {/* Time Tracking - Requires time_tracking feature */}
+              <Route path="/time-tracking" element={
+                <FeatureGuard feature="time_tracking" requiredTier="Starter">
+                  <ProtectedPage><TimeTracking /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              
+              {/* Projects - Always accessible */}
               <Route path="/projects" element={<ProtectedPage><ProjectsOverview /></ProtectedPage>} />
               <Route path="/projects/new" element={<ProtectedPage><CreateProject /></ProtectedPage>} />
               <Route path="/projects/:id" element={<ProtectedPage><ProjectDetail /></ProtectedPage>} />
               
               {/* ============================================ */}
-              {/* Program Routes                               */}
+              {/* Program Routes - Require program_management  */}
               {/* ============================================ */}
-              <Route path="/programs" element={<ProtectedPage><ProgramsOverview /></ProtectedPage>} />
-              <Route path="/programs/new" element={<ProtectedPage><CreateProgram /></ProtectedPage>} />
-              <Route path="/programs/:id" element={<ProtectedPage><ProgramDetail /></ProtectedPage>} />
-              <Route path="/programs/:id/dashboard" element={<ProtectedPage><ProgramDashboard /></ProtectedPage>} />
-              <Route path="/programs/:id/projects" element={<ProtectedPage><ProgramDashboard /></ProtectedPage>} />
-              <Route path="/programs/:id/roadmap" element={<ProtectedPage><ProgramRoadmap /></ProtectedPage>} />
-              <Route path="/programs/:id/resources" element={<ProtectedPage><ProgramResources /></ProtectedPage>} />
-              <Route path="/programs/:id/benefits" element={<ProtectedPage><ProgramBenefits /></ProtectedPage>} />
-              <Route path="/programs/:id/governance" element={<ProtectedPage><ProgramGovernance /></ProtectedPage>} />
-              <Route path="/programs/:id/risks" element={<ProtectedPage><ProgramDashboard /></ProtectedPage>} />
-              <Route path="/programs/:id/stakeholders" element={<ProtectedPage><ProgramDashboard /></ProtectedPage>} />
-              <Route path="/programs/:id/communications" element={<ProtectedPage><ProgramDashboard /></ProtectedPage>} />
-              <Route path="/programs/:id/edit" element={<ProtectedPage><CreateProgram /></ProtectedPage>} />
+              <Route path="/programs" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramsOverview /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/new" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><CreateProgram /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDetail /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/dashboard" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/projects" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/roadmap" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramRoadmap /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/resources" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramResources /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/benefits" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramBenefits /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/governance" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramGovernance /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/risks" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/stakeholders" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/communications" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/edit" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><CreateProgram /></ProtectedPage>
+                </FeatureGuard>
+              } />
               
               {/* SAFe-specific routes */}
-              <Route path="/programs/:id/art" element={<ProtectedPage><ProgramDashboard /></ProtectedPage>} />
-              <Route path="/programs/:id/pi/current" element={<ProtectedPage><ProgramDashboard /></ProtectedPage>} />
-              <Route path="/programs/:id/pi/planning" element={<ProtectedPage><ProgramDashboard /></ProtectedPage>} />
-              <Route path="/programs/:id/pi/objectives" element={<ProtectedPage><ProgramDashboard /></ProtectedPage>} />
-              <Route path="/programs/:id/features" element={<ProtectedPage><ProgramDashboard /></ProtectedPage>} />
-              <Route path="/programs/:id/demos" element={<ProtectedPage><ProgramDashboard /></ProtectedPage>} />
-              <Route path="/programs/:id/inspect-adapt" element={<ProtectedPage><ProgramDashboard /></ProtectedPage>} />
+              <Route path="/programs/:id/art" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/pi/current" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/pi/planning" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/pi/objectives" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/features" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/demos" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/inspect-adapt" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                </FeatureGuard>
+              } />
               
               {/* MSP-specific routes */}
-              <Route path="/programs/:id/blueprint" element={<ProtectedPage><ProgramDashboard /></ProtectedPage>} />
-              <Route path="/programs/:id/benefits/profiles" element={<ProtectedPage><ProgramBenefits /></ProtectedPage>} />
-              <Route path="/programs/:id/benefits/realization" element={<ProtectedPage><ProgramBenefits /></ProtectedPage>} />
-              <Route path="/programs/:id/tranches" element={<ProtectedPage><ProgramRoadmap /></ProtectedPage>} />
-              <Route path="/programs/:id/transitions" element={<ProtectedPage><ProgramRoadmap /></ProtectedPage>} />
+              <Route path="/programs/:id/blueprint" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/benefits/profiles" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramBenefits /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/benefits/realization" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramBenefits /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/tranches" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramRoadmap /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/transitions" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramRoadmap /></ProtectedPage>
+                </FeatureGuard>
+              } />
               
               {/* PMI-specific routes */}
-              <Route path="/programs/:id/charter" element={<ProtectedPage><ProgramDashboard /></ProtectedPage>} />
-              <Route path="/programs/:id/milestones" element={<ProtectedPage><ProgramRoadmap /></ProtectedPage>} />
-              <Route path="/programs/:id/schedule" element={<ProtectedPage><ProgramRoadmap /></ProtectedPage>} />
-              <Route path="/programs/:id/kpis" element={<ProtectedPage><ProgramBenefits /></ProtectedPage>} />
+              <Route path="/programs/:id/charter" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/milestones" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramRoadmap /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/schedule" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramRoadmap /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/kpis" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramBenefits /></ProtectedPage>
+                </FeatureGuard>
+              } />
               
               {/* PRINCE2-specific routes */}
-              <Route path="/programs/:id/business-case" element={<ProtectedPage><ProgramDashboard /></ProtectedPage>} />
-              <Route path="/programs/:id/stage-gates" element={<ProtectedPage><ProgramGovernance /></ProtectedPage>} />
-              <Route path="/programs/:id/exceptions" element={<ProtectedPage><ProgramGovernance /></ProtectedPage>} />
-              <Route path="/programs/:id/highlights" element={<ProtectedPage><ProgramGovernance /></ProtectedPage>} />
+              <Route path="/programs/:id/business-case" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/stage-gates" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramGovernance /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/exceptions" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramGovernance /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/highlights" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramGovernance /></ProtectedPage>
+                </FeatureGuard>
+              } />
               
               {/* General program routes */}
-              <Route path="/programs/:id/dependencies" element={<ProtectedPage><ProgramRoadmap /></ProtectedPage>} />
-              <Route path="/programs/:id/reports" element={<ProtectedPage><ProgramGovernance /></ProtectedPage>} />
+              <Route path="/programs/:id/dependencies" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramRoadmap /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/reports" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramGovernance /></ProtectedPage>
+                </FeatureGuard>
+              } />
               
               {/* ============================================ */}
               {/* Project Foundation Routes                    */}
@@ -527,6 +708,9 @@ const App = () => (
               <Route path="/projects/:id/scrum/daily-standup" element={<ProtectedPage><ScrumDailyStandup /></ProtectedPage>} />
               <Route path="/projects/:id/scrum/retrospective" element={<ProtectedPage><ScrumRetrospective /></ProtectedPage>} />
               <Route path="/projects/:id/scrum/definition-of-done" element={<ProtectedPage><ScrumDefinitionOfDone /></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/sprint-planning" element={<ProtectedPage><ScrumSprintPlanning /></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/sprint-review" element={<ProtectedPage><ScrumSprintReview /></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/increments" element={<ProtectedPage><ScrumIncrements /></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* Kanban Methodology Routes                    */}
@@ -574,21 +758,12 @@ const App = () => (
               <Route path="/projects/:id/waterfall/milestones" element={<ProtectedPage><WaterfallMilestones /></ProtectedPage>} />
               <Route path="/projects/:id/waterfall/change-requests" element={<ProtectedPage><WaterfallChangeRequests /></ProtectedPage>} />
               
+              <Route path="/profile" element={<ProtectedPage><Profile /></ProtectedPage>} />
+              <Route path="/settings" element={<ProtectedPage><Settings /></ProtectedPage>} />
               <Route path="/settings/2fa" element={<ProtectedRoute><TwoFactorAuth /></ProtectedRoute>} />
-              <Route path="/academy/marketplace" element={<TrainingMarketplace />} />
-              <Route path="/academy/course/:id" element={<CourseDetail />} />
-              <Route path="/academy/checkout/success" element={<AcademyCheckoutSuccess />} />
-              <Route path="/academy/quote/:id" element={<RequestQuote />} />
-              <Route path="/academy/quote" element={<RequestQuote />} />
-              <Route path="/academy/methodieken" element={<ManagementMethodieken />} />
-              <Route path="/academy/course/:id/learn" element={<CourseLearningPlayer />} />
-              <Route path="/academy/course/:id/learn/:lessonId" element={<CourseLearningPlayer />} />
-              <Route path="/pricing" element={<Pricing />} />
 
-              {/* 404 Not Found */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
     </LanguageProvider>

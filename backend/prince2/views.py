@@ -6,12 +6,14 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from .models import (
+    Product,
     ProjectBrief, BusinessCase, BusinessCaseBenefit, BusinessCaseRisk,
     ProjectInitiationDocument, Stage, StagePlan, StageGate, WorkPackage,
     ProjectBoard, ProjectBoardMember, HighlightReport, EndProjectReport,
     LessonsLog, ProjectTolerance
 )
 from .serializers import (
+    ProductSerializer,
     ProjectBriefSerializer, BusinessCaseSerializer, BusinessCaseBenefitSerializer,
     BusinessCaseRiskSerializer, ProjectInitiationDocumentSerializer,
     StageSerializer, StagePlanSerializer, StageGateSerializer, WorkPackageSerializer,
@@ -516,3 +518,29 @@ class Prince2DashboardView(APIView):
         }
         
         return Response(dashboard_data)
+
+
+class ProductViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.get_project_queryset(Product)
+
+    def perform_create(self, serializer):
+        project = self.get_project()
+        serializer.save(project=project)
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, project_id=None, pk=None):
+        product = self.get_object()
+        product.status = 'approved'
+        product.save()
+        return Response(ProductSerializer(product).data)
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, project_id=None, pk=None):
+        product = self.get_object()
+        product.status = 'rejected'
+        product.save()
+        return Response(ProductSerializer(product).data)

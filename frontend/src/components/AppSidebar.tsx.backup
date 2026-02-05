@@ -5,8 +5,8 @@ import { LayoutDashboard, MessageSquare, FolderKanban, Users,
   GraduationCap, Mail, Activity, CalendarDays, Table, Clock, Target, 
   Columns, Crown, Award, Repeat, Zap, ArrowDown, GitMerge, BarChart3, 
   TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
-  Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+  Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock, Package, Presentation } from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -35,6 +35,11 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserFeatures, hasFeature, getTierName, getTierColor } from "@/hooks/useUserFeatures";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+
+// [All the getProgramPhases, getMethodologyPhases, getMethodologyBadge, and ProjeXtPalLogo functions stay the same]
+// I'll include them for completeness...
 
 // Program sidebar configuration (for when viewing a specific program)
 const getProgramPhases = (programId: string, methodology: string | null) => {
@@ -305,6 +310,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Sprint Board", url: `/projects/${projectId}/scrum/sprint-board`, icon: Columns },
             { title: "Velocity", url: `/projects/${projectId}/scrum/velocity`, icon: Gauge },
+            { title: "Increments", url: `/projects/${projectId}/scrum/increments`, icon: Package },
           ],
         },
         {
@@ -314,6 +320,8 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Daily Standup", url: `/projects/${projectId}/scrum/daily-standup`, icon: Users },
             { title: "Retrospective", url: `/projects/${projectId}/scrum/retrospective`, icon: Lightbulb },
+            { title: "Sprint Planning", url: `/projects/${projectId}/scrum/sprint-planning`, icon: Calendar },
+            { title: "Sprint Review", url: `/projects/${projectId}/scrum/sprint-review`, icon: Presentation },
           ],
         },
       ];
@@ -330,6 +338,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Budget", url: `/projects/${projectId}/kanban/budget`, icon: DollarSign },
             { title: "Board Configuration", url: `/projects/${projectId}/kanban/board-configuration`, icon: Columns },
             { title: "WIP Limits", url: `/projects/${projectId}/kanban/wip-limits`, icon: Shield },
+            { title: "Work Policies", url: `/projects/${projectId}/kanban/work-policies`, icon: FileText },
           ],
         },
         {
@@ -523,6 +532,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Velocity", url: `/projects/${projectId}/agile/velocity`, icon: TrendingUp },
             { title: "Retrospective", url: `/projects/${projectId}/agile/retrospective`, icon: Lightbulb },
+            { title: "Definition of Done", url: `/projects/${projectId}/agile/definition-of-done`, icon: CheckSquare },
           ],
         },
       ];
@@ -567,6 +577,11 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           icon: Shield,
           items: [
             { title: "Change Requests", url: `/projects/${projectId}/waterfall/change-requests`, icon: FileEdit },
+            { title: "Phase Gates", url: `/projects/${projectId}/waterfall/phase-gate`, icon: CheckCircle },
+            { title: "Baselines", url: `/projects/${projectId}/waterfall/baselines`, icon: Target },
+            { title: "Risks", url: `/projects/${projectId}/waterfall/risks`, icon: Shield },
+            { title: "Issues", url: `/projects/${projectId}/waterfall/issues`, icon: AlertCircle },
+            { title: "Deliverables", url: `/projects/${projectId}/waterfall/deliverables`, icon: Package },
           ],
         },
       ];
@@ -668,9 +683,6 @@ const getMethodologyBadge = (methodology: string | null) => {
   return badges[methodology?.toLowerCase() || ''] || null;
 };
 
-/**
- * ProjeXtPal Logo Component
- */
 const ProjeXtPalLogo = ({ collapsed }: { collapsed: boolean }) => (
   <div className="flex items-center gap-2.5">
     <div className="relative flex h-9 w-9 items-center justify-center flex-shrink-0">
@@ -718,6 +730,8 @@ export function AppSidebar() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { data: userFeatures, isLoading: featuresLoading } = useUserFeatures();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const isCollapsed = state === "collapsed";
   const location = useLocation();
   
@@ -733,13 +747,27 @@ export function AppSidebar() {
     adminPortal: 'Admin Portal',
   };
   
-  // Helper to check if feature is accessible
-  const canAccessFeature = (featureName: string) => {
-    if (featuresLoading || !userFeatures) return true; // Show while loading
-    return hasFeature(userFeatures, featureName);
+  // Helper to check if item is locked for trial users
+  const isItemLocked = (featureName: string | null) => {
+    // SuperAdmin sees everything enabled
+    if (user?.isSuperAdmin || user?.role === 'superadmin') {
+      return false;
+    }
+    
+    // No feature requirement = always accessible
+    if (!featureName) {
+      return false;
+    }
+    
+    // Don't lock while loading
+    if (featuresLoading || !userFeatures) {
+      return false;
+    }
+    
+    // Check if feature is available
+    return !hasFeature(userFeatures, featureName);
   };
 
-  // Menu items with feature requirements
   const menuItems = [
     { 
       title: ts.dashboard, 
@@ -814,25 +842,64 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => {
-                // Hide if feature not available
-                if (item.feature && !canAccessFeature(item.feature)) {
-                  return null;
-                }
+                const isLocked = isItemLocked(item.feature);
+                const isActive = location.pathname === item.url || 
+                                 (item.isProgramLink && isProgramContext);
 
                 return (
                   <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton 
+                      asChild
+                      tooltip={isLocked ? "🔒 Upgrade Required" : item.title}
+                      className={cn(
+                        isLocked && "opacity-60 hover:opacity-80"
+                      )}
+                    >
                       <NavLink
                         to={item.url}
                         end={item.isProgramLink ? !isProgramContext : true}
-                        className={({ isActive }) =>
-                          (isActive || (item.isProgramLink && isProgramContext))
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                            : "hover:bg-sidebar-accent/50 text-sidebar-foreground"
+                        onClick={(e) => {
+                          if (isLocked) {
+                            e.preventDefault();
+                            toast({
+                              title: "🔒 Upgrade Required",
+                              description: `${item.title} is available with a paid subscription.`,
+                              action: (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => navigate('/profile?tab=subscription')}
+                                >
+                                  View Plans
+                                </Button>
+                              ),
+                            });
+                          }
+                        }}
+                        className={({ isActive: navIsActive }) =>
+                          cn(
+                            "flex items-center gap-3",
+                            (navIsActive || isActive)
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                              : "hover:bg-sidebar-accent/50 text-sidebar-foreground",
+                            isLocked && "cursor-not-allowed"
+                          )
                         }
                       >
-                        <item.icon className="h-4 w-4" />
-                        {!isCollapsed && <span>{item.title}</span>}
+                        <item.icon className={cn(
+                          "h-4 w-4",
+                          isLocked && "text-muted-foreground"
+                        )} />
+                        {!isCollapsed && (
+                          <span className={cn(
+                            isLocked && "text-muted-foreground"
+                          )}>
+                            {item.title}
+                          </span>
+                        )}
+                        {isLocked && !isCollapsed && (
+                          <Lock className="ml-auto h-4 w-4 text-muted-foreground" />
+                        )}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -975,9 +1042,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      {/* User Menu Footer */}
       <SidebarFooter className="border-t border-sidebar-border">
-        {/* Subscription Badge */}
         {userFeatures && !isCollapsed && (
           <div className="px-3 py-2 mb-2">
             <div className="bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-lg p-3">
@@ -1035,7 +1100,6 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
 
-          {/* Admin Portal - SuperAdmin Only */}
           {user?.isSuperAdmin && (
             <SidebarMenuItem>
               <SidebarMenuButton asChild>

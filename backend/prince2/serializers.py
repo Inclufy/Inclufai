@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import (
+    Product,
     ProjectBrief, BusinessCase, BusinessCaseBenefit, BusinessCaseRisk,
     ProjectInitiationDocument, Stage, StagePlan, StageGate, WorkPackage,
     ProjectBoard, ProjectBoardMember, HighlightReport, EndProjectReport,
@@ -160,5 +161,15 @@ class ProjectToleranceSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ProjectTolerance
+        fields = '__all__'
+        read_only_fields = ['project', 'created_at', 'updated_at']
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    owner_name = serializers.CharField(source='owner.get_full_name', read_only=True)
+    quality_responsibility_name = serializers.CharField(source='quality_responsibility.get_full_name', read_only=True)
+    
+    class Meta:
+        model = Product
         fields = '__all__'
         read_only_fields = ['project', 'created_at', 'updated_at']

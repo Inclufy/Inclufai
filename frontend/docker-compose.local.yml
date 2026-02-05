@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_BACKEND_URL: http://localhost:8001
+        VITE_API_URL: http://localhost:8001
+    container_name: projextpal-frontend-local
+    ports:
+      - "8083:80"
+    depends_on:
+      - backend
+
+  backend:
+    image: projextpal-backend
+    container_name: projextpal-backend-local
+    ports:
+      - "8001:8001"
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: projextpal-postgres-local
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: projextpal-redis-local
+
+volumes:
+  postgres_data:
