@@ -69,3 +69,4 @@ def agile_project(db, user, company):
         created_by=user,
         company=company
     )
+# Tests updated do  5 feb. 2026 07:38:55 CET
