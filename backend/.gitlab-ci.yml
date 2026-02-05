@@ -21,13 +21,20 @@ test:backend:
   script:
     - python manage.py migrate --noinput
     - python manage.py check
-    # Test ONLY implemented apps with full code
+    # Ignore skeleton apps explicitly
     - |
       pytest \
-        agile/tests/ \
-        waterfall/tests/ \
-        kanban/tests/ \
-        prince2/tests/ \
+        --ignore=hybrid/ \
+        --ignore=hybrid_programme/ \
+        --ignore=lss_black/ \
+        --ignore=lss_green/ \
+        --ignore=msp/ \
+        --ignore=p2_programme/ \
+        --ignore=pmi/ \
+        --ignore=program_management/ \
+        --ignore=safe/ \
+        --ignore=cross_methodology/ \
+        --ignore=workflow/ \
         -v --cov=. --cov-report=xml --cov-report=term --tb=short
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
