@@ -14,7 +14,8 @@ from .models import (
     WaterfallDesignDocument, WaterfallTask, WaterfallTestCase,
     WaterfallMilestone, WaterfallGanttTask, WaterfallChangeRequest,
     WaterfallDeploymentChecklist, WaterfallMaintenanceItem,
-    WaterfallBudget, WaterfallBudgetItem
+    WaterfallBudget, WaterfallBudgetItem,
+    WaterfallRisk, WaterfallIssue, WaterfallDeliverable, WaterfallBaseline
 )
 from .serializers import (
     WaterfallPhaseSerializer, WaterfallTeamMemberSerializer,
