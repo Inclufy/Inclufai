@@ -70,7 +70,7 @@ def company(db):
     
     return Company.objects.create(
         name='Test Company',
-        subscription_plan='enterprise'
+        is_subscribed=True  
     )
 
 
@@ -82,7 +82,7 @@ def second_company(db):
     
     return Company.objects.create(
         name='Second Test Company',
-        subscription_plan='professional'
+        is_subscribed=True  
     )
 
 
