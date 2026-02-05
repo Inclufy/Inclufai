@@ -2,6 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from projects.models import Project
+from companies.models import Company
 
 User = get_user_model()
 
@@ -11,25 +12,38 @@ def api_client():
     return APIClient()
 
 @pytest.fixture
-def user(db):
-    """Create a test user - adjust based on your User model"""
-    # Try without username first (for custom user models)
+def company(db):
+    """Create a test company"""
+    return Company.objects.create(
+        name='Test Company',
+        slug='test-company'
+    )
+
+@pytest.fixture
+def user(db, company):
+    """Create a test user"""
     try:
-        return User.objects.create_user(
+        user = User.objects.create_user(
             email='test@projextpal.com',
             password='testpass123',
             first_name='Test',
             last_name='User'
         )
     except TypeError:
-        # If that fails, try with username
-        return User.objects.create_user(
+        user = User.objects.create_user(
             username='testuser',
             email='test@projextpal.com',
             password='testpass123',
             first_name='Test',
             last_name='User'
         )
+    
+    # Link user to company if needed
+    if hasattr(user, 'company'):
+        user.company = company
+        user.save()
+    
+    return user
 
 @pytest.fixture
 def authenticated_client(api_client, user):
@@ -38,28 +52,31 @@ def authenticated_client(api_client, user):
     return api_client
 
 @pytest.fixture
-def waterfall_project(db, user):
+def waterfall_project(db, user, company):
     """Create a test Waterfall project"""
     return Project.objects.create(
         name='Test Waterfall Project',
         methodology='waterfall',
-        created_by=user
+        created_by=user,
+        company=company
     )
 
 @pytest.fixture
-def kanban_project(db, user):
+def kanban_project(db, user, company):
     """Create a test Kanban project"""
     return Project.objects.create(
         name='Test Kanban Project',
         methodology='kanban',
-        created_by=user
+        created_by=user,
+        company=company
     )
 
 @pytest.fixture
-def agile_project(db, user):
+def agile_project(db, user, company):
     """Create a test Agile project"""
     return Project.objects.create(
         name='Test Agile Project',
         methodology='agile',
-        created_by=user
+        created_by=user,
+        company=company
     )
