@@ -1,0 +1,35 @@
+stages:
+  - test
+
+variables:
+  POSTGRES_DB: projextpal_test
+  POSTGRES_USER: projextpal
+  POSTGRES_PASSWORD: test_password
+  POSTGRES_HOST: postgres
+  DATABASE_URL: postgresql://projextpal:test_password@postgres:5432/projextpal_test
+  DJANGO_SETTINGS_MODULE: core.settings
+
+test:backend:
+  stage: test
+  image: python:3.11
+  services:
+    - postgres:14
+  before_script:
+    - cd backend
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+  script:
+    - python manage.py migrate --noinput
+    - python manage.py check
+    # Test only implemented apps
+    - pytest agile/ waterfall/ kanban/ prince2/ scrum/ workflow/ -v --cov=. --cov-report=xml --cov-report=term
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: backend/coverage.xml
+  only:
+    - master
+    - main
+    - merge_requests
