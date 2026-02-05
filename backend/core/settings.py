@@ -212,3 +212,12 @@ SPECTACULAR_SETTINGS = {
 }
 
 MOBILE_DEEP_LINK = "projextpal://"
+# Use SQLite for testing (faster and no Docker needed)
+import sys
+if 'test' in sys.argv or 'pytest' in sys.modules:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+        }
+    }

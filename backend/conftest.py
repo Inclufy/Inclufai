@@ -940,10 +940,84 @@ def sample_team_members(db, company):
 # Coverage: 8 project methodologies + 6 program methodologies
 # Total: ~750+ potential tests
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# METHODOLOGY-SPECIFIC FIXTURES FOR TESTING
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 @pytest.fixture
-def agile_iteration(db, agile_project, user):
-    """Create an Agile iteration/sprint"""
+def waterfall_phase(db, waterfall_project, user):
+    """Create a Waterfall phase"""
+    try:
+        from waterfall.models import WaterfallPhase
+        from datetime import datetime, timedelta
+        
+        return WaterfallPhase.objects.create(
+            project=waterfall_project,
+            name='Requirements',
+            description='Requirements gathering phase',
+            start_date=datetime.now().date(),
+            end_date=(datetime.now() + timedelta(days=30)).date(),
+            status='active',
+            order=1
+        )
+    except ImportError:
+        pytest.skip("waterfall.WaterfallPhase model not available")
+
+
+@pytest.fixture
+def kanban_board(db, kanban_project, user):
+    """Create a Kanban board with default columns"""
+    try:
+        from kanban.models import KanbanBoard, KanbanColumn
+        
+        board = KanbanBoard.objects.create(
+            project=kanban_project,
+            name='Main Board',
+            description='Test kanban board'
+        )
+        
+        # Create default columns
+        columns = ['Backlog', 'To Do', 'In Progress', 'Done']
+        for i, col_name in enumerate(columns):
+            KanbanColumn.objects.create(
+                board=board,
+                name=col_name,
+                wip_limit=5 if col_name == 'In Progress' else None,
+                order=i
+            )
+        
+        return board
+    except ImportError:
+        pytest.skip("kanban.KanbanBoard model not available")
+
+
+@pytest.fixture
+def prince2_stage(db, prince2_project, user):
+    """Create a PRINCE2 stage"""
+    try:
+        from prince2.models import Prince2Stage
+        from datetime import datetime, timedelta
+        
+        return Prince2Stage.objects.create(
+            project=prince2_project,
+            name='Initiation',
+            description='Initiation stage',
+            start_date=datetime.now().date(),
+            end_date=(datetime.now() + timedelta(days=30)).date(),
+            status='active',
+            order=1
+        )
+    except ImportError:
+        pytest.skip("prince2.Prince2Stage model not available")
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# METHODOLOGY-SPECIFIC FIXTURES FOR TESTING
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@pytest.fixture
+def agile_iteration(db, agile_project):
+    """Create an agile iteration for testing"""
     try:
         from agile.models import AgileIteration
         from datetime import datetime, timedelta
@@ -951,10 +1025,84 @@ def agile_iteration(db, agile_project, user):
         return AgileIteration.objects.create(
             project=agile_project,
             name='Sprint 1',
-            goal='Test sprint',
+            goal='Test sprint goal',
             start_date=datetime.now().date(),
             end_date=(datetime.now() + timedelta(days=14)).date(),
             status='active'
         )
     except ImportError:
         pytest.skip("agile.AgileIteration model not available")
+
+
+@pytest.fixture
+def waterfall_phase(db, waterfall_project):
+    """Create a Waterfall phase"""
+    try:
+        from waterfall.models import WaterfallPhase
+        from datetime import datetime, timedelta
+        
+        return WaterfallPhase.objects.create(
+            project=waterfall_project,
+            phase_type='requirements',
+            name='Requirements Phase',
+            description='Requirements gathering',
+            start_date=datetime.now().date(),
+            end_date=(datetime.now() + timedelta(days=30)).date(),
+            status='active',
+            order=1
+        )
+    except ImportError:
+        pytest.skip("waterfall.WaterfallPhase model not available")
+
+
+@pytest.fixture
+def kanban_board(db, kanban_project):
+    """Create a Kanban board with columns"""
+    try:
+        from kanban.models import KanbanBoard, KanbanColumn
+        
+        board = KanbanBoard.objects.create(
+            project=kanban_project,
+            name='Main Board',
+            description='Test board'
+        )
+        
+        # Create default columns
+        for i, name in enumerate(['Backlog', 'To Do', 'In Progress', 'Done']):
+            KanbanColumn.objects.create(
+                board=board,
+                name=name,
+                column_type='custom',
+                order=i,
+                wip_limit=5 if name == 'In Progress' else None
+            )
+        
+        return board
+    except ImportError:
+        pytest.skip("kanban.KanbanBoard model not available")
+
+
+@pytest.fixture  
+def kanban_column(db, kanban_board):
+    """Get first column from kanban board"""
+    return kanban_board.columns.first()
+
+
+@pytest.fixture
+def prince2_stage(db, prince2_project):
+    """Create a PRINCE2 stage"""
+    try:
+        from prince2.models import Stage
+        from datetime import datetime, timedelta
+        
+        return Stage.objects.create(
+            project=prince2_project,
+            name='Initiation',
+            description='Initiation stage',
+            start_date=datetime.now().date(),
+            planned_end_date=(datetime.now() + timedelta(days=30)).date(),
+            status='active',
+            order=1
+        )
+    except ImportError:
+        pytest.skip("prince2.Stage model not available")

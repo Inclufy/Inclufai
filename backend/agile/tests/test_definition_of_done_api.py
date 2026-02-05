@@ -18,8 +18,7 @@ class TestDefinitionOfDoneAPI:
         url = f'/api/v1/projects/{agile_project.id}/agile/definition-of-done/'
         data = {
             'project': agile_project.id,
-            'title': 'Code Review',
-            'description': 'All code must be peer reviewed',
+            'description': 'All code must be peer reviewed',  # ← Changed from 'title'
             'category': 'quality',
             'is_required': True
         }
@@ -27,15 +26,14 @@ class TestDefinitionOfDoneAPI:
         response = authenticated_client.post(url, data, format='json')
         
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data['title'] == 'Code Review'
+        assert response.data['description'] == 'All code must be peer reviewed'  # ← Changed from 'title'
         assert DefinitionOfDone.objects.count() == 1
     
     def test_delete_dod_item(self, authenticated_client, agile_project):
         """Test deleting a DoD item"""
         dod = DefinitionOfDone.objects.create(
             project=agile_project,
-            title='DoD to Delete',
-            description='Description',
+            description='DoD to Delete',  # ← Changed from 'title'
             category='quality',
             is_required=True
         )

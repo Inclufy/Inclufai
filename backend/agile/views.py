@@ -12,7 +12,7 @@ from .models import (
     AgileTeamMember, AgileProductVision, AgileProductGoal,
     AgileUserPersona, AgileEpic, AgileBacklogItem, AgileIteration,
     AgileRelease, AgileDailyUpdate, AgileRetrospective, AgileRetroItem,
-    AgileBudget, AgileBudgetItem
+    AgileBudget, AgileBudgetItem, DefinitionOfDone
 )
 from .serializers import (
     DefinitionOfDoneSerializer,
