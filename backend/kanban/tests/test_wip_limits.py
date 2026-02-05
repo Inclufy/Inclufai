@@ -1,29 +1,31 @@
 """Tests for Kanban WIP Limits"""
 import pytest
 from django.urls import reverse
+from kanban.models import KanbanBoard, KanbanColumn
 
 
 @pytest.mark.django_db
 class TestKanbanWIPLimits:
-    """Test Kanban WIP limits"""
+    """Test Kanban WIP limit functionality"""
     
     def test_set_wip_limit(self, authenticated_client, kanban_project):
         """Test setting WIP limit on column"""
         # Create board and column
-        board_url = reverse('kanban:kanban-board-list', kwargs={'project_id': kanban_project.id})
-        board = authenticated_client.post(board_url, {'name': 'Test Board'})
+        board = KanbanBoard.objects.create(
+            project=kanban_project,
+            name='Test Board'
+        )
+        column = KanbanColumn.objects.create(
+            board=board,
+            name='In Progress',
+            column_type='in_progress',
+            order=1
+        )
         
-        column_url = reverse('kanban:kanban-columns-list', 
-                           kwargs={'project_id': kanban_project.id, 'board_id': board.data['id']})
-        data = {
-            'name': 'In Progress',
-            'wip_limit': 3
-        }
-        response = authenticated_client.post(column_url, data)
-        assert response.status_code == 201
+        # Update column with WIP limit - URL only needs project_id
+        column_url = reverse('kanban:kanban-columns-detail',
+                           kwargs={'project_id': kanban_project.id, 'pk': column.id})
+        
+        response = authenticated_client.patch(column_url, {'wip_limit': 3})
+        assert response.status_code == 200
         assert response.data['wip_limit'] == 3
-    
-    def test_wip_limit_exceeded(self, authenticated_client, kanban_project):
-        """Test WIP limit validation"""
-        # This would test that moving too many cards to a column fails
-        pass

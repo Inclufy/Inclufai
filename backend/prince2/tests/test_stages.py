@@ -23,11 +23,23 @@ class TestPRINCE2Stages:
     def test_stage_gate(self, authenticated_client, prince2_project):
         """Test stage gate review"""
         # Create stage
-        url = reverse('prince2:prince2-stages-list', kwargs={'project_id': prince2_project.id})
-        stage = authenticated_client.post(url, {'name': 'Test Stage'})
+        stage_url = reverse('prince2:prince2-stages-list', kwargs={'project_id': prince2_project.id})
+        stage = authenticated_client.post(stage_url, {'name': 'Test Stage'})
         
-        # Complete stage gate
-        gate_url = reverse('prince2:prince2-stage-gates-detail', 
-                         kwargs={'project_id': prince2_project.id, 'pk': stage.data['id']})
-        response = authenticated_client.post(gate_url, {'approved': True})
+        # Create stage gate
+        gate_list_url = reverse('prince2:prince2-stage-gates-list', kwargs={'project_id': prince2_project.id})
+        gate = authenticated_client.post(gate_list_url, {
+            'stage': stage.data['id'],
+            'gate_type': 'stage_boundary',
+            'scheduled_date': '2024-12-31'
+        })
+        
+        # Approve stage gate
+        gate_approve_url = reverse('prince2:prince2-stage-gates-approve', 
+                                  kwargs={'project_id': prince2_project.id, 'pk': gate.data['id']})
+        response = authenticated_client.post(gate_approve_url, {
+            'approved': True,
+            'decision': 'approved',
+            'comments': 'Gate approved'
+        })
         assert response.status_code == 200

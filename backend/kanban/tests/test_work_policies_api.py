@@ -20,8 +20,7 @@ class TestWorkPolicyAPI:
             'project': kanban_project.id,
             'title': 'Definition of Ready',
             'description': 'All tasks must have acceptance criteria',
-            'category': 'entry',
-            'applies_to': 'backlog'
+            'category': 'workflow'  # ← FIXED: valid choice from model
         }
         
         response = authenticated_client.post(url, data, format='json')
@@ -36,8 +35,7 @@ class TestWorkPolicyAPI:
             project=kanban_project,
             title='Original Policy',
             description='Original description',
-            category='entry',
-            applies_to='backlog'
+            category='workflow'  # ← FIXED
         )
         
         url = f'/api/v1/projects/{kanban_project.id}/kanban/work-policies/{policy.id}/'
@@ -54,8 +52,7 @@ class TestWorkPolicyAPI:
             project=kanban_project,
             title='Policy to Delete',
             description='Description',
-            category='entry',
-            applies_to='backlog'
+            category='quality'  # ← FIXED
         )
         
         url = f'/api/v1/projects/{kanban_project.id}/kanban/work-policies/{policy.id}/'
