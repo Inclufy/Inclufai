@@ -1,4 +1,7 @@
 from django.urls import path
+
+app_name = "kanban"
+
 from .views import (
     KanbanBoardViewSet, KanbanColumnViewSet, KanbanSwimlaneViewSet,
     KanbanCardViewSet, CardCommentViewSet, CardChecklistViewSet,

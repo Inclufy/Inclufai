@@ -1,4 +1,7 @@
 from django.urls import path
+
+app_name = "scrum"
+
 from .views import (
     ProductBacklogViewSet, BacklogItemViewSet, SprintViewSet,
     DailyStandupViewSet, SprintReviewViewSet, SprintRetrospectiveViewSet,

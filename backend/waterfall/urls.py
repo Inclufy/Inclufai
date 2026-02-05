@@ -1,4 +1,7 @@
 from django.urls import path
+
+app_name = "waterfall"
+
 from .views import (
     WaterfallDashboardViewSet,
     WaterfallPhaseViewSet,

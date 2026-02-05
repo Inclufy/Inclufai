@@ -1,4 +1,7 @@
 from django.urls import path
+
+app_name = "prince2"
+
 from .views import (
     ProjectBriefViewSet, BusinessCaseViewSet, BusinessCaseBenefitViewSet,
     BusinessCaseRiskViewSet, ProjectInitiationDocumentViewSet,
