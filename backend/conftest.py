@@ -15,8 +15,7 @@ def api_client():
 def company(db):
     """Create a test company"""
     return Company.objects.create(
-        name='Test Company',
-        slug='test-company'
+        name='Test Company'
     )
 
 @pytest.fixture
@@ -30,11 +29,9 @@ def user(db, company):
     
     user.first_name = 'Test'
     user.last_name = 'User'
-    
-    if hasattr(user, 'company'):
-        user.company = company
-    
+    user.company = company
     user.save()
+    
     return user
 
 @pytest.fixture
@@ -72,4 +69,3 @@ def agile_project(db, user, company):
         created_by=user,
         company=company
     )
-# Updated do  5 feb. 2026 07:28:18 CET
