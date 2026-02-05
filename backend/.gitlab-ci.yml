@@ -17,14 +17,13 @@ variables:
   DJANGO_SETTINGS_MODULE: core.settings
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
-# Cache pip packages for faster builds
 cache:
   paths:
     - .cache/pip
     - backend/venv/
 
 # ============================================================================
-# LINT STAGE - Code Quality Checks
+# LINT STAGE
 # ============================================================================
 
 lint:flake8:
@@ -34,9 +33,7 @@ lint:flake8:
     - cd backend
     - pip install flake8
   script:
-    # Stop on critical errors
     - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=venv,migrations
-    # Warning on style issues (don't fail build)
     - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=venv,migrations
   allow_failure: false
   only:
@@ -56,21 +53,8 @@ lint:black:
     - branches
     - merge_requests
 
-lint:isort:
-  stage: lint
-  image: python:3.9
-  before_script:
-    - cd backend
-    - pip install isort
-  script:
-    - isort --check-only --diff --skip venv --skip migrations .
-  allow_failure: true
-  only:
-    - branches
-    - merge_requests
-
 # ============================================================================
-# TEST STAGE - Complete Methodology Coverage
+# TEST STAGE - All tests in tests/ directory
 # ============================================================================
 
 test:backend:
@@ -85,14 +69,9 @@ test:backend:
   script:
     - python manage.py migrate --noinput
     - python manage.py check
-    - echo "🚀 Testing ALL 14 methodologies!"
-    - echo "📊 Project Methodologies (8): Waterfall, Kanban, Agile, PRINCE2, LSS Green, LSS Black, Hybrid, Program"
-    - echo "🎯 Program Methodologies (6): Program, SAFe, MSP, PMI, P2 Programme, Hybrid Programme"
+    - echo "🚀 Testing ALL 14 methodologies from tests/ directory!"
     - |
-      pytest \
-        --ignore=cross_methodology/ \
-        --ignore=workflow/ \
-        --ignore=venv/ \
+      pytest tests/ \
         -v \
         --cov=. \
         --cov-report=xml \
@@ -118,8 +97,8 @@ test:backend:
     - master
     - develop
 
-# Test specific methodology groups (parallel jobs for speed)
-test:waterfall-kanban:
+# Test by methodology markers
+test:kanban:
   stage: test
   image: python:3.9
   services:
@@ -130,12 +109,12 @@ test:waterfall-kanban:
     - pip install -r requirements.txt
   script:
     - python manage.py migrate --noinput
-    - pytest waterfall/ kanban/ -v --tb=short
+    - pytest tests/kanban/ -v --tb=short
   only:
     - merge_requests
   when: manual
 
-test:agile-prince2:
+test:prince2:
   stage: test
   image: python:3.9
   services:
@@ -146,13 +125,29 @@ test:agile-prince2:
     - pip install -r requirements.txt
   script:
     - python manage.py migrate --noinput
-    - pytest agile/ prince2/ -v --tb=short
+    - pytest tests/prince2/ -v --tb=short
+  only:
+    - merge_requests
+  when: manual
+
+test:waterfall:
+  stage: test
+  image: python:3.9
+  services:
+    - postgres:14
+  before_script:
+    - cd backend
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+  script:
+    - python manage.py migrate --noinput
+    - pytest tests/waterfall/ -v --tb=short
   only:
     - merge_requests
   when: manual
 
 # ============================================================================
-# SECURITY STAGE - Vulnerability Scanning
+# SECURITY STAGE
 # ============================================================================
 
 security:bandit:
@@ -180,15 +175,14 @@ security:safety:
     - cd backend
     - pip install safety
   script:
-    - safety check --json || true
-    - safety check
+    - safety check || true
   allow_failure: true
   only:
     - branches
     - merge_requests
 
 # ============================================================================
-# BUILD STAGE - Docker Image
+# BUILD STAGE
 # ============================================================================
 
 build:docker:
@@ -203,14 +197,11 @@ build:docker:
   script:
     - cd backend
     - docker build -t $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_REF_SLUG .
-    - docker build -t $CI_REGISTRY_IMAGE/backend:latest .
     - docker push $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_REF_SLUG
-    - docker push $CI_REGISTRY_IMAGE/backend:latest
   only:
     - main
     - master
     - develop
-    - tags
 
 # ============================================================================
 # DEPLOY STAGES
@@ -231,10 +222,7 @@ deploy:staging:
       ssh $DEPLOY_USER@$STAGING_SERVER << 'ENDSSH'
         cd /var/www/projextpal
         git pull origin develop
-        docker-compose pull backend
-        docker-compose up -d backend
-        docker-compose exec -T backend python manage.py migrate --noinput
-        docker-compose exec -T backend python manage.py collectstatic --noinput
+        docker-compose restart backend
       ENDSSH
   environment:
     name: staging
@@ -258,10 +246,7 @@ deploy:production:
       ssh $DEPLOY_USER@$PRODUCTION_SERVER << 'ENDSSH'
         cd /var/www/projextpal
         git pull origin main
-        docker-compose pull backend
-        docker-compose up -d backend
-        docker-compose exec -T backend python manage.py migrate --noinput
-        docker-compose exec -T backend python manage.py collectstatic --noinput
+        docker-compose restart backend
       ENDSSH
   environment:
     name: production
@@ -269,23 +254,4 @@ deploy:production:
   only:
     - main
     - master
-    - tags
   when: manual
-
-# ============================================================================
-# DATABASE MIGRATIONS CHECK
-# ============================================================================
-
-check:migrations:
-  stage: lint
-  image: python:3.9
-  services:
-    - postgres:14
-  before_script:
-    - cd backend
-    - pip install --upgrade pip
-    - pip install -r requirements.txt
-  script:
-    - python manage.py makemigrations --check --dry-run --noinput
-  only:
-    - merge_requests

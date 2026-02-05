@@ -156,7 +156,7 @@ class WaterfallPhaseViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
     def perform_create(self, serializer):
         max_order = WaterfallPhase.objects.filter(
             project=self.get_project()
-        ).aggregate(max=models.Max('order'))['max'] or 0
+        ).aggregate(max=Max('order'))['max'] or 0
         serializer.save(project=self.get_project(), order=max_order + 1)
     
     @action(detail=True, methods=['post'])

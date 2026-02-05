@@ -10,7 +10,7 @@ from datetime import timedelta
 from .models import (
     KanbanBoard, KanbanColumn, KanbanSwimlane, KanbanCard,
     CardHistory, CardComment, CardChecklist, ChecklistItem,
-    CumulativeFlowData, KanbanMetrics, WipLimitViolation
+    CumulativeFlowData, KanbanMetrics, WipLimitViolation, WorkPolicy
 )
 from .serializers import (
     WorkPolicySerializer,
@@ -514,7 +514,7 @@ class KanbanDashboardView(APIView):
         
         return Response(dashboard_data)
 
-class WorkPolicyViewSet(viewsets.ModelViewSet):
+class WorkPolicyViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = WorkPolicySerializer
     permission_classes = [IsAuthenticated]
     
@@ -523,5 +523,5 @@ class WorkPolicyViewSet(viewsets.ModelViewSet):
         return WorkPolicy.objects.filter(project_id=project_id)
     
     def perform_create(self, serializer):
-        project_id = self.kwargs.get('project_id')
-        serializer.save(project=Project.objects.get(id=project_id))
+        project = self.get_project()
+        serializer.save(project=project)
