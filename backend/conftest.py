@@ -939,3 +939,22 @@ def sample_team_members(db, company):
 # Generated: 5 Feb 2026 09:50 CET
 # Coverage: 8 project methodologies + 6 program methodologies
 # Total: ~750+ potential tests
+
+
+@pytest.fixture
+def agile_iteration(db, agile_project, user):
+    """Create an Agile iteration/sprint"""
+    try:
+        from agile.models import AgileIteration
+        from datetime import datetime, timedelta
+        
+        return AgileIteration.objects.create(
+            project=agile_project,
+            name='Sprint 1',
+            goal='Test sprint',
+            start_date=datetime.now().date(),
+            end_date=(datetime.now() + timedelta(days=14)).date(),
+            status='active'
+        )
+    except ImportError:
+        pytest.skip("agile.AgileIteration model not available")

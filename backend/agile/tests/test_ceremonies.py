@@ -7,23 +7,24 @@ from django.urls import reverse
 class TestAgileCeremonies:
     """Test Agile ceremonies"""
     
-    def test_daily_standup(self, authenticated_client, agile_project):
+    def test_daily_standup(self, authenticated_client, agile_project, agile_iteration):
         """Test daily standup recording"""
         url = reverse('agile:agile-daily-updates-list', kwargs={'project_id': agile_project.id})
         data = {
+            'iteration': agile_iteration.id,
             'date': '2026-02-05',
-            'what_done': 'Completed login API',
-            'what_doing': 'Working on authentication',
+            'yesterday': 'Completed login API',
+            'today': 'Working on authentication',
             'blockers': 'None'
         }
         response = authenticated_client.post(url, data)
         assert response.status_code == 201
     
-    def test_sprint_retrospective(self, authenticated_client, agile_project):
+    def test_sprint_retrospective(self, authenticated_client, agile_project, agile_iteration):
         """Test sprint retrospective"""
         url = reverse('agile:agile-retrospectives-list', kwargs={'project_id': agile_project.id})
         data = {
-            'sprint_id': 1,
+            'iteration': agile_iteration.id,
             'what_went_well': 'Good team collaboration',
             'what_to_improve': 'Better estimation',
             'action_items': 'Use planning poker'
