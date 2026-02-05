@@ -21,28 +21,22 @@ def company(db):
 
 @pytest.fixture
 def user(db, company):
-    """Create a test user"""
-    try:
-        user = User.objects.create_user(
-            email='test@projextpal.com',
-            password='testpass123',
-            first_name='Test',
-            last_name='User'
-        )
-    except TypeError:
-        user = User.objects.create_user(
-            username='testuser',
-            email='test@projextpal.com',
-            password='testpass123',
-            first_name='Test',
-            last_name='User'
-        )
+    """Create a test user - username MUST be first argument"""
+    user = User.objects.create_user(
+        'testuser',  # username as positional argument
+        email='test@projextpal.com',
+        password='testpass123'
+    )
     
-    # Link user to company if needed
+    # Set additional fields
+    user.first_name = 'Test'
+    user.last_name = 'User'
+    
+    # Link user to company if field exists
     if hasattr(user, 'company'):
         user.company = company
-        user.save()
     
+    user.save()
     return user
 
 @pytest.fixture
