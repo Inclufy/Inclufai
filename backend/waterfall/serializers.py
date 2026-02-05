@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import (
+    WaterfallRisk, WaterfallIssue, WaterfallDeliverable, WaterfallBaseline,
     WaterfallPhase, WaterfallTeamMember, WaterfallRequirement,
     WaterfallDesignDocument, WaterfallTask, WaterfallTestCase,
     WaterfallMilestone, WaterfallGanttTask, WaterfallChangeRequest,
@@ -288,3 +289,35 @@ class WaterfallDashboardSerializer(serializers.Serializer):
     team_size = serializers.IntegerField()
     pending_change_requests = serializers.IntegerField()
     budget_utilization = serializers.FloatField()
+
+
+# Risk Serializer
+class WaterfallRiskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WaterfallRisk
+        fields = '__all__'
+        read_only_fields = ['created_at', 'updated_at']
+
+
+# Issue Serializer
+class WaterfallIssueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WaterfallIssue
+        fields = '__all__'
+        read_only_fields = ['created_at', 'updated_at']
+
+
+# Deliverable Serializer
+class WaterfallDeliverableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WaterfallDeliverable
+        fields = '__all__'
+        read_only_fields = ['created_at', 'updated_at']
+
+
+# Baseline Serializer
+class WaterfallBaselineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WaterfallBaseline
+        fields = '__all__'
+        read_only_fields = ['created_at', 'updated_at']

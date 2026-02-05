@@ -15,6 +15,7 @@ from .models import (
     AgileBudget, AgileBudgetItem
 )
 from .serializers import (
+    DefinitionOfDoneSerializer,
     AgileTeamMemberSerializer, AgileTeamMemberCreateSerializer,
     AgileProductVisionSerializer, AgileProductGoalSerializer,
     AgileUserPersonaSerializer, AgileEpicSerializer,
@@ -512,3 +513,16 @@ class AgileBudgetItemViewSet(viewsets.ModelViewSet):
         project = get_object_or_404(Project, id=self.kwargs.get('project_id'))
         budget, _ = AgileBudget.objects.get_or_create(project=project)
         serializer.save(budget=budget)
+
+class DefinitionOfDoneViewSet(viewsets.ModelViewSet):
+    serializer_class = DefinitionOfDoneSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        project_id = self.kwargs.get('project_id')
+        return DefinitionOfDone.objects.filter(project_id=project_id)
+    
+    def perform_create(self, serializer):
+        project_id = self.kwargs.get('project_id')
+        from projects.models import Project
+        serializer.save(project=Project.objects.get(id=project_id))

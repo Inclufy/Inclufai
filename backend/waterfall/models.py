@@ -450,3 +450,162 @@ class WaterfallBudgetItem(models.Model):
     
     def __str__(self):
         return f"{self.category}: {self.description}"
+
+
+# Risk Management
+class WaterfallRisk(models.Model):
+    CATEGORY_CHOICES = [
+        ('technical', 'Technical'),
+        ('business', 'Business'),
+        ('resource', 'Resource'),
+        ('external', 'External'),
+    ]
+    
+    PROBABILITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+    ]
+    
+    IMPACT_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('identified', 'Identified'),
+        ('analyzing', 'Analyzing'),
+        ('mitigating', 'Mitigating'),
+        ('closed', 'Closed'),
+    ]
+    
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='waterfall_risks')
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    probability = models.CharField(max_length=20, choices=PROBABILITY_CHOICES)
+    impact = models.CharField(max_length=20, choices=IMPACT_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='identified')
+    owner = models.CharField(max_length=255)
+    mitigation = models.TextField()
+    date_identified = models.DateField()
+    date_closed = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"{self.title} - {self.status}"
+
+
+# Issue Management
+class WaterfallIssue(models.Model):
+    CATEGORY_CHOICES = [
+        ('technical', 'Technical'),
+        ('business', 'Business'),
+        ('resource', 'Resource'),
+        ('process', 'Process'),
+    ]
+    
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('critical', 'Critical'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('in-progress', 'In Progress'),
+        ('resolved', 'Resolved'),
+        ('closed', 'Closed'),
+    ]
+    
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='waterfall_issues')
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    assignee = models.CharField(max_length=255)
+    reporter = models.CharField(max_length=255)
+    date_reported = models.DateField()
+    date_resolved = models.DateField(null=True, blank=True)
+    resolution = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"{self.title} - {self.status}"
+
+
+# Deliverable Management
+class WaterfallDeliverable(models.Model):
+    TYPE_CHOICES = [
+        ('document', 'Document'),
+        ('code', 'Code'),
+        ('design', 'Design'),
+        ('approval', 'Approval'),
+        ('training', 'Training'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('in-progress', 'In Progress'),
+        ('review', 'Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='waterfall_deliverables')
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    phase = models.CharField(max_length=100)
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    owner = models.CharField(max_length=255)
+    approver = models.CharField(max_length=255, blank=True)
+    due_date = models.DateField()
+    completed_date = models.DateField(null=True, blank=True)
+    acceptance_criteria = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['due_date']
+        
+    def __str__(self):
+        return f"{self.name} - {self.phase}"
+
+
+# Baseline Management
+class WaterfallBaseline(models.Model):
+    BASELINE_TYPE_CHOICES = [
+        ('scope', 'Scope Baseline'),
+        ('schedule', 'Schedule Baseline'),
+        ('cost', 'Cost Baseline'),
+    ]
+    
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='waterfall_baselines')
+    baseline_type = models.CharField(max_length=20, choices=BASELINE_TYPE_CHOICES)
+    version = models.IntegerField(default=1)
+    data = models.JSONField()
+    approved_by = models.CharField(max_length=255)
+    approval_date = models.DateField()
+    is_current = models.BooleanField(default=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-version']
+        unique_together = ['project', 'baseline_type', 'version']
+        
+    def __str__(self):
+        return f"{self.baseline_type} v{self.version} - {self.project.name}"

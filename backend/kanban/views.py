@@ -13,6 +13,7 @@ from .models import (
     CumulativeFlowData, KanbanMetrics, WipLimitViolation
 )
 from .serializers import (
+    WorkPolicySerializer,
     KanbanBoardSerializer, KanbanBoardDetailSerializer,
     KanbanColumnSerializer, KanbanColumnWithCardsSerializer,
     KanbanSwimlaneSerializer, KanbanCardSerializer, KanbanCardDetailSerializer,
@@ -512,3 +513,15 @@ class KanbanDashboardView(APIView):
         }
         
         return Response(dashboard_data)
+
+class WorkPolicyViewSet(viewsets.ModelViewSet):
+    serializer_class = WorkPolicySerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        project_id = self.kwargs.get('project_id')
+        return WorkPolicy.objects.filter(project_id=project_id)
+    
+    def perform_create(self, serializer):
+        project_id = self.kwargs.get('project_id')
+        serializer.save(project=Project.objects.get(id=project_id))

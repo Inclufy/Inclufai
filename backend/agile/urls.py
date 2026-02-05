@@ -15,6 +15,7 @@ from .views import (
     AgileRetroItemViewSet,
     AgileBudgetViewSet,
     AgileBudgetItemViewSet,
+    DefinitionOfDoneViewSet,
 )
 
 # Create a router for viewsets
@@ -217,4 +218,18 @@ urlpatterns = [
         AgileBudgetItemViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
         name='agile-budget-items-detail'
     ),
+    # =========================================================================
+    # DEFINITION OF DONE
+    # =========================================================================
+    path(
+        "projects/<int:project_id>/agile/definition-of-done/",
+        DefinitionOfDoneViewSet.as_view({"get": "list", "post": "create"}),
+        name="agile-definition-of-done-list"
+    ),
+    path(
+        "projects/<int:project_id>/agile/definition-of-done/<int:pk>/",
+        DefinitionOfDoneViewSet.as_view({"get": "retrieve", "put": "update", "patch": "partial_update", "delete": "destroy"}),
+        name="agile-definition-of-done-detail"
+    ),
 ]
+

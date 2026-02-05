@@ -1,3 +1,5 @@
+from .models import WorkPolicy
+
 from rest_framework import serializers
 from .models import (
     KanbanBoard, KanbanColumn, KanbanSwimlane, KanbanCard,
@@ -138,3 +140,9 @@ class WipLimitViolationSerializer(serializers.ModelSerializer):
     class Meta:
         model = WipLimitViolation
         fields = '__all__'
+
+class WorkPolicySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkPolicy
+        fields = ['id', 'project', 'title', 'description', 'category', 'is_active', 'order', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']

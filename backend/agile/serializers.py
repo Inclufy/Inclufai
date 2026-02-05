@@ -1,3 +1,5 @@
+from .models import DefinitionOfDone
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import (
@@ -234,3 +236,9 @@ class AgileDashboardSerializer(serializers.Serializer):
     velocity_history = serializers.ListField(child=serializers.DictField())
     upcoming_releases = AgileReleaseSerializer(many=True)
     recent_activity = serializers.ListField(child=serializers.DictField())
+
+class DefinitionOfDoneSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DefinitionOfDone
+        fields = ['id', 'project', 'description', 'category', 'is_required', 'order', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']

@@ -267,3 +267,15 @@ export const kanbanApi = {
 };
 
 export default kanbanApi;
+
+// Work Policies
+export const workPoliciesApi = {
+  getAll: (projectId: string | number) =>
+    api.get(`/projects/${projectId}/kanban/work-policies/`),
+  create: (projectId: string | number, data: any) =>
+    api.post(`/projects/${projectId}/kanban/work-policies/`, data),
+  update: (projectId: string | number, id: number, data: any) =>
+    api.patch(`/projects/${projectId}/kanban/work-policies/${id}/`, data),
+  delete: (projectId: string | number, id: number) =>
+    api.delete(`/projects/${projectId}/kanban/work-policies/${id}/`),
+};

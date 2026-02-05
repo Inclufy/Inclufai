@@ -352,3 +352,29 @@ class AgileBudgetItem(models.Model):
     
     def __str__(self):
         return f"{self.category}: {self.description}"
+
+class DefinitionOfDone(models.Model):
+    CATEGORY_CHOICES = [
+        ('development', 'Development'),
+        ('testing', 'Testing'),
+        ('review', 'Review'),
+        ('documentation', 'Documentation'),
+        ('quality', 'Quality'),
+        ('acceptance', 'Acceptance'),
+        ('security', 'Security'),
+    ]
+    
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='agile_dod')
+    description = models.CharField(max_length=500)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    is_required = models.BooleanField(default=True)
+    order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'agile_definition_of_done'
+        ordering = ['order', 'id']
+        
+    def __str__(self):
+        return f"{self.project.name} - {self.description[:50]}"

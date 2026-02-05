@@ -24,7 +24,9 @@ from .serializers import (
     WaterfallGanttTaskSerializer, WaterfallChangeRequestSerializer,
     WaterfallDeploymentChecklistSerializer, WaterfallMaintenanceItemSerializer,
     WaterfallBudgetSerializer, WaterfallBudgetItemSerializer,
-    WaterfallDashboardSerializer
+    WaterfallDashboardSerializer,
+    WaterfallRiskSerializer, WaterfallIssueSerializer,
+    WaterfallDeliverableSerializer, WaterfallBaselineSerializer
 )
 
 User = get_user_model()
@@ -680,3 +682,39 @@ class WaterfallBudgetItemViewSet(viewsets.ModelViewSet):
         project = get_object_or_404(Project, id=self.kwargs.get('project_id'))
         budget, _ = WaterfallBudget.objects.get_or_create(project=project)
         serializer.save(budget=budget)
+
+
+# Risk ViewSet
+class WaterfallRiskViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
+    serializer_class = WaterfallRiskSerializer
+    
+    def get_queryset(self):
+        project_id = self.kwargs.get('project_id')
+        return WaterfallRisk.objects.filter(project_id=project_id)
+
+
+# Issue ViewSet
+class WaterfallIssueViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
+    serializer_class = WaterfallIssueSerializer
+    
+    def get_queryset(self):
+        project_id = self.kwargs.get('project_id')
+        return WaterfallIssue.objects.filter(project_id=project_id)
+
+
+# Deliverable ViewSet
+class WaterfallDeliverableViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
+    serializer_class = WaterfallDeliverableSerializer
+    
+    def get_queryset(self):
+        project_id = self.kwargs.get('project_id')
+        return WaterfallDeliverable.objects.filter(project_id=project_id)
+
+
+# Baseline ViewSet
+class WaterfallBaselineViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
+    serializer_class = WaterfallBaselineSerializer
+    
+    def get_queryset(self):
+        project_id = self.kwargs.get('project_id')
+        return WaterfallBaseline.objects.filter(project_id=project_id)
