@@ -11,6 +11,7 @@ class TestWaterfallPhases:
         """Test creating a waterfall phase"""
         url = reverse('waterfall:waterfall-phases-list', kwargs={'project_id': waterfall_project.id})
         data = {
+            'phase_type': 'requirements',  # ← ADDED required field
             'name': 'Requirements Phase',
             'description': 'Gather all requirements',
             'order': 1,
@@ -33,9 +34,9 @@ class TestWaterfallPhases:
         url = reverse('waterfall:waterfall-phases-list', kwargs={'project_id': waterfall_project.id})
         
         phases = [
-            {'name': 'Requirements', 'order': 1},
-            {'name': 'Design', 'order': 2},
-            {'name': 'Implementation', 'order': 3}
+            {'phase_type': 'requirements', 'name': 'Requirements', 'order': 1},  # ← ADDED
+            {'phase_type': 'design', 'name': 'Design', 'order': 2},  # ← ADDED
+            {'phase_type': 'development', 'name': 'Implementation', 'order': 3}  # ← ADDED
         ]
         
         for phase in phases:
