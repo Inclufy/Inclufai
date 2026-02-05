@@ -10,10 +10,10 @@ class TestKanbanWIPLimits:
     def test_set_wip_limit(self, authenticated_client, kanban_project):
         """Test setting WIP limit on column"""
         # Create board and column
-        board_url = reverse('kanban:board-list', kwargs={'project_id': kanban_project.id})
+        board_url = reverse('kanban:kanban-board-list', kwargs={'project_id': kanban_project.id})
         board = authenticated_client.post(board_url, {'name': 'Test Board'})
         
-        column_url = reverse('kanban:column-list', 
+        column_url = reverse('kanban:kanban-columns-list', 
                            kwargs={'project_id': kanban_project.id, 'board_id': board.data['id']})
         data = {
             'name': 'In Progress',

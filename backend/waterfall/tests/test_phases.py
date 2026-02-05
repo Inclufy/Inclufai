@@ -9,7 +9,7 @@ class TestWaterfallPhases:
     
     def test_create_phase(self, authenticated_client, waterfall_project):
         """Test creating a waterfall phase"""
-        url = reverse('waterfall:phase-list', kwargs={'project_id': waterfall_project.id})
+        url = reverse('waterfall:waterfall-phases-list', kwargs={'project_id': waterfall_project.id})
         data = {
             'name': 'Requirements Phase',
             'description': 'Gather all requirements',
@@ -23,14 +23,14 @@ class TestWaterfallPhases:
     
     def test_list_phases(self, authenticated_client, waterfall_project):
         """Test listing phases"""
-        url = reverse('waterfall:phase-list', kwargs={'project_id': waterfall_project.id})
+        url = reverse('waterfall:waterfall-phases-list', kwargs={'project_id': waterfall_project.id})
         response = authenticated_client.get(url)
         assert response.status_code == 200
     
     def test_phase_order(self, authenticated_client, waterfall_project):
         """Test phases are ordered correctly"""
         # Create multiple phases
-        url = reverse('waterfall:phase-list', kwargs={'project_id': waterfall_project.id})
+        url = reverse('waterfall:waterfall-phases-list', kwargs={'project_id': waterfall_project.id})
         
         phases = [
             {'name': 'Requirements', 'order': 1},

@@ -9,7 +9,7 @@ class TestWaterfallTasks:
     
     def test_create_task(self, authenticated_client, waterfall_project):
         """Test creating a task"""
-        url = reverse('waterfall:task-list', kwargs={'project_id': waterfall_project.id})
+        url = reverse('waterfall:waterfall-tasks-list', kwargs={'project_id': waterfall_project.id})
         data = {
             'title': 'Write Requirements Document',
             'description': 'Document all functional requirements',
@@ -21,7 +21,7 @@ class TestWaterfallTasks:
     
     def test_task_dependencies(self, authenticated_client, waterfall_project):
         """Test task dependencies"""
-        url = reverse('waterfall:task-list', kwargs={'project_id': waterfall_project.id})
+        url = reverse('waterfall:waterfall-tasks-list', kwargs={'project_id': waterfall_project.id})
         
         # Create first task
         task1 = authenticated_client.post(url, {'title': 'Task 1'})

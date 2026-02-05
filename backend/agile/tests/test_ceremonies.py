@@ -9,7 +9,7 @@ class TestAgileCeremonies:
     
     def test_daily_standup(self, authenticated_client, agile_project):
         """Test daily standup recording"""
-        url = reverse('agile:standup-list', kwargs={'project_id': agile_project.id})
+        url = reverse('agile:agile-daily-updates-list', kwargs={'project_id': agile_project.id})
         data = {
             'date': '2026-02-05',
             'what_done': 'Completed login API',
@@ -21,7 +21,7 @@ class TestAgileCeremonies:
     
     def test_sprint_retrospective(self, authenticated_client, agile_project):
         """Test sprint retrospective"""
-        url = reverse('agile:retrospective-list', kwargs={'project_id': agile_project.id})
+        url = reverse('agile:agile-retrospectives-list', kwargs={'project_id': agile_project.id})
         data = {
             'sprint_id': 1,
             'what_went_well': 'Good team collaboration',

@@ -10,7 +10,7 @@ class TestAgileSprints:
     
     def test_create_sprint(self, authenticated_client, agile_project):
         """Test creating a sprint"""
-        url = reverse('agile:sprint-list', kwargs={'project_id': agile_project.id})
+        url = reverse('agile:agile-iterations-list', kwargs={'project_id': agile_project.id})
         data = {
             'name': 'Sprint 1',
             'goal': 'Complete login feature',
@@ -22,7 +22,7 @@ class TestAgileSprints:
     
     def test_sprint_duration(self, authenticated_client, agile_project):
         """Test sprint duration validation"""
-        url = reverse('agile:sprint-list', kwargs={'project_id': agile_project.id})
+        url = reverse('agile:agile-iterations-list', kwargs={'project_id': agile_project.id})
         data = {
             'name': 'Sprint 1',
             'start_date': '2026-02-01',

@@ -9,7 +9,7 @@ class TestPRINCE2Stages:
     
     def test_create_stage(self, authenticated_client, prince2_project):
         """Test creating a PRINCE2 stage"""
-        url = reverse('prince2:stage-list', kwargs={'project_id': prince2_project.id})
+        url = reverse('prince2:prince2-stages-list', kwargs={'project_id': prince2_project.id})
         data = {
             'name': 'Initiation Stage',
             'description': 'Project initiation',
@@ -23,11 +23,11 @@ class TestPRINCE2Stages:
     def test_stage_gate(self, authenticated_client, prince2_project):
         """Test stage gate review"""
         # Create stage
-        url = reverse('prince2:stage-list', kwargs={'project_id': prince2_project.id})
+        url = reverse('prince2:prince2-stages-list', kwargs={'project_id': prince2_project.id})
         stage = authenticated_client.post(url, {'name': 'Test Stage'})
         
         # Complete stage gate
-        gate_url = reverse('prince2:stage-gate', 
+        gate_url = reverse('prince2:prince2-stage-gates-detail', 
                          kwargs={'project_id': prince2_project.id, 'pk': stage.data['id']})
         response = authenticated_client.post(gate_url, {'approved': True})
         assert response.status_code == 200

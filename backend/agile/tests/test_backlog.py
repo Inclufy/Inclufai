@@ -9,7 +9,7 @@ class TestAgileBacklog:
     
     def test_create_user_story(self, authenticated_client, agile_project):
         """Test creating a user story"""
-        url = reverse('agile:user-story-list', kwargs={'project_id': agile_project.id})
+        url = reverse('agile:agile-backlog-list', kwargs={'project_id': agile_project.id})
         data = {
             'title': 'As a user, I want to login',
             'description': 'User authentication story',
@@ -21,7 +21,7 @@ class TestAgileBacklog:
     
     def test_backlog_prioritization(self, authenticated_client, agile_project):
         """Test backlog item prioritization"""
-        url = reverse('agile:user-story-list', kwargs={'project_id': agile_project.id})
+        url = reverse('agile:agile-backlog-list', kwargs={'project_id': agile_project.id})
         
         stories = [
             {'title': 'Story 1', 'priority': 'high', 'order': 1},
