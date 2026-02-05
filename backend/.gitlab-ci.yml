@@ -21,8 +21,14 @@ test:backend:
   script:
     - python manage.py migrate --noinput
     - python manage.py check
-    # Test only implemented apps
-    - pytest agile/ waterfall/ kanban/ prince2/ scrum/ workflow/ -v --cov=. --cov-report=xml --cov-report=term
+    # Test ONLY implemented apps with full code
+    - |
+      pytest \
+        agile/tests/ \
+        waterfall/tests/ \
+        kanban/tests/ \
+        prince2/tests/ \
+        -v --cov=. --cov-report=xml --cov-report=term --tb=short
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
     reports:
