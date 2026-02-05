@@ -17,7 +17,7 @@ test:backend:
   before_script:
     - cd backend
     - pip install --upgrade pip
-    - pip install -r requirements_compatible.txt
+    - pip install -r requirements.txt
   script:
     - python manage.py migrate --noinput
     - python manage.py check
