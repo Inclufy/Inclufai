@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from projects.models import Project
-from companies.models import Company
+from accounts.models import Company
 
 User = get_user_model()
 
@@ -23,16 +23,14 @@ def company(db):
 def user(db, company):
     """Create a test user - username MUST be first argument"""
     user = User.objects.create_user(
-        'testuser',  # username as positional argument
+        'testuser',
         email='test@projextpal.com',
         password='testpass123'
     )
     
-    # Set additional fields
     user.first_name = 'Test'
     user.last_name = 'User'
     
-    # Link user to company if field exists
     if hasattr(user, 'company'):
         user.company = company
     
