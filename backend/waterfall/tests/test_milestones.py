@@ -23,8 +23,13 @@ class TestWaterfallMilestones:
         """Test marking milestone as complete"""
         url = reverse('waterfall:waterfall-milestones-list', kwargs={'project_id': waterfall_project.id})
         
-        # Create milestone
-        milestone = authenticated_client.post(url, {'name': 'Test Milestone'})
+        # Create milestone with required due_date
+        data = {
+            'name': 'Test Milestone',
+            'due_date': '2026-03-15'  # ← ADDED required field
+        }
+        milestone = authenticated_client.post(url, data)
+        assert milestone.status_code == 201  # ← Verify creation succeeded
         milestone_id = milestone.data['id']
         
         # Complete it
@@ -32,3 +37,4 @@ class TestWaterfallMilestones:
                            kwargs={'project_id': waterfall_project.id, 'pk': milestone_id})
         response = authenticated_client.patch(update_url, {'status': 'completed'})
         assert response.status_code == 200
+        assert response.data['status'] == 'completed'
