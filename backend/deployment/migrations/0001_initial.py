@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                 ('order', models.IntegerField(default=0)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('deployment_plan', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='rollout_phases', to='deployment.deploymentplan')),
+                ('deployment_plan', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='rollout_phases', to='deploment.deploymentplan')),
             ],
             options={
                 'verbose_name': 'Rollout Phase',
@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
                 ('order', models.IntegerField(default=0)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('rollout_phase', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tasks', to='deployment.rolloutphase')),
+                ('rollout_phase', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tasks', to='deploment.rolloutphase')),
             ],
             options={
                 'verbose_name': 'Phase Task',
@@ -71,7 +71,7 @@ class Migration(migrations.Migration):
                 ('order', models.IntegerField(default=0)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('deployment_plan', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='strategy_items', to='deployment.deploymentplan')),
+                ('deployment_plan', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='strategy_items', to='deploment.deploymentplan')),
             ],
             options={
                 'verbose_name': 'Strategy Item',

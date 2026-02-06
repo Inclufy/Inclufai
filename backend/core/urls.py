@@ -33,7 +33,7 @@ urlpatterns = [
     path("api/v1/postproject/", include("postproject.urls")),
     path("api/v1/communication/", include("communication.urls")),
     path("api/v1/newsletters/", include("newsletters.urls")),
-    path("api/v1/bot/", include("bot.urls")),  # AI Chat enabled
+    # path("api/v1/bot/", include("bot.urls")),  # Disabled - needs deployment app
     path("api/v1/workflow/", include("workflow.urls")),
     path("api/v1/academy/", include("academy.urls")),
     path("api/v1/admin/", include("admin_portal.urls")),
@@ -55,8 +55,3 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-# Invitations endpoint (redirect to surveys)
-from django.views.generic import RedirectView
-urlpatterns += [
-    path("api/v1/invitations/", RedirectView.as_view(pattern_name='survey-detail', permanent=False)),
-]

@@ -18,8 +18,7 @@ class TestAPIPerformance:
         client.force_login(user)
         
         start = time.time()
-        # Fixed: use correct API version endpoint
-        response = client.get('/api/v1/public/plans/')
+        response = client.get('/api/projects/')
         duration = time.time() - start
         
         assert response.status_code == 200
