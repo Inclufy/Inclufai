@@ -221,3 +221,6 @@ if 'test' in sys.argv or 'pytest' in sys.modules:
             'NAME': ':memory:',
         }
     }
+
+# Frontend URL for invitation links
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://projextpal.com')

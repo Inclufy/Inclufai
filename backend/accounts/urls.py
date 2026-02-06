@@ -87,3 +87,10 @@ urlpatterns = [
 ]
 
 urlpatterns += router.urls
+# Team Invitations
+from .invitation_views import CreateInvitationView, AcceptInvitationView, ListInvitationsView
+urlpatterns += [
+    path("invitations/", ListInvitationsView.as_view(), name="list_invitations"),
+    path("invitations/create/", CreateInvitationView.as_view(), name="create_invitation"),
+    path("invitations/accept/<str:token>/", AcceptInvitationView.as_view(), name="accept_invitation"),
+]
