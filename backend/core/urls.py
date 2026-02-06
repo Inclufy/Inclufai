@@ -55,3 +55,8 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+# Invitations endpoint (redirect to surveys)
+from django.views.generic import RedirectView
+urlpatterns += [
+    path("api/v1/invitations/", RedirectView.as_view(pattern_name='survey-detail', permanent=False)),
+]

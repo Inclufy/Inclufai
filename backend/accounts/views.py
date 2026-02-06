@@ -2106,3 +2106,10 @@ class RegistrationsView(APIView):
                 'active_trials': sum(1 for r in registrations if r['subscription']['is_active'] and r['subscription']['tier'] == 'trial'),
             }
         })
+
+class CompanyUsersMembersView(CompanyUsersView):
+    """
+    Alias for CompanyUsersView to match frontend endpoint expectations
+    Returns all users in the same company as the requesting user
+    """
+    pass

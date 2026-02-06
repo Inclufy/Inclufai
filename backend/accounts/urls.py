@@ -87,3 +87,8 @@ urlpatterns = [
 ]
 
 urlpatterns += router.urls
+# Company users members endpoint
+from .views import CompanyUsersMembersView
+urlpatterns += [
+    path("company-users/members/", CompanyUsersMembersView.as_view(), name="company_users_members"),
+]
