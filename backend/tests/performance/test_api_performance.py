@@ -9,7 +9,9 @@ class TestAPIPerformance:
     
     def test_quick_response(self, client):
         """API should respond quickly"""
+        # Create user with username
         user = User.objects.create_user(
+            username='testuser',
             email='test@example.com',
             password='test123'
         )
@@ -20,4 +22,4 @@ class TestAPIPerformance:
         duration = time.time() - start
         
         assert response.status_code == 200
-        assert duration < 1.0
+        assert duration < 1.0, f"Response took {duration:.2f}s (should be <1s)"
