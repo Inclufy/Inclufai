@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class DeplomentConfig(AppConfig):
+class DeploymentConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "deploment"
+    name = "deployment"

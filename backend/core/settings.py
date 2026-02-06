@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "communication",
     "newsletters",
     "bot",
+    # "deployment",  # TODO: Fix migration conflicts
     "workflow",
     "programs",
     "sixsigma",  # NEW: Lean Six Sigma DMAIC tools
