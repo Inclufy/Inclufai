@@ -18,7 +18,7 @@ class TestAPIPerformance:
         client.force_login(user)
         
         start = time.time()
-        response = client.get('/api/projects/')
+        response = client.get('/api/v1/projects/')
         duration = time.time() - start
         
         assert response.status_code == 200
