@@ -106,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (userData) {
           console.log('✅ Session restored for:', userData.email);
           setUser(userData);
+        localStorage.setItem('user_role', userData.role || 'admin');
         localStorage.setItem("user", JSON.stringify(userData));
         } else {
           console.log('❌ Session invalid, cleared auth data');
@@ -156,6 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (userData) {
   console.log('✅ Login successful for:', userData.email);
   setUser(userData);
+        localStorage.setItem('user_role', userData.role || 'admin');
   localStorage.setItem('user', JSON.stringify(userData)); // ← ADD THIS
 } else {
         throw new Error('Failed to fetch user data after login');

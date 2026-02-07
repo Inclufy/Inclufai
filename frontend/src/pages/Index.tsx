@@ -1,3 +1,6 @@
+import ExecutiveDashboard from "@/components/dashboards/ExecutiveDashboard";
+import ProjectManagerDashboard from "@/components/dashboards/ProjectManagerDashboard";
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -306,6 +309,21 @@ const CurrentPlanCard = () => {
 };
 
 const Index = () => {
+  // Role-based dashboard routing
+  const userRole = localStorage.getItem("user_role");
+  
+  // Admin/SuperAdmin gets Executive Dashboard
+  if (userRole === "admin" || userRole === "superadmin") {
+    return <ExecutiveDashboard />;
+  }
+  
+  if (userRole === "pm") {
+    return <ProjectManagerDashboard />;
+  }
+  
+  // Default: Executive/Admin Dashboard
+
+
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const currencyCode = getCurrencyFromLanguage(language);
