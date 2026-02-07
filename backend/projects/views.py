@@ -122,22 +122,25 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         return [IsAuthenticated(), IsAdminOrPM()]
 
     def get_queryset(self):
-        """Filter projects based on user role and team membership."""
+        """Filter projects based on team membership - supports cross-company collaboration."""
         from django.db.models import Q
 
-        # Get the base queryset from CompanyScopedQuerysetMixin
-        qs = super().get_queryset()
         user = self.request.user
+        
+        if not user.is_authenticated:
+            return Project.objects.none()
 
         # SuperAdmins see everything
         if user.role == "superadmin":
-            return qs
+            return Project.objects.all()
 
-        # ALL other users (including admin/pm) must be team members or project creators
-        return qs.filter(
+        # For ALL other users: show projects where they are team members OR creators
+        # This allows freelancers/consultants to work across multiple companies
+        # NOTE: We bypass CompanyScopedQuerysetMixin to allow cross-company access
+        return Project.objects.filter(
             Q(team_members__user=user, team_members__is_active=True)
-            | Q(created_by=user)  # Include projects created by the user
-        ).distinct()
+            | Q(created_by=user)
+        ).select_related("company", "created_by").prefetch_related("team_members").distinct()
 
     def perform_create(self, serializer):
         project = serializer.save(company=self.request.user.company, created_by=self.request.user)
