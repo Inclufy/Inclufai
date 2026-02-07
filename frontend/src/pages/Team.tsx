@@ -795,8 +795,8 @@ if (!sendInviteEmail) {
     try {
       const token = localStorage.getItem("access_token");
       const endpoint = assignmentType === "project" 
-        ? `${API_BASE_URL}/projects/${selectedItemId}/team/`
-        : `${API_BASE_URL}/programs/${selectedItemId}/team/`;
+        ? `${API_BASE_URL}/projects/${selectedItemId}/team/add/`
+        : `${API_BASE_URL}/programs/${selectedItemId}/team/add/`;
       
       await fetch(endpoint, {
         method: 'POST',
@@ -806,7 +806,6 @@ if (!sendInviteEmail) {
         },
         body: JSON.stringify({
           user_id: parseInt(selectedMember.id, 10),
-          role: selectedRole,
         }),
       });
 
