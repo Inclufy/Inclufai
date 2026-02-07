@@ -31,6 +31,7 @@ class CustomUser(AbstractUser):
         ("superadmin", "Super Admin"),
         ("admin", "Administrator"),
         ("pm", "Project Manager"),
+        ("program_manager", "Program Manager"),
         ("contibuter", "Contibuter"),
         ("reviewer", "Reviewer"),
         ("guest", "Guest"),
@@ -634,6 +635,7 @@ class TeamInvitation(models.Model):
     ROLE_CHOICES = [
         ('guest', 'Guest'),
         ('pm', 'Project Manager'),
+        ('program_manager', 'Program Manager'),
         ('admin', 'Admin'),
     ]
     

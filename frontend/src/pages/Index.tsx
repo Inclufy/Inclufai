@@ -1,4 +1,5 @@
 import ExecutiveDashboard from "@/components/dashboards/ExecutiveDashboard";
+import ProgramManagerDashboard from "@/components/dashboards/ProgramManagerDashboard";
 import ProjectManagerDashboard from "@/components/dashboards/ProjectManagerDashboard";
 
 import { useState, useEffect } from "react";
@@ -319,6 +320,10 @@ const Index = () => {
   
   if (userRole === "pm") {
     return <ProjectManagerDashboard />;
+  }
+  
+  if (userRole === "program_manager") {
+    return <ProgramManagerDashboard />;
   }
   
   // Default: Executive/Admin Dashboard
