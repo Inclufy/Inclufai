@@ -1,5 +1,6 @@
 import ExecutiveDashboard from "@/components/dashboards/ExecutiveDashboard";
 import ProjectManagerDashboard from "@/components/dashboards/ProjectManagerDashboard";
+import TeamMemberDashboard from "@/components/dashboards/TeamMemberDashboard";
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -312,17 +313,23 @@ const Index = () => {
   // Role-based dashboard routing
   const userRole = localStorage.getItem("user_role");
   
-  // Admin/SuperAdmin gets Executive Dashboard
-  if (userRole === "admin" || userRole === "superadmin") {
-    return <ExecutiveDashboard />;
-  }
-  
+  // PM gets Project Manager Dashboard
   if (userRole === "pm") {
     return <ProjectManagerDashboard />;
   }
   
-  // Default: Executive/Admin Dashboard
-
+  // Program Manager gets Program Manager Dashboard
+  if (userRole === "program_manager") {
+    return <ProgramManagerDashboard />;
+  }
+  
+  // Admin and SuperAdmin get Executive Dashboard
+  if (userRole === "admin" || userRole === "superadmin") {
+    return <ExecutiveDashboard />;
+  }
+  
+  // Everyone else (guest, reviewer, member, etc.) gets Team Member Dashboard
+  return <TeamMemberDashboard />;
 
   const navigate = useNavigate();
   const { t, language } = useLanguage();
