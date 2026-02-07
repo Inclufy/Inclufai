@@ -129,11 +129,11 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         qs = super().get_queryset()
         user = self.request.user
 
-        # If user is admin or PM, show all company projects
-        if user.role in ["admin", "pm"]:
+        # SuperAdmins see everything
+        if user.role == "superadmin":
             return qs
 
-        # For other roles (contributor, reviewer, guest), filter by team membership
+        # ALL other users (including admin/pm) must be team members or project creators
         return qs.filter(
             Q(team_members__user=user, team_members__is_active=True)
             | Q(created_by=user)  # Include projects created by the user
