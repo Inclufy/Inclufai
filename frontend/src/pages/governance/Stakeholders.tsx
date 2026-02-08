@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useNavigate, Button } from "@/components/ui/button";
-import { useNavigate, Badge } from "@/components/ui/badge";
-import { useNavigate, Plus, User, TrendingUp, AlertCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Plus, User, TrendingUp, AlertCircle } from "lucide-react";
 
 interface Stakeholder {
   id: string;
@@ -17,6 +18,7 @@ interface Stakeholder {
 }
 
 export default function Stakeholders() {
+  const navigate = useNavigate();
   const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -90,7 +92,7 @@ export default function Stakeholders() {
             Strategic stakeholder engagement and influence mapping
           </p>
         </div>
-        <Button>
+        <Button onClick={() => navigate("/governance/stakeholders/new")}>
           <Plus className="h-4 w-4 mr-2" />
           Add Stakeholder
         </Button>
@@ -188,7 +190,7 @@ export default function Stakeholders() {
             <p className="text-muted-foreground mb-4">
               Add stakeholders to track engagement and influence
             </p>
-            <Button>
+            <Button onClick={() => navigate("/governance/stakeholders/new")}>
               <Plus className="h-4 w-4 mr-2" />
               Add Stakeholder
             </Button>

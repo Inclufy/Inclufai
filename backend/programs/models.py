@@ -37,6 +37,9 @@ class Program(models.Model):
     company = models.ForeignKey(
         "accounts.Company", on_delete=models.CASCADE, related_name="programs"
     )
+    portfolio = models.ForeignKey(
+        "governance.Portfolio", on_delete=models.SET_NULL, null=True, blank=True, related_name="programs"
+    )
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     strategic_objective = models.TextField(blank=True, help_text="Strategic objective this program supports")

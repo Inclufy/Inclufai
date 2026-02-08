@@ -55,12 +55,15 @@ const CreateStakeholder: React.FC = () => {
 
     try {
       const token = localStorage.getItem("access_token");
-      const company = localStorage.getItem("company_id");
-      
+      const validRoles = ["executive_sponsor", "senior_responsible_owner", "business_change_manager", "project_executive", "key_stakeholder"];
       const payload = {
         ...formData,
-        company: company,
+        role: validRoles.includes(formData.role) ? formData.role : "key_stakeholder",
       };
+      // Remove empty optional fields
+      if (!payload.organization) delete payload.organization;
+      if (!payload.portfolio) delete payload.portfolio;
+      console.log("Sending payload:", payload);
       
       const response = await fetch("/api/v1/governance/stakeholders/", {
         method: "POST",
@@ -71,7 +74,11 @@ const CreateStakeholder: React.FC = () => {
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error("Failed to create stakeholder");
+      if (!response.ok) {
+        const err = await response.json();
+        console.error("Stakeholder error:", err);
+        throw new Error(JSON.stringify(err));
+      }
 
       toast({
         title: "✅ Stakeholder Added",

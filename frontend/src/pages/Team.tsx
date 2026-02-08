@@ -292,6 +292,7 @@ const mapBackendRole = (role: string): TeamMember['role'] => {
     'admin': 'ADMIN',
     'administrator': 'ADMIN',
     'pm': 'PM',
+    'program_manager': 'PROGRAM_MANAGER',
     'project_manager': 'PM',
     'member': 'MEMBER',
     'contibuter': 'MEMBER',
@@ -1459,6 +1460,7 @@ if (!sendInviteEmail) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ADMIN">Admin</SelectItem>
+                    <SelectItem value="PROGRAM_MANAGER">Program Manager</SelectItem>
                     <SelectItem value="PM">Project Manager</SelectItem>
                     <SelectItem value="MEMBER">Member</SelectItem>
                     <SelectItem value="REVIEWER">Reviewer</SelectItem>
@@ -1565,6 +1567,7 @@ if (!sendInviteEmail) {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ADMIN">Admin</SelectItem>
+                      <SelectItem value="PROGRAM_MANAGER">Program Manager</SelectItem>
                       <SelectItem value="PM">Project Manager</SelectItem>
                       <SelectItem value="MEMBER">Member</SelectItem>
                       <SelectItem value="REVIEWER">Reviewer</SelectItem>

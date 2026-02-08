@@ -5,6 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
   server: {
+    allowedHosts: ["projextpal.com", "www.projextpal.com"],
     host: "::",
     port: 8083,
     proxy: {

@@ -34,7 +34,7 @@ urlpatterns = [
     path("api/v1/postproject/", include("postproject.urls")),
     path("api/v1/communication/", include("communication.urls")),
     path("api/v1/newsletters/", include("newsletters.urls")),
-    # path("api/v1/bot/", include("bot.urls")),  # Disabled - needs deployment app
+    path("api/v1/bot/", include("bot.urls")),
     path("api/v1/workflow/", include("workflow.urls")),
     path("api/v1/academy/", include("academy.urls")),
     path("api/v1/admin/", include("admin_portal.urls")),

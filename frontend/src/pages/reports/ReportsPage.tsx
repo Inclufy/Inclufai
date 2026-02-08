@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ReportModal from "./ReportModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -194,16 +195,46 @@ const ReportsPage: React.FC = () => {
       ? availableReports
       : availableReports.filter((r) => r.category === selectedCategory);
 
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportData, setReportData] = useState<any>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+
   const handleGenerateReport = async (reportId: string) => {
     setGeneratingReport(reportId);
-    
-    // Simulate AI report generation
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    
-    setGeneratingReport(null);
-    
-    // TODO: Actual report generation logic
-    alert(`Report "${reportTemplates.find(r => r.id === reportId)?.title}" generated!`);
+    setReportModalOpen(true);
+    setReportLoading(true);
+    setReportData(null);
+
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await fetch("/api/v1/governance/reports/generate/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ report_id: reportId }),
+      });
+
+      if (!response.ok) throw new Error("Failed to generate report");
+      
+      const data = await response.json();
+      setReportData(data);
+    } catch (error) {
+      console.error("Report generation failed:", error);
+      setReportData({
+        title: "Error",
+        date: new Date().toISOString(),
+        executive_summary: "Failed to generate report. Please check your connection and try again.",
+        sections: [],
+        recommendations: [],
+        risk_highlights: [],
+        kpis: [],
+      });
+    } finally {
+      setReportLoading(false);
+      setGeneratingReport(null);
+    }
   };
 
   return (
@@ -324,6 +355,12 @@ const ReportsPage: React.FC = () => {
           </Tabs>
         </Card>
       </div>
+      <ReportModal
+        open={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        report={reportData}
+        loading={reportLoading}
+      />
     </div>
   );
 };

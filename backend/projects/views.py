@@ -133,15 +133,32 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
 
         # SuperAdmins see everything
         if user.role == "superadmin":
-            return Project.objects.all()
+            qs = Project.objects.all()
+            portfolio = self.request.query_params.get('portfolio')
+            if portfolio:
+                qs = qs.filter(portfolio_id=portfolio)
+            program = self.request.query_params.get('program')
+            if program:
+                qs = qs.filter(program_id=program)
+            return qs
 
         # For ALL other users: show projects where they are team members OR creators
         # This allows freelancers/consultants to work across multiple companies
         # NOTE: We bypass CompanyScopedQuerysetMixin to allow cross-company access
-        return Project.objects.filter(
+        qs = Project.objects.filter(
             Q(team_members__user=user, team_members__is_active=True)
             | Q(created_by=user)
         ).select_related("company", "created_by").prefetch_related("team_members").distinct()
+        
+        portfolio = self.request.query_params.get('portfolio')
+        if portfolio:
+            qs = qs.filter(portfolio_id=portfolio)
+        
+        program = self.request.query_params.get('program')
+        if program:
+            qs = qs.filter(program_id=program)
+        
+        return qs
 
     def perform_create(self, serializer):
         project = serializer.save(company=self.request.user.company, created_by=self.request.user)

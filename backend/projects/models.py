@@ -64,6 +64,12 @@ class Project(models.Model):
     company = models.ForeignKey(
         "accounts.Company", on_delete=models.CASCADE, related_name="projects"
     )
+    portfolio = models.ForeignKey(
+        "governance.Portfolio", on_delete=models.SET_NULL, null=True, blank=True, related_name="projects"
+    )
+    program = models.ForeignKey(
+        "programs.Program", on_delete=models.SET_NULL, null=True, blank=True, related_name="linked_projects"
+    )
     name = models.CharField(max_length=255)
     project_type = models.CharField(
         max_length=50, choices=PROJECT_TYPE_CHOICES, null=True, blank=True

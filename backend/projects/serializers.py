@@ -122,6 +122,8 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "company",
+            "portfolio",
+            "program",
             "name",
             "project_type",
             "methodology",
@@ -192,6 +194,8 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "name",
             "project_type",
             "methodology",
+            "portfolio",
+            "program",
             "budget",
             "start_date",
             "end_date",

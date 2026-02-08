@@ -76,6 +76,8 @@ const PortfolioDetail: React.FC = () => {
     fetchPortfolio();
     fetchBoards();
     fetchStakeholders();
+    fetchPrograms();
+    fetchProjects();
   }, [id]);
 
   const fetchPortfolio = async () => {
@@ -109,6 +111,22 @@ const PortfolioDetail: React.FC = () => {
         setStakeholders(Array.isArray(data) ? data : data.results || []);
       }
     } catch {}
+  };
+
+  const fetchPrograms = async () => {
+    try {
+      const res = await fetch(`/api/v1/programs/?portfolio=${id}`, { headers });
+      const data = await res.json();
+      setPrograms(data.results || data || []);
+    } catch (e) { console.error("Failed to fetch programs:", e); }
+  };
+
+  const fetchProjects = async () => {
+    try {
+      const res = await fetch(`/api/v1/projects/?portfolio=${id}`, { headers });
+      const data = await res.json();
+      setProjects(data.results || data || []);
+    } catch (e) { console.error("Failed to fetch projects:", e); }
   };
 
   const handleDelete = async () => {

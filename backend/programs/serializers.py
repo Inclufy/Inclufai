@@ -59,7 +59,7 @@ class ProgramListSerializer(serializers.ModelSerializer):
             'id', 'name', 'description', 'methodology', 'status', 'health_status',
             'start_date', 'target_end_date', 'total_budget', 'spent_budget', 'currency',
             'program_manager', 'program_manager_name', 'progress', 'project_count',
-            'created_at', 'updated_at'
+            'portfolio', 'created_at', 'updated_at'
         ]
 
     def get_program_manager_name(self, obj):
@@ -86,7 +86,7 @@ class ProgramDetailSerializer(serializers.ModelSerializer):
         model = Program
         fields = [
             'id', 'name', 'description', 'strategic_objective',
-            'methodology', 'status', 'health_status',
+            'portfolio', 'methodology', 'status', 'health_status',
             'start_date', 'target_end_date', 'actual_end_date',
             'total_budget', 'spent_budget', 'currency', 'budget_variance',
             'program_manager', 'program_manager_name',
@@ -126,7 +126,7 @@ class ProgramCreateUpdateSerializer(serializers.ModelSerializer):
         model = Program
         fields = [
             'id', 'name', 'description', 'strategic_objective',
-            'methodology', 'status', 'health_status',
+            'portfolio', 'methodology', 'status', 'health_status',
             'start_date', 'target_end_date',
             'total_budget', 'currency',
             'program_manager', 'executive_sponsor',

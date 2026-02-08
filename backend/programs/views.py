@@ -38,6 +38,10 @@ class ProgramViewSet(viewsets.ModelViewSet):
                 Q(name__icontains=search) | Q(description__icontains=search)
             )
         
+        portfolio = self.request.query_params.get('portfolio')
+        if portfolio:
+            queryset = queryset.filter(portfolio_id=portfolio)
+        
         return queryset.select_related('program_manager', 'executive_sponsor', 'created_by')
 
     def get_serializer_class(self):

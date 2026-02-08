@@ -186,45 +186,18 @@ const STEPS = [
 // AI Helper function
 const callAI = async (prompt: string): Promise<string> => {
   const token = localStorage.getItem("access_token");
-  
   try {
-    // Step 1: Create a new chat
-    const createChatResponse = await fetch("/api/v1/bot/chats/", {
+    const response = await fetch("/api/v1/governance/ai/generate/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        title: "Program AI Assistant",
-      }),
+      body: JSON.stringify({ prompt }),
     });
-
-    if (!createChatResponse.ok) {
-      throw new Error("Failed to create chat");
-    }
-
-    const chatData = await createChatResponse.json();
-    const chatId = chatData.id;
-
-    // Step 2: Send message to the chat
-    const messageResponse = await fetch(`/api/v1/bot/chats/${chatId}/send_message/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        message: prompt,
-      }),
-    });
-
-    if (!messageResponse.ok) {
-      throw new Error("AI service unavailable");
-    }
-
-    const data = await messageResponse.json();
-    return data.ai_response?.content || data.response || data.message || "";
+    if (!response.ok) throw new Error("AI service unavailable");
+    const data = await response.json();
+    return data.response || "";
   } catch (error) {
     console.error("AI call failed:", error);
     throw error;
@@ -289,6 +262,22 @@ const CreateProgram = () => {
   });
 
   // Form state
+  const [portfolios, setPortfolios] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchPortfolios = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const res = await fetch("/api/v1/governance/portfolios/", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setPortfolios(data.results || data || []);
+      } catch (e) { console.error("Failed to fetch portfolios:", e); }
+    };
+    fetchPortfolios();
+  }, []);
+
   const [formData, setFormData] = useState({
     methodology: '' as ProgramMethodology | '',
     name: '',
@@ -301,6 +290,7 @@ const CreateProgram = () => {
     currency: 'EUR',
     selectedProjectIds: [] as string[],
     strategicObjective: '',
+    portfolio: '',
   });
 
   // Onboarding state
@@ -529,6 +519,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
   const handleSubmit = async () => {
     const payload: any = {
+      portfolio: formData.portfolio || null,
       name: formData.name,
       description: formData.description || "",
       strategic_objective: formData.strategicObjective || "",
@@ -886,6 +877,20 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label>Portfolio (optional)</Label>
+                    <select
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      value={formData.portfolio}
+                      onChange={(e) => setFormData(prev => ({ ...prev, portfolio: e.target.value }))}
+                    >
+                      <option value="">No portfolio</option>
+                      {portfolios.map((p: any) => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="grid gap-2">

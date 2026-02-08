@@ -185,45 +185,18 @@ const STEPS = [
 // AI Helper function
 const callAI = async (prompt: string): Promise<string> => {
   const token = localStorage.getItem("access_token");
-  
   try {
-    // Step 1: Create a new chat
-    const createChatResponse = await fetch("/api/v1/bot/chats/", {
+    const response = await fetch("/api/v1/governance/ai/generate/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        title: "Program AI Assistant",
-      }),
+      body: JSON.stringify({ prompt }),
     });
-
-    if (!createChatResponse.ok) {
-      throw new Error("Failed to create chat");
-    }
-
-    const chatData = await createChatResponse.json();
-    const chatId = chatData.id;
-
-    // Step 2: Send message to the chat
-    const messageResponse = await fetch(`/api/v1/bot/chats/${chatId}/send_message/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        message: prompt,
-      }),
-    });
-
-    if (!messageResponse.ok) {
-      throw new Error("AI service unavailable");
-    }
-
-    const data = await messageResponse.json();
-    return data.ai_response?.content || data.response || data.message || "";
+    if (!response.ok) throw new Error("AI service unavailable");
+    const data = await response.json();
+    return data.response || "";
   } catch (error) {
     console.error("AI call failed:", error);
     throw error;

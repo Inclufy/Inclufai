@@ -285,10 +285,10 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
         if value == "superadmin":
             raise serializers.ValidationError("Invalid role selection.")
         # Ensure role is one of allowed choices (excluding superadmin)
-        allowed_roles = {"admin", "pm", "contibuter", "reviewer", "guest"}
+        allowed_roles = {"admin", "pm", "program_manager", "contibuter", "reviewer", "guest"}
         if value not in allowed_roles:
             raise serializers.ValidationError(
-                "Role must be one of admin, pm, contibuter, reviewer or guest."
+                "Role must be one of admin, program_manager, pm, contibuter, reviewer or guest."
             )
         return value
     
@@ -388,10 +388,10 @@ class AdminUpdateUserSerializer(serializers.ModelSerializer):
     def validate_role(self, value):
         if value == "superadmin":
             raise serializers.ValidationError("Invalid role selection.")
-        allowed_roles = {"admin", "pm", "contibuter", "reviewer", "guest"}
+        allowed_roles = {"admin", "pm", "program_manager", "contibuter", "reviewer", "guest"}
         if value not in allowed_roles:
             raise serializers.ValidationError(
-                "Role must be one of admin, pm, contibuter, reviewer or guest."
+                "Role must be one of admin, program_manager, pm, contibuter, reviewer or guest."
             )
         return value
 
