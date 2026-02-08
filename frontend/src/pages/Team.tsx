@@ -1115,6 +1115,7 @@ if (!sendInviteEmail) {
                 <SelectContent>
                   <SelectItem value="all">Alle rollen</SelectItem>
                   <SelectItem value="ADMIN">Admin</SelectItem>
+                  <SelectItem value="PROGRAM_MANAGER">Program Manager</SelectItem>
                   <SelectItem value="PM">Project Manager</SelectItem>
                   <SelectItem value="MEMBER">Member</SelectItem>
                   <SelectItem value="REVIEWER">Reviewer</SelectItem>

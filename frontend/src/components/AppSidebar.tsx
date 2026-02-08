@@ -5,7 +5,7 @@ import { LayoutDashboard, MessageSquare, FolderKanban, Users,
   GraduationCap, Mail, Activity, CalendarDays, Table, Clock, Target, 
   Columns, Crown, Award, Repeat, Zap, ArrowDown, GitMerge, BarChart3, 
   TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
-  Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock, Package, Presentation } from "lucide-react";
+  Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock, Package, Presentation , Briefcase } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -768,51 +768,95 @@ export function AppSidebar() {
     return !hasFeature(userFeatures, featureName);
   };
 
-  const menuItems = [
-    { 
-      title: ts.dashboard, 
-      url: "/dashboard", 
-      icon: LayoutDashboard,
-      feature: null, // Always accessible
-    },
-    { 
-      title: ts.aiAssistant, 
-      url: "/ai-assistant", 
-      icon: MessageSquare,
-      feature: 'ai_assistant',
-    },
-    { 
-      title: ts.programs, 
-      url: "/programs", 
-      icon: Layers, 
-      isProgramLink: true,
-      feature: 'program_management',
-    },
-    { 
+  // Get user role for menu filtering
+  const userRole = user?.role || 'guest';
+
+  // Role-based menu items
+  const getMenuItemsForRole = () => {
+    const baseItems = [
+      { 
+        title: ts.dashboard, 
+        url: "/dashboard", 
+        icon: LayoutDashboard,
+        feature: null,
+      },
+      { 
+        title: ts.aiAssistant, 
+        url: "/ai-assistant", 
+        icon: MessageSquare,
+        feature: 'ai_assistant',
+      },
+    ];
+
+    // Governance - only for program managers and admins
+    if (['program_manager', 'admin', 'superadmin'].includes(userRole)) {
+      baseItems.push({ 
+        title: "Governance", 
+        url: "/governance/portfolios", 
+        icon: Briefcase,
+        feature: null,
+      });
+    }
+
+    // Programs - only for program managers and admins
+    if (['program_manager', 'admin', 'superadmin'].includes(userRole)) {
+      baseItems.push({ 
+        title: ts.programs, 
+        url: "/programs", 
+        icon: Layers, 
+        isProgramLink: true,
+        feature: 'program_management',
+      });
+    }
+
+    // Reports - everyone can see
+    baseItems.push({ 
+      title: "Reports", 
+      url: "/reports", 
+      icon: FileBarChart,
+      feature: null,
+    });
+
+    // Projects - everyone can see
+    baseItems.push({ 
       title: ts.allProjects, 
       url: "/projects", 
       icon: FolderKanban,
-      feature: null, // Always accessible
-    },
-    { 
+      feature: null,
+    });
+
+    // Team - PM and above
+    if (['pm', 'program_manager', 'admin', 'superadmin'].includes(userRole)) {
+      baseItems.push({ 
+        title: ts.team, 
+        url: "/team", 
+        icon: Users,
+        feature: 'teams',
+      });
+    }
+
+    // Time Tracking - everyone
+    baseItems.push({ 
       title: ts.timeTracking, 
       url: "/time-tracking", 
       icon: Clock,
       feature: 'time_tracking',
-    },
-    { 
-      title: ts.team, 
-      url: "/team", 
-      icon: Users,
-      feature: 'teams',
-    },
-    { 
-      title: ts.postProject, 
-      url: "/post-project", 
-      icon: FileCheck,
-      feature: 'post_project',
-    },
-  ];
+    });
+
+    // Post Project - PM and above
+    if (['pm', 'program_manager', 'admin', 'superadmin'].includes(userRole)) {
+      baseItems.push({ 
+        title: ts.postProject, 
+        url: "/post-project", 
+        icon: FileCheck,
+        feature: 'post_project',
+      });
+    }
+
+    return baseItems;
+  };
+
+  const menuItems = getMenuItemsForRole();
   
   const pathParts = location.pathname.split('/');
   const isProjectContext = pathParts[1] === 'projects' && pathParts[2] && pathParts[2] !== 'new';

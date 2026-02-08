@@ -1,318 +1,603 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, FolderKanban, TrendingUp, AlertTriangle, DollarSign, Users, Sparkles, Target } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useQuery } from "@tanstack/react-query";
+import { AISummaryModal } from "@/components/AISummaryModal";
+import AICommander from "@/components/AICommander";
+import { formatBudget, getCurrencyFromLanguage } from "@/lib/currencies";
+import { 
+  Building2, 
+  FolderKanban, 
+  TrendingUp, 
+  AlertTriangle, 
+  DollarSign, 
+  Sparkles,
+  ArrowRight,
+  Target,
+  Activity,
+  Crown,
+  Zap,
+  Trello,
+  Waves,
+  GitMerge,
+  Layers,
+  BarChart3
+} from "lucide-react";
 
-interface Project {
-  id: number;
-  name: string;
-  status: string;
-  progress: number;
-  budget: string;
-  expenses_total: number;
-  team_members_count: number;
-  methodology: string;
-  program?: number;
+const fetchPrograms = async () => {
+  const token = localStorage.getItem("access_token");
+  const response = await fetch("/api/v1/programs/", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Failed to fetch programs");
+  return response.json();
+};
+
+const fetchProjects = async () => {
+  const token = localStorage.getItem("access_token");
+  const response = await fetch("/api/v1/projects/", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Failed to fetch projects");
+  return response.json();
+};
+
+const callAI = async (prompt: string): Promise<string> => {
+  const token = localStorage.getItem("access_token");
+  try {
+    const createChatResponse = await fetch("/api/v1/bot/chats/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ title: "Dashboard AI Summary" }),
+    });
+    if (!createChatResponse.ok) throw new Error("Failed to create chat");
+    const chatData = await createChatResponse.json();
+    const messageResponse = await fetch(`/api/v1/bot/chats/${chatData.id}/send_message/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ message: prompt }),
+    });
+    if (!messageResponse.ok) throw new Error("AI service unavailable");
+    const data = await messageResponse.json();
+    return data.ai_response?.content || "";
+  } catch (error) {
+    throw error;
+  }
+};
+
+const methodologyIcons: Record<string, { icon: any; label: string; color: string }> = {
+  'prince2': { icon: Crown, label: 'PRINCE2', color: 'text-indigo-600' },
+  'agile': { icon: Zap, label: 'Agile', color: 'text-orange-600' },
+  'scrum': { icon: Target, label: 'Scrum', color: 'text-blue-600' },
+  'kanban': { icon: Trello, label: 'Kanban', color: 'text-cyan-600' },
+  'waterfall': { icon: Waves, label: 'Waterfall', color: 'text-teal-600' },
+  'hybrid': { icon: GitMerge, label: 'Hybrid', color: 'text-pink-600' },
+  'msp': { icon: Layers, label: 'MSP', color: 'text-purple-600' },
+  'safe': { icon: Sparkles, label: 'SAFe', color: 'text-amber-600' },
+  'pmi': { icon: BarChart3, label: 'PMI', color: 'text-emerald-600' },
+  'sixsigma': { icon: Sparkles, label: 'Six Sigma', color: 'text-green-600' },
+};
+
+interface DonutChartProps {
+  total: number;
+  segments: { label: string; value: number; color: string }[];
+  centerLabel: string;
 }
 
-interface Program {
-  id: number;
-  name: string;
-  status: string;
-  description?: string;
-}
+const DonutChart = ({ total, segments, centerLabel }: DonutChartProps) => {
+  const radius = 80;
+  const strokeWidth = 20;
+  const normalizedRadius = radius - strokeWidth / 2;
+  const circumference = normalizedRadius * 2 * Math.PI;
+  
+  let currentOffset = 0;
+  
+  return (
+    <div className="relative inline-flex items-center justify-center">
+      <svg height={radius * 2} width={radius * 2} className="transform -rotate-90">
+        <circle
+          stroke="currentColor"
+          fill="transparent"
+          strokeWidth={strokeWidth}
+          r={normalizedRadius}
+          cx={radius}
+          cy={radius}
+          className="text-purple-100 dark:text-purple-900/30"
+        />
+        {segments.map((segment, index) => {
+          const percentage = total > 0 ? (segment.value / total) * 100 : 0;
+          const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
+          const strokeDashoffset = -currentOffset;
+          currentOffset += (percentage / 100) * circumference;
+          
+          return (
+            <circle
+              key={index}
+              stroke={segment.color}
+              fill="transparent"
+              strokeWidth={strokeWidth}
+              strokeDasharray={strokeDasharray}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+              r={normalizedRadius}
+              cx={radius}
+              cy={radius}
+              className="transition-all duration-700 ease-out drop-shadow-sm"
+            />
+          );
+        })}
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-5xl font-bold bg-gradient-to-br from-purple-600 to-pink-600 bg-clip-text text-transparent">{total}</span>
+        <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-widest mt-1">{centerLabel}</span>
+      </div>
+    </div>
+  );
+};
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const statusStyles: Record<string, string> = {
+    'planning': 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 ring-1 ring-inset ring-purple-600/20',
+    'in_progress': 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 ring-1 ring-inset ring-blue-600/20',
+    'active': 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300 ring-1 ring-inset ring-emerald-600/20',
+    'completed': 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 ring-1 ring-inset ring-green-600/20',
+    'on_hold': 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300 ring-1 ring-inset ring-amber-600/20',
+    'pending': 'bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300 ring-1 ring-inset ring-orange-600/20',
+  };
+  
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide ${statusStyles[status?.toLowerCase()] || statusStyles['planning']}`}>
+      {status || 'planning'}
+    </span>
+  );
+};
+
+const HealthIndicator = ({ health }: { health?: string }) => {
+  const healthColors: Record<string, string> = {
+    'healthy': 'bg-emerald-500 ring-emerald-100 dark:ring-emerald-900/30',
+    'good': 'bg-emerald-500 ring-emerald-100 dark:ring-emerald-900/30',
+    'at_risk': 'bg-amber-500 ring-amber-100 dark:ring-amber-900/30',
+    'critical': 'bg-red-500 ring-red-100 dark:ring-red-900/30',
+  };
+  
+  return (
+    <div className={`h-2.5 w-2.5 rounded-full ring-4 ${healthColors[health?.toLowerCase() || 'healthy'] || 'bg-emerald-500 ring-emerald-100 dark:ring-emerald-900/30'}`} />
+  );
+};
+
+const StatCard = ({ 
+  title, 
+  value, 
+  subtitle, 
+  icon: Icon,
+  trend,
+  trendValue,
+  color = 'purple' 
+}: any) => {
+  const colorClasses: Record<string, string> = {
+    purple: 'from-purple-600 to-pink-600',
+    blue: 'from-blue-600 to-cyan-600',
+    emerald: 'from-emerald-600 to-teal-600',
+    red: 'from-red-600 to-rose-600',
+    amber: 'from-amber-600 to-orange-600',
+  };
+
+  return (
+    <Card className="relative overflow-hidden border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white dark:bg-gray-900 shadow-sm hover:shadow-xl hover:ring-purple-200 dark:hover:ring-purple-800/50 transition-all duration-300 group">
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 via-transparent to-pink-50/50 dark:from-purple-900/10 dark:via-transparent dark:to-pink-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      
+      <CardContent className="p-7 relative z-10">
+        <div className="flex items-start justify-between mb-5">
+          <div className={`p-3 rounded-2xl bg-gradient-to-br ${colorClasses[color]} shadow-lg`}>
+            <Icon className="h-5 w-5 text-white" />
+          </div>
+          {trend && (
+            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+              trend === 'up' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300 ring-1 ring-inset ring-emerald-600/20' : 
+              'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300 ring-1 ring-inset ring-red-600/20'
+            }`}>
+              <TrendingUp className={`h-3.5 w-3.5 ${trend === 'down' ? 'rotate-180' : ''}`} />
+              {trendValue}
+            </div>
+          )}
+        </div>
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-widest">
+            {title}
+          </p>
+          <h3 className={`text-4xl font-bold bg-gradient-to-br ${colorClasses[color]} bg-clip-text text-transparent leading-none`}>
+            {value}
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{subtitle}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const ProgramManagerDashboard: React.FC = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { t, language } = useLanguage();
+  const currencyCode = getCurrencyFromLanguage(language);
+  const [aiSummaryOpen, setAiSummaryOpen] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSummary, setAiSummary] = useState("");
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const { data: programsData } = useQuery({ queryKey: ["programs"], queryFn: fetchPrograms });
+  const { data: projectsData } = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
 
-  const fetchData = async () => {
+  const programs = Array.isArray(programsData) ? programsData : (programsData?.results || []);
+  const projects = Array.isArray(projectsData) ? projectsData : (projectsData?.results || []);
+
+  const totalPrograms = programs.length;
+  const totalProjects = projects.length;
+  const activeProjects = projects.filter((p: any) => p.status === 'in_progress' || p.status === 'active').length;
+  const atRiskProjects = projects.filter((p: any) => p.health_status === 'at_risk' || p.health_status === 'critical').length;
+  const totalBudget = programs.reduce((sum: number, p: any) => sum + (parseFloat(p.total_budget) || 0), 0);
+  const avgProgress = programs.length > 0 
+    ? Math.round(programs.reduce((sum: number, p: any) => sum + (p.progress || 0), 0) / programs.length)
+    : 0;
+
+  const programStatusCounts = programs.reduce((acc: Record<string, number>, p: any) => {
+    const status = p.status || 'planning';
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {});
+
+  const projectStatusCounts = projects.reduce((acc: Record<string, number>, p: any) => {
+    const status = p.status || 'pending';
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {});
+
+  const programSegments = [
+    { label: t.app.planning, value: programStatusCounts['planning'] || 0, color: '#8B5CF6' },
+    { label: t.app.active, value: programStatusCounts['active'] || 0, color: '#10b981' },
+    { label: t.app.completed, value: programStatusCounts['completed'] || 0, color: '#3b82f6' },
+  ].filter(s => s.value > 0);
+
+  const projectSegments = [
+    { label: t.app.planning, value: projectStatusCounts['planning'] || 0, color: '#8B5CF6' },
+    { label: t.app.pending, value: projectStatusCounts['pending'] || 0, color: '#f59e0b' },
+    { label: t.app.inProgress, value: projectStatusCounts['in_progress'] || 0, color: '#3b82f6' },
+    { label: t.app.completed, value: projectStatusCounts['completed'] || 0, color: '#10b981' },
+  ].filter(s => s.value > 0);
+
+  const formattedPrograms = programs.map((p: any) => ({
+    id: String(p.id), 
+    name: p.name, 
+    status: p.status, 
+    methodology: p.methodology,
+    health_status: p.health_status, 
+    project_count: p.project_count || 0, 
+    total_budget: p.total_budget || 0,
+    progress: p.progress || 0,
+  }));
+
+  const formattedProjects = projects.map((p: any) => ({
+    id: String(p.id), 
+    name: p.name, 
+    status: p.status, 
+    health_status: p.health_status,
+    progress: p.progress || 0, 
+    budget: p.budget || 0, 
+    end_date: p.end_date,
+  }));
+
+  const handleAIGenerate = async (selectedPrograms: any[], selectedProjects: any[]) => {
+    setAiLoading(true);
+    setAiSummary("");
     try {
-      const token = localStorage.getItem("access_token");
-      
-      const projectsRes = await fetch('/api/v1/projects/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const projectsData = await projectsRes.json();
-      setProjects(projectsData);
-
-      const programsRes = await fetch('/api/v1/programs/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const programsData = await programsRes.json();
-      setPrograms(programsData);
+      const langInst = language === 'nl' ? '**BELANGRIJK: Antwoord in het Nederlands.**' : '**Respond in English.**';
+      const prompt = `${langInst}\n\nAnalyze: ${selectedPrograms.length} programs, ${selectedProjects.length} projects.\n\n## Summary\nProvide analysis.`;
+      const response = await callAI(prompt);
+      setAiSummary(response);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      setAiSummary("## Error\n\nUnable to generate summary.");
     } finally {
-      setLoading(false);
+      setAiLoading(false);
     }
   };
 
-  const getProjectsByProgram = (programId: number) => {
-    return projects.filter(p => p.program === programId);
-  };
+  useEffect(() => {
+    const handleModal = (e: CustomEvent) => {
+      if (e.detail.modal === 'ai-insights') setAiSummaryOpen(true);
+    };
 
-  const getProgramHealth = (programId: number) => {
-    const programProjects = getProjectsByProgram(programId);
-    if (programProjects.length === 0) return 100;
-    
-    const avgProgress = programProjects.reduce((sum, p) => sum + p.progress, 0) / programProjects.length;
-    return Math.round(avgProgress);
-  };
-
-  const getProgramBudget = (programId: number) => {
-    const programProjects = getProjectsByProgram(programId);
-    const total = programProjects.reduce((sum, p) => sum + parseFloat(p.budget || "0"), 0);
-    const spent = programProjects.reduce((sum, p) => sum + (p.expenses_total || 0), 0);
-    return { total, spent };
-  };
-
-  const activePrograms = programs.filter(p => p.status === 'active').length;
-  const totalProjects = projects.length;
-  const totalBudget = projects.reduce((sum, p) => sum + parseFloat(p.budget || "0"), 0);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-muted-foreground">Loading program dashboard...</div>
-      </div>
-    );
-  }
+    window.addEventListener('ai-commander-modal', handleModal as EventListener);
+    return () => {
+      window.removeEventListener('ai-commander-modal', handleModal as EventListener);
+    };
+  }, []);
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Program Manager Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Cross-program insights and resource management</p>
-      </div>
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-violet-900/20">
+      <div className="absolute top-0 -left-4 w-[28rem] h-[28rem] bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
+      <div className="absolute top-0 -right-4 w-[28rem] h-[28rem] bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
+      <div className="absolute bottom-0 left-20 w-[28rem] h-[28rem] bg-violet-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000" />
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">MY PROGRAMS</p>
-                <p className="text-3xl font-bold mt-2">{programs.length}</p>
-                <p className="text-xs text-green-600 dark:text-green-500 mt-1">{activePrograms} Active</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">TOTAL PROJECTS</p>
-                <p className="text-3xl font-bold mt-2">{totalProjects}</p>
-                <p className="text-xs text-muted-foreground mt-1">Across Programs</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                <FolderKanban className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">TOTAL BUDGET</p>
-                <p className="text-3xl font-bold mt-2">€{(totalBudget / 1000).toFixed(1)}K</p>
-                <p className="text-xs text-muted-foreground mt-1">All Programs</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">TEAM SIZE</p>
-                <p className="text-3xl font-bold mt-2">
-                  {projects.reduce((sum, p) => sum + p.team_members_count, 0)}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">Total Members</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                <Users className="h-6 w-6 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* AI Insights */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
-            AI Program Insights
-            <Badge variant="outline" className="ml-auto">AI-Powered</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="p-4 rounded-lg border hover:bg-accent/50 transition-colors">
-            <div className="flex items-start gap-3">
-              <TrendingUp className="h-5 w-5 text-green-500 mt-0.5" />
-              <div>
-                <p className="font-medium">Strong Program Performance</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {activePrograms} active programs showing healthy progress - recommend stakeholder updates
-                </p>
-              </div>
-            </div>
+      <div className="relative z-10 p-8 md:p-10 space-y-8 max-w-[1800px] mx-auto">
+        <div className="text-center mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+            <Sparkles className="h-4 w-4" />
+            <span>📋 Program Manager Dashboard</span>
+            <Badge className="ml-1 bg-green-500 text-white text-xs">AI-Powered</Badge>
           </div>
 
-          <div className="p-4 rounded-lg border hover:bg-accent/50 transition-colors">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
-              <div>
-                <p className="font-medium">Resource Distribution</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Team capacity spread across {programs.length} programs - consider consolidation opportunities
-                </p>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+            <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
+              My Programs & Projects
+            </span>
+          </h1>
+          
+          <p className="text-gray-600 dark:text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
+            Manage your programs and track project performance
+          </p>
+
+          <AICommander 
+            isNL={language === 'nl'} 
+            programs={formattedPrograms}
+            projects={formattedProjects}
+          />
+
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-6">
+            {language === 'nl' 
+              ? '⌘K om te zoeken • Navigeer, creëer, analyseer en rapporteer met AI' 
+              : '⌘K to search • Navigate, create, analyze and report with AI'}
+          </p>
+        </div>
+
+        <AISummaryModal 
+          isOpen={aiSummaryOpen} 
+          onClose={() => setAiSummaryOpen(false)} 
+          onGenerate={handleAIGenerate} 
+          programs={formattedPrograms} 
+          projects={formattedProjects} 
+          isLoading={aiLoading} 
+          content={aiSummary} 
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
+          <StatCard title="My Programs" value={totalPrograms} subtitle="Programs I manage" icon={Building2} color="purple" />
+          <StatCard title="Total Projects" value={totalProjects} subtitle="Across all programs" icon={FolderKanban} color="blue" />
+          <StatCard title="Active" value={activeProjects} subtitle="In progress" icon={Activity} color="emerald" />
+          <StatCard title="At Risk" value={atRiskProjects} subtitle="Need attention" icon={AlertTriangle} color="red" />
+          <StatCard title="Budget" value={formatBudget(totalBudget, currencyCode)} subtitle="Total allocated" icon={DollarSign} color="amber" />
+          <StatCard title="Progress" value={`${avgProgress}%`} subtitle="Average completion" icon={Target} color="emerald" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl">
+            <CardHeader className="border-b border-purple-100 dark:border-purple-900/30 pb-5">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-3.5 text-xl font-bold text-gray-900 dark:text-gray-100">
+                  <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                    <Building2 className="h-5 w-5 text-white" />
+                  </div>
+                  Program Status
+                </CardTitle>
+                <Badge className="bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 ring-1 ring-inset ring-purple-600/20 font-mono text-sm font-semibold px-3 py-1">
+                  {totalPrograms} Total
+                </Badge>
               </div>
+            </CardHeader>
+            <CardContent className="flex items-center justify-center py-14">
+              <DonutChart 
+                total={totalPrograms} 
+                segments={programSegments.length > 0 ? programSegments : [{ label: 'Planning', value: 1, color: '#8B5CF6' }]} 
+                centerLabel="Programs" 
+              />
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl">
+            <CardHeader className="border-b border-purple-100 dark:border-purple-900/30 pb-5">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-3.5 text-xl font-bold text-gray-900 dark:text-gray-100">
+                  <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <FolderKanban className="h-5 w-5 text-white" />
+                  </div>
+                  Project Status
+                </CardTitle>
+                <Badge className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 ring-1 ring-inset ring-blue-600/20 font-mono text-sm font-semibold px-3 py-1">
+                  {totalProjects} Total
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="flex items-center justify-center py-14">
+              <DonutChart 
+                total={totalProjects} 
+                segments={projectSegments.length > 0 ? projectSegments : [{ label: 'Pending', value: 1, color: '#f59e0b' }]} 
+                centerLabel="Projects" 
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl">
+          <Tabs defaultValue="programs" className="w-full">
+            <div className="border-b border-purple-100 dark:border-purple-900/30 px-7 pt-7">
+              <TabsList className="bg-purple-50 dark:bg-purple-900/20 p-1.5 rounded-2xl ring-1 ring-inset ring-purple-100 dark:ring-purple-900/50">
+                <TabsTrigger 
+                  value="programs" 
+                  className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg data-[state=active]:ring-1 data-[state=active]:ring-purple-100 dark:data-[state=active]:ring-purple-800 rounded-xl px-6 py-2.5 text-sm font-bold transition-all"
+                >
+                  <Building2 className="h-4 w-4 mr-2" />
+                  My Programs ({totalPrograms})
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="projects"
+                  className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg data-[state=active]:ring-1 data-[state=active]:ring-purple-100 dark:data-[state=active]:ring-purple-800 rounded-xl px-6 py-2.5 text-sm font-bold transition-all"
+                >
+                  <FolderKanban className="h-4 w-4 mr-2" />
+                  All Projects ({totalProjects})
+                </TabsTrigger>
+              </TabsList>
             </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Program Details */}
-      <div>
-        <h2 className="text-xl font-bold mb-4">Program Overview</h2>
-        <div className="space-y-4">
-          {programs.map((program) => {
-            const programProjects = getProjectsByProgram(program.id);
-            const health = getProgramHealth(program.id);
-            const { total, spent } = getProgramBudget(program.id);
-
-            return (
-              <Card key={program.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3">
-                        <CardTitle className="text-xl">{program.name}</CardTitle>
-                        <Badge variant="outline" className="capitalize">{program.status}</Badge>
-                      </div>
-                      {program.description && (
-                        <p className="text-sm text-muted-foreground mt-2">{program.description}</p>
-                      )}
-                    </div>
-                    <div className={`text-2xl font-bold ${
-                      health >= 80 ? 'text-green-600' :
-                      health >= 60 ? 'text-yellow-600' : 'text-red-600'
-                    }`}>
-                      {health}
-                      <span className="text-xs text-muted-foreground ml-1">Health</span>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Program Stats */}
-                  <div className="grid grid-cols-3 gap-4 pb-4 border-b">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Projects</p>
-                      <p className="text-xl font-bold">{programProjects.length}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Budget</p>
-                      <p className="text-xl font-bold">€{(total / 1000).toFixed(1)}K</p>
-                      <p className="text-xs text-muted-foreground">€{(spent / 1000).toFixed(1)}K spent</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Team</p>
-                      <p className="text-xl font-bold">
-                        {programProjects.reduce((sum, p) => sum + p.team_members_count, 0)} members
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* AI Program Summary */}
-                  <div className="p-3 rounded-lg bg-accent/20 border">
-                    <div className="flex items-start gap-2">
-                      <Sparkles className="h-4 w-4 text-purple-500 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium">AI Program Summary</p>
-                        <p className="text-sm text-muted-foreground">
-                          Program contains {programProjects.length} projects with {health}% average health. 
-                          {health >= 80 
-                            ? " All projects on track - maintain current momentum."
-                            : health >= 60
-                            ? " Some projects need attention - schedule program review."
-                            : " Multiple projects at risk - immediate program intervention required."}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Projects in Program */}
-                  {programProjects.length > 0 && (
-                    <div>
-                      <p className="text-sm font-medium mb-2">Projects in this Program:</p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {programProjects.map((project) => (
-                          <div key={project.id} className="p-3 rounded-lg border bg-accent/10">
-                            <div className="flex items-center justify-between mb-1">
-                              <p className="font-medium text-sm">{project.name}</p>
-                              <Badge variant="outline" className="text-xs capitalize">{project.status}</Badge>
+            <TabsContent value="programs" className="p-7">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Programs I Manage</h3>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate('/programs')}
+                  className="font-bold ring-2 ring-inset ring-purple-200 hover:ring-purple-300 hover:bg-purple-50 dark:ring-purple-800 dark:hover:ring-purple-700 dark:hover:bg-purple-900/20 border-0 rounded-xl"
+                >
+                  View All <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
+              
+              <div className="overflow-x-auto rounded-2xl ring-1 ring-purple-100 dark:ring-purple-900/50">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-b border-purple-100 dark:border-purple-900/50">
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Program Name</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Framework</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Projects</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Budget</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Progress</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Status</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Health</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-900 divide-y divide-purple-50 dark:divide-purple-900/20">
+                    {formattedPrograms.length > 0 ? formattedPrograms.map((program) => {
+                      const methodology = program.methodology?.toLowerCase() || 'hybrid';
+                      const methodInfo = methodologyIcons[methodology] || methodologyIcons['hybrid'];
+                      const IconComponent = methodInfo.icon;
+                      return (
+                        <tr 
+                          key={program.id} 
+                          className="hover:bg-gradient-to-r hover:from-purple-50/50 hover:to-pink-50/50 dark:hover:from-purple-900/10 dark:hover:to-pink-900/10 cursor-pointer transition-colors"
+                          onClick={() => navigate(`/programs/${program.id}`)}
+                        >
+                          <td className="py-4 px-6">
+                            <span className="font-bold text-gray-900 dark:text-gray-100">{program.name}</span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className={`inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-semibold ${methodInfo.color} bg-white dark:bg-gray-800 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 shadow-sm`}>
+                              <IconComponent className="h-4 w-4" />
+                              <span>{methodInfo.label}</span>
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">{program.project_count}</span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">{formatBudget(parseFloat(String(program.total_budget)) || 0, currencyCode)}</span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-3">
+                              <Progress value={program.progress} className="h-2 w-24 bg-purple-100 dark:bg-purple-900/30" />
+                              <span className="text-sm font-mono font-bold text-gray-600 dark:text-gray-400 min-w-[3ch] tabular-nums">{program.progress}%</span>
                             </div>
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <span>{project.progress}% complete</span>
-                              <span>{project.team_members_count} members</span>
-                              <span className="capitalize">{project.methodology}</span>
+                          </td>
+                          <td className="py-4 px-6"><StatusBadge status={program.status} /></td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center justify-center">
+                              <HealthIndicator health={program.health_status} />
                             </div>
+                          </td>
+                        </tr>
+                      );
+                    }) : (
+                      <tr>
+                        <td colSpan={7} className="py-20 text-center">
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center ring-4 ring-purple-50 dark:ring-purple-900/20">
+                              <Building2 className="h-8 w-8 text-purple-400" />
+                            </div>
+                            <p className="text-gray-500 dark:text-gray-400 font-medium">No programs assigned</p>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </TabsContent>
 
-      {/* Standalone Projects */}
-      {projects.filter(p => !p.program).length > 0 && (
-        <div>
-          <h2 className="text-xl font-bold mb-4">Standalone Projects</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {projects.filter(p => !p.program).map((project) => (
-              <Card key={project.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-bold">{project.name}</h3>
-                    <Badge variant="outline" className="capitalize">{project.status}</Badge>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>{project.progress}% complete</span>
-                    <span>{project.team_members_count} members</span>
-                    <span className="capitalize">{project.methodology}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
+            <TabsContent value="projects" className="p-7">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">All Projects in My Programs</h3>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate('/projects')}
+                  className="font-bold ring-2 ring-inset ring-purple-200 hover:ring-purple-300 hover:bg-purple-50 dark:ring-purple-800 dark:hover:ring-purple-700 dark:hover:bg-purple-900/20 border-0 rounded-xl"
+                >
+                  View All <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
+              
+              <div className="overflow-x-auto rounded-2xl ring-1 ring-purple-100 dark:ring-purple-900/50">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-b border-purple-100 dark:border-purple-900/50">
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Project Name</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">End Date</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Budget</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Progress</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Status</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Health</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-900 divide-y divide-purple-50 dark:divide-purple-900/20">
+                    {formattedProjects.length > 0 ? formattedProjects.map((project) => (
+                      <tr 
+                        key={project.id} 
+                        className="hover:bg-gradient-to-r hover:from-purple-50/50 hover:to-pink-50/50 dark:hover:from-purple-900/10 dark:hover:to-pink-900/10 cursor-pointer transition-colors"
+                        onClick={() => navigate(`/projects/${project.id}`)}
+                      >
+                        <td className="py-4 px-6">
+                          <span className="font-bold text-gray-900 dark:text-gray-100">{project.name}</span>
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                            {project.end_date ? new Date(project.end_date).toLocaleDateString() : '—'}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">{formatBudget(parseFloat(String(project.budget)) || 0, currencyCode)}</span>
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-3">
+                            <Progress value={project.progress} className="h-2 w-24 bg-purple-100 dark:bg-purple-900/30" />
+                            <span className="text-sm font-mono font-bold text-gray-600 dark:text-gray-400 min-w-[3ch] tabular-nums">{project.progress}%</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6"><StatusBadge status={project.status} /></td>
+                        <td className="py-4 px-6">
+                          <div className="flex items-center justify-center">
+                            <HealthIndicator health={project.health_status} />
+                          </div>
+                        </td>
+                      </tr>
+                    )) : (
+                      <tr>
+                        <td colSpan={6} className="py-20 text-center">
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center ring-4 ring-purple-50 dark:ring-purple-900/20">
+                              <FolderKanban className="h-8 w-8 text-purple-400" />
+                            </div>
+                            <p className="text-gray-500 dark:text-gray-400 font-medium">No projects in your programs</p>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </Card>
+      </div>
     </div>
   );
 };

@@ -20,6 +20,7 @@ urlpatterns = [
     # Specific app paths - EACH NEEDS A UNIQUE PREFIX
     path("api/v1/projects/", include("projects.urls")),
     path("api/v1/programs/", include("programs.urls")),
+    path("api/v1/governance/", include("governance.urls")),
     path("api/v1/execution/", include("execution.urls")),
     path("api/v1/sixsigma/", include("sixsigma.urls")),
     path("api/v1/prince2/", include("prince2.urls")),

@@ -3,10 +3,11 @@ from .methodology_service import apply_methodology_template
 from .methodology_service import apply_methodology_template
 
 from rest_framework import viewsets
+from core.ai_utils import RiskDetector, BudgetForecaster, ProjectHealthScorer
 from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status  # Keep this
 from rest_framework.permissions import IsAuthenticated
 from accounts.permissions import HasRole
 from django.db import models
@@ -783,6 +784,65 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         }
         return Response(data, status=status.HTTP_200_OK)
 
+
+
+    @action(detail=True, methods=['get'], url_path='ai-insights')
+    def ai_insights(self, request, pk=None):
+        """Generate AI-powered insights for this project"""
+        project = self.get_object()
+        
+        # Get metrics
+        budget = project.budget or 0
+        # For now, assume 50% spent if in progress (we can enhance this later)
+        spent = budget * 0.5 if project.status == 'in_progress' else 0
+        allocated = budget
+        
+        # Get computed progress
+        from projects.serializers import ProjectSerializer
+        serializer = ProjectSerializer(project)
+        progress = serializer.data.get('progress', 0)
+        team_size = project.team_members.filter(is_active=True).count() if hasattr(project, 'team_members') else 0
+        
+        # AI analysis
+        budget_risk = RiskDetector.analyze_budget_risk(spent, allocated, progress)
+        timeline_risk = RiskDetector.analyze_timeline_risk(project.start_date, project.end_date, progress)
+        budget_forecast = BudgetForecaster.forecast_completion(spent, allocated, progress)
+        health_score = ProjectHealthScorer.calculate_health_score(
+            budget_risk['severity'],
+            timeline_risk['severity'],
+            progress,
+            team_size
+        )
+        
+        # Recommendations
+        recommendations = []
+        if budget_risk['risk_level'] == 'high':
+            recommendations.append({
+                'priority': 'high',
+                'category': 'budget',
+                'action': 'Review and reduce scope or request additional budget',
+                'reason': budget_risk['message']
+            })
+        if timeline_risk['risk_level'] == 'high':
+            recommendations.append({
+                'priority': 'high',
+                'category': 'timeline',
+                'action': 'Accelerate critical path or adjust deadline',
+                'reason': timeline_risk['message']
+            })
+        
+        return Response({
+            'project_id': project.id,
+            'project_name': project.name,
+            'analysis': {
+                'budget_risk': budget_risk,
+                'timeline_risk': timeline_risk,
+                'budget_forecast': budget_forecast,
+                'health_score': health_score
+            },
+            'recommendations': recommendations,
+            'generated_at': datetime.now().isoformat()
+        })
 
 class MilestoneViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     queryset = Milestone.objects.all().select_related("project", "project__company")
@@ -1898,7 +1958,8 @@ from .methodology_service import apply_methodology_template
 # ADD THESE TO projects/views.py
 # ========================================
 
-from rest_framework import viewsets, status
+from rest_framework import viewsets
+from core.ai_utils import RiskDetector, BudgetForecaster, ProjectHealthScorer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import BudgetCategory, BudgetItem, ProjectBudget
@@ -1993,3 +2054,12 @@ class BudgetOverviewViewSet(viewsets.ViewSet):
         
         serializer = BudgetOverviewSerializer(data)
         return Response(serializer.data)
+
+# ============================================
+# AI INSIGHTS
+# ============================================
+
+from rest_framework.decorators import api_view
+from datetime import datetime
+
+

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "bot",
     "workflow",
     "programs",
+    "governance",
     "sixsigma",  # NEW: Lean Six Sigma DMAIC tools
     "prince2",
     'scrum',

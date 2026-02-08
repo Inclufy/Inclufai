@@ -26,9 +26,15 @@ import Registrations from '@/pages/admin-portal/Registrations';
 
 // Existing Page Imports
 import Index from "./pages/Index";
+import ReportsPage from "./pages/reports/ReportsPage";
+import CreatePortfolio from "./pages/governance/CreatePortfolio";
+import CreateBoard from "./pages/governance/CreateBoard";
+import CreateStakeholder from "./pages/governance/CreateStakeholder";
+import Portfolios from "./pages/governance/Portfolios";
+import GovernanceBoards from "./pages/governance/GovernanceBoards";
+import Stakeholders from "./pages/governance/Stakeholders";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
-import DemoRequests from './pages/admin/DemoRequests';
 import DemoRequests from './pages/admin/DemoRequests';
 import Signup from "./pages/Signup"; 
 import TrialPending from "./pages/TrialPending";
@@ -153,7 +159,6 @@ import KanbanCFD from './pages/kanban/KanbanCFD';
 import KanbanContinuousImprovement from './pages/kanban/KanbanContinuousImprovement';
 import KanbanWorkItems from './pages/kanban/KanbanWorkItems';
 import KanbanBlockedItems from './pages/kanban/KanbanBlockedItems';
-import KanbanWorkPolicies from './pages/kanban/KanbanWorkPolicies';
 
 // Agile imports
 import AgileOverview from './pages/agile/AgileOverview';
@@ -167,7 +172,6 @@ import AgileReleasePlanning from './pages/agile/AgileReleasePlanning';
 import AgileDailyProgress from './pages/agile/AgileDailyProgress';
 import AgileRetrospective from './pages/agile/AgileRetrospective';
 import AgileVelocity from './pages/agile/AgileVelocity';
-import AgileDefinitionOfDone from './pages/agile/AgileDefinitionOfDone';
 
 // Waterfall imports
 import WaterfallOverview from './pages/waterfall/WaterfallOverview';
@@ -181,11 +185,6 @@ import WaterfallDeployment from './pages/waterfall/WaterfallDeployment';
 import WaterfallMaintenance from './pages/waterfall/WaterfallMaintenance';
 import WaterfallGantt from './pages/waterfall/WaterfallGantt';
 import WaterfallMilestones from './pages/waterfall/WaterfallMilestones';
-import WaterfallPhaseGate from './pages/waterfall/WaterfallPhaseGate';
-import WaterfallBaselines from './pages/waterfall/WaterfallBaselines';
-import WaterfallRisks from './pages/waterfall/WaterfallRisks';
-import WaterfallIssues from './pages/waterfall/WaterfallIssues';
-import WaterfallDeliverables from './pages/waterfall/WaterfallDeliverables';
 import WaterfallChangeRequests from './pages/waterfall/WaterfallChangeRequests';
 
 // ============================================
@@ -391,6 +390,9 @@ const App = () => (
               {/* Protected Routes - Dashboard & Main App      */}
               {/* ============================================ */}
               <Route path="/dashboard" element={<ProtectedPage><Index /></ProtectedPage>} />
+              
+              {/* Reports - Role-based AI reports */}
+              <Route path="/reports" element={<ProtectedPage><ReportsPage /></ProtectedPage>} />
               
               {/* AI Assistant - Requires ai_assistant feature */}
               <Route path="/ai-assistant" element={
@@ -731,7 +733,6 @@ const App = () => (
               <Route path="/projects/:id/kanban/metrics" element={<ProtectedPage><KanbanFlowMetrics /></ProtectedPage>} />
               <Route path="/projects/:id/kanban/cfd" element={<ProtectedPage><KanbanCFD /></ProtectedPage>} />
               <Route path="/projects/:id/kanban/improvement" element={<ProtectedPage><KanbanContinuousImprovement /></ProtectedPage>} />
-              <Route path="/projects/:id/kanban/work-policies" element={<ProtectedPage><KanbanWorkPolicies /></ProtectedPage>} />
               <Route path="/projects/:id/kanban/work-items" element={<ProtectedPage><KanbanWorkItems /></ProtectedPage>} />
               <Route path="/projects/:id/kanban/blocked" element={<ProtectedPage><KanbanBlockedItems /></ProtectedPage>} />
 
@@ -748,7 +749,6 @@ const App = () => (
               <Route path="/projects/:id/agile/release-planning" element={<ProtectedPage><AgileReleasePlanning /></ProtectedPage>} />
               <Route path="/projects/:id/agile/daily-progress" element={<ProtectedPage><AgileDailyProgress /></ProtectedPage>} />
               <Route path="/projects/:id/agile/retrospective" element={<ProtectedPage><AgileRetrospective /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/definition-of-done" element={<ProtectedPage><AgileDefinitionOfDone /></ProtectedPage>} />
               <Route path="/projects/:id/agile/velocity" element={<ProtectedPage><AgileVelocity /></ProtectedPage>} />
 
               {/* ============================================ */}
@@ -766,17 +766,19 @@ const App = () => (
               <Route path="/projects/:id/waterfall/gantt" element={<ProtectedPage><WaterfallGantt /></ProtectedPage>} />
               <Route path="/projects/:id/waterfall/milestones" element={<ProtectedPage><WaterfallMilestones /></ProtectedPage>} />
               <Route path="/projects/:id/waterfall/change-requests" element={<ProtectedPage><WaterfallChangeRequests /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/phase-gate" element={<ProtectedPage><WaterfallPhaseGate /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/baselines" element={<ProtectedPage><WaterfallBaselines /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/risks" element={<ProtectedPage><WaterfallRisks /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/issues" element={<ProtectedPage><WaterfallIssues /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/deliverables" element={<ProtectedPage><WaterfallDeliverables /></ProtectedPage>} />
               
               <Route path="/profile" element={<ProtectedPage><Profile /></ProtectedPage>} />
               <Route path="/settings" element={<ProtectedPage><Settings /></ProtectedPage>} />
               <Route path="/settings/2fa" element={<ProtectedRoute><TwoFactorAuth /></ProtectedRoute>} />
 
               <Route path="*" element={<NotFound />} />
+              {/* Governance */}
+              <Route path="/governance/portfolios" element={<ProtectedPage><Portfolios /></ProtectedPage>} />
+              <Route path="/governance/boards" element={<ProtectedPage><GovernanceBoards /></ProtectedPage>} />
+              <Route path="/governance/stakeholders" element={<ProtectedPage><Stakeholders /></ProtectedPage>} />
+              <Route path="/governance/portfolios/new" element={<ProtectedPage><CreatePortfolio /></ProtectedPage>} />
+              <Route path="/governance/boards/new" element={<ProtectedPage><CreateBoard /></ProtectedPage>} />
+              <Route path="/governance/stakeholders/new" element={<ProtectedPage><CreateStakeholder /></ProtectedPage>} />
             </Routes>
         </TooltipProvider>
       </AuthProvider>

@@ -50,3 +50,6 @@ urlpatterns = [
          ProgramMilestoneViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), 
          name='program-milestones-detail'),
 ]
+# AI Insights endpoints
+urlpatterns += [
+]

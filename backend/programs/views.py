@@ -356,3 +356,195 @@ class ProgramBudgetOverviewViewSet(viewsets.ViewSet):
                 {'error': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+# ============================================
+# AI INSIGHTS ENDPOINTS
+# ============================================
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .ai_utils import RiskDetector, BudgetForecaster, ProjectHealthScorer
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def project_ai_insights(request, project_id):
+    """
+    Generate AI-powered insights for a specific project
+    """
+    try:
+        from projects.models import Project
+        project = Project.objects.get(id=project_id)
+        
+        # Get project metrics
+        spent = project.budget_spent or 0
+        allocated = project.budget_allocated or 0
+        progress = project.progress or 0
+        team_size = project.team_members.filter(is_active=True).count()
+        
+        # Run AI analysis
+        budget_risk = RiskDetector.analyze_budget_risk(spent, allocated, progress)
+        timeline_risk = RiskDetector.analyze_timeline_risk(
+            project.start_date, 
+            project.end_date, 
+            progress
+        )
+        budget_forecast = BudgetForecaster.forecast_completion(spent, allocated, progress)
+        health_score = ProjectHealthScorer.calculate_health_score(
+            budget_risk['severity'],
+            timeline_risk['severity'],
+            progress,
+            team_size
+        )
+        
+        return Response({
+            'project_id': project.id,
+            'project_name': project.name,
+            'analysis': {
+                'budget_risk': budget_risk,
+                'timeline_risk': timeline_risk,
+                'budget_forecast': budget_forecast,
+                'health_score': health_score
+            },
+            'recommendations': generate_recommendations(budget_risk, timeline_risk, health_score),
+            'generated_at': datetime.now().isoformat()
+        })
+        
+    except Project.DoesNotExist:
+        return Response({'error': 'Project not found'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def program_ai_insights(request, program_id):
+    """
+    Generate AI-powered insights for a specific program
+    """
+    try:
+        program = Program.objects.get(id=program_id)
+        
+        # Aggregate metrics from program projects
+        projects = program.projects.all()
+        
+        total_budget = sum(p.budget_allocated or 0 for p in projects)
+        total_spent = sum(p.budget_spent or 0 for p in projects)
+        avg_progress = sum(p.progress or 0 for p in projects) / len(projects) if projects else 0
+        total_team = sum(p.team_members.filter(is_active=True).count() for p in projects)
+        
+        # Run AI analysis
+        budget_risk = RiskDetector.analyze_budget_risk(total_spent, total_budget, int(avg_progress))
+        budget_forecast = BudgetForecaster.forecast_completion(total_spent, total_budget, int(avg_progress))
+        health_score = ProjectHealthScorer.calculate_health_score(
+            budget_risk['severity'],
+            0,  # No program-level timeline
+            int(avg_progress),
+            total_team
+        )
+        
+        # Project-level insights
+        project_insights = []
+        for project in projects:
+            p_budget_risk = RiskDetector.analyze_budget_risk(
+                project.budget_spent or 0,
+                project.budget_allocated or 0,
+                project.progress or 0
+            )
+            
+            if p_budget_risk['risk_level'] in ['high', 'medium']:
+                project_insights.append({
+                    'project_id': project.id,
+                    'project_name': project.name,
+                    'risk': p_budget_risk
+                })
+        
+        return Response({
+            'program_id': program.id,
+            'program_name': program.name,
+            'analysis': {
+                'budget_risk': budget_risk,
+                'budget_forecast': budget_forecast,
+                'health_score': health_score,
+                'projects_at_risk': len(project_insights)
+            },
+            'project_insights': project_insights[:5],  # Top 5 risky projects
+            'recommendations': generate_program_recommendations(budget_risk, health_score, project_insights),
+            'generated_at': datetime.now().isoformat()
+        })
+        
+    except Program.DoesNotExist:
+        return Response({'error': 'Program not found'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
+def generate_recommendations(budget_risk, timeline_risk, health_score):
+    """Generate actionable recommendations"""
+    recommendations = []
+    
+    if budget_risk['risk_level'] == 'high':
+        recommendations.append({
+            'priority': 'high',
+            'category': 'budget',
+            'action': 'Review and reduce scope or request additional budget',
+            'reason': budget_risk['message']
+        })
+    
+    if timeline_risk['risk_level'] == 'high':
+        recommendations.append({
+            'priority': 'high',
+            'category': 'timeline',
+            'action': 'Accelerate critical path activities or adjust deadline',
+            'reason': timeline_risk['message']
+        })
+    
+    if health_score['status'] == 'critical':
+        recommendations.append({
+            'priority': 'critical',
+            'category': 'overall',
+            'action': 'Immediate executive review required',
+            'reason': f"Project health score is {health_score['score']}/100"
+        })
+    
+    if not recommendations:
+        recommendations.append({
+            'priority': 'low',
+            'category': 'overall',
+            'action': 'Continue current approach',
+            'reason': 'All metrics within acceptable ranges'
+        })
+    
+    return recommendations
+
+
+def generate_program_recommendations(budget_risk, health_score, project_insights):
+    """Generate program-level recommendations"""
+    recommendations = []
+    
+    if len(project_insights) > 0:
+        recommendations.append({
+            'priority': 'high',
+            'category': 'portfolio',
+            'action': f'Review {len(project_insights)} at-risk projects',
+            'reason': 'Multiple projects showing budget or timeline concerns'
+        })
+    
+    if budget_risk['risk_level'] == 'high':
+        recommendations.append({
+            'priority': 'high',
+            'category': 'budget',
+            'action': 'Program-wide budget review needed',
+            'reason': budget_risk['message']
+        })
+    
+    if not recommendations:
+        recommendations.append({
+            'priority': 'low',
+            'category': 'overall',
+            'action': 'Program performing well',
+            'reason': f"Health score: {health_score['score']}/100"
+        })
+    
+    return recommendations

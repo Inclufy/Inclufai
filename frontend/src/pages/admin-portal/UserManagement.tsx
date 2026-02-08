@@ -527,6 +527,7 @@ export default function UserManagement() {
                 <SelectItem value="all">{isNL ? 'Alle Rollen' : 'All Roles'}</SelectItem>
                 <SelectItem value="superadmin">Super Admin</SelectItem>
                 <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="program_manager">Program Manager</SelectItem>
                 <SelectItem value="pm">Project Manager</SelectItem>
                 <SelectItem value="user">User</SelectItem>
               </SelectContent>
@@ -764,6 +765,7 @@ export default function UserManagement() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="program_manager">Program Manager</SelectItem>
                   <SelectItem value="pm">Project Manager</SelectItem>
                   <SelectItem value="contributor">Contributor</SelectItem>
                   <SelectItem value="reviewer">Reviewer</SelectItem>
@@ -833,6 +835,7 @@ export default function UserManagement() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="program_manager">Program Manager</SelectItem>
                   <SelectItem value="pm">Project Manager</SelectItem>
                   <SelectItem value="contributor">Contributor</SelectItem>
                   <SelectItem value="reviewer">Reviewer</SelectItem>

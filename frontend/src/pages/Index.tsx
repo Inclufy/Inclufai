@@ -1,4 +1,5 @@
 import ExecutiveDashboard from "@/components/dashboards/ExecutiveDashboard";
+import ProgramManagerDashboard from "@/components/dashboards/ProgramManagerDashboard";
 import ProjectManagerDashboard from "@/components/dashboards/ProjectManagerDashboard";
 import TeamMemberDashboard from "@/components/dashboards/TeamMemberDashboard";
 

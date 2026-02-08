@@ -1,281 +1,463 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, CheckCircle, Clock, DollarSign, Users, TrendingUp, Target, Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useQuery } from "@tanstack/react-query";
+import { AISummaryModal } from "@/components/AISummaryModal";
+import AICommander from "@/components/AICommander";
+import { formatBudget, getCurrencyFromLanguage } from "@/lib/currencies";
+import { 
+  FolderKanban, 
+  TrendingUp, 
+  AlertTriangle, 
+  DollarSign, 
+  Sparkles,
+  ArrowRight,
+  Target,
+  Activity,
+  Users,
+  Calendar,
+  CheckCircle2
+} from "lucide-react";
 
-interface Project {
-  id: number;
-  name: string;
-  status: string;
-  progress: number;
-  budget: string;
-  expenses_total: number;
-  team_members_count: number;
-  methodology: string;
-}
+const fetchProjects = async () => {
+  const token = localStorage.getItem("access_token");
+  const response = await fetch("/api/v1/projects/", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Failed to fetch projects");
+  return response.json();
+};
 
-interface AIInsight {
-  type: "critical" | "warning" | "success";
-  message: string;
-  action?: string;
-}
-
-const ProjectManagerDashboard: React.FC = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const aiInsights: AIInsight[] = [
-    {
-      type: "critical",
-      message: "Mobile App Development: 15% over budget",
-      action: "Review sprint scope and reduce features"
-    },
-    {
-      type: "warning", 
-      message: "Backend API integration delayed - waiting on 3rd party",
-      action: "Schedule vendor call to negotiate timeline"
-    },
-    {
-      type: "success",
-      message: "Team velocity +12% vs last sprint",
-      action: "Consider increasing sprint capacity"
-    }
-  ];
-
-  useEffect(() => {
-    fetchMyProjects();
-  }, []);
-
-  const fetchMyProjects = async () => {
-    try {
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(`/api/v1/projects/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await response.json();
-      setProjects(data);
-    } catch (error) {
-      console.error("Error fetching projects:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getHealthScore = (project: Project) => {
-    const budgetTotal = parseFloat(project.budget) || 0;
-    const budgetSpent = project.expenses_total || 0;
-    const budgetHealth = budgetTotal > 0 ? ((budgetTotal - budgetSpent) / budgetTotal * 100) : 100;
-    const scheduleHealth = project.progress || 0;
-    return Math.round((budgetHealth + scheduleHealth) / 2);
-  };
-
-  const getHealthColor = (score: number) => {
-    if (score >= 80) return "text-green-600 dark:text-green-500";
-    if (score >= 60) return "text-yellow-600 dark:text-yellow-500";
-    return "text-red-600 dark:text-red-500";
-  };
-
-  const totalBudget = projects.reduce((sum, p) => sum + parseFloat(p.budget || "0"), 0);
-  const totalSpent = projects.reduce((sum, p) => sum + (p.expenses_total || 0), 0);
-  const activeProjects = projects.filter(p => p.status === "active").length;
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-muted-foreground">Loading dashboard...</div>
-      </div>
-    );
+const callAI = async (prompt: string): Promise<string> => {
+  const token = localStorage.getItem("access_token");
+  try {
+    const createChatResponse = await fetch("/api/v1/bot/chats/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ title: "Dashboard AI Summary" }),
+    });
+    if (!createChatResponse.ok) throw new Error("Failed to create chat");
+    const chatData = await createChatResponse.json();
+    const messageResponse = await fetch(`/api/v1/bot/chats/${chatData.id}/send_message/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ message: prompt }),
+    });
+    if (!messageResponse.ok) throw new Error("AI service unavailable");
+    const data = await messageResponse.json();
+    return data.ai_response?.content || "";
+  } catch (error) {
+    throw error;
   }
+};
+
+interface DonutChartProps {
+  total: number;
+  segments: { label: string; value: number; color: string }[];
+  centerLabel: string;
+}
+
+const DonutChart = ({ total, segments, centerLabel }: DonutChartProps) => {
+  const radius = 80;
+  const strokeWidth = 20;
+  const normalizedRadius = radius - strokeWidth / 2;
+  const circumference = normalizedRadius * 2 * Math.PI;
+  
+  let currentOffset = 0;
+  
+  return (
+    <div className="relative inline-flex items-center justify-center">
+      <svg height={radius * 2} width={radius * 2} className="transform -rotate-90">
+        <circle
+          stroke="currentColor"
+          fill="transparent"
+          strokeWidth={strokeWidth}
+          r={normalizedRadius}
+          cx={radius}
+          cy={radius}
+          className="text-purple-100 dark:text-purple-900/30"
+        />
+        {segments.map((segment, index) => {
+          const percentage = total > 0 ? (segment.value / total) * 100 : 0;
+          const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
+          const strokeDashoffset = -currentOffset;
+          currentOffset += (percentage / 100) * circumference;
+          
+          return (
+            <circle
+              key={index}
+              stroke={segment.color}
+              fill="transparent"
+              strokeWidth={strokeWidth}
+              strokeDasharray={strokeDasharray}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+              r={normalizedRadius}
+              cx={radius}
+              cy={radius}
+              className="transition-all duration-700 ease-out drop-shadow-sm"
+            />
+          );
+        })}
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-5xl font-bold bg-gradient-to-br from-purple-600 to-pink-600 bg-clip-text text-transparent">{total}</span>
+        <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-widest mt-1">{centerLabel}</span>
+      </div>
+    </div>
+  );
+};
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const statusStyles: Record<string, string> = {
+    'planning': 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 ring-1 ring-inset ring-purple-600/20',
+    'in_progress': 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 ring-1 ring-inset ring-blue-600/20',
+    'active': 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300 ring-1 ring-inset ring-emerald-600/20',
+    'completed': 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 ring-1 ring-inset ring-green-600/20',
+    'on_hold': 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300 ring-1 ring-inset ring-amber-600/20',
+    'pending': 'bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300 ring-1 ring-inset ring-orange-600/20',
+  };
+  
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide ${statusStyles[status?.toLowerCase()] || statusStyles['planning']}`}>
+      {status || 'planning'}
+    </span>
+  );
+};
+
+const HealthIndicator = ({ health }: { health?: string }) => {
+  const healthColors: Record<string, string> = {
+    'healthy': 'bg-emerald-500 ring-emerald-100 dark:ring-emerald-900/30',
+    'good': 'bg-emerald-500 ring-emerald-100 dark:ring-emerald-900/30',
+    'at_risk': 'bg-amber-500 ring-amber-100 dark:ring-amber-900/30',
+    'critical': 'bg-red-500 ring-red-100 dark:ring-red-900/30',
+  };
+  
+  return (
+    <div className={`h-2.5 w-2.5 rounded-full ring-4 ${healthColors[health?.toLowerCase() || 'healthy'] || 'bg-emerald-500 ring-emerald-100 dark:ring-emerald-900/30'}`} />
+  );
+};
+
+const StatCard = ({ 
+  title, 
+  value, 
+  subtitle, 
+  icon: Icon,
+  trend,
+  trendValue,
+  color = 'purple' 
+}: any) => {
+  const colorClasses: Record<string, string> = {
+    purple: 'from-purple-600 to-pink-600',
+    blue: 'from-blue-600 to-cyan-600',
+    emerald: 'from-emerald-600 to-teal-600',
+    red: 'from-red-600 to-rose-600',
+    amber: 'from-amber-600 to-orange-600',
+  };
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header Section - Consistent with Executive Dashboard */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Project Manager Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Your project portfolio overview</p>
+    <Card className="relative overflow-hidden border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white dark:bg-gray-900 shadow-sm hover:shadow-xl hover:ring-purple-200 dark:hover:ring-purple-800/50 transition-all duration-300 group">
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 via-transparent to-pink-50/50 dark:from-purple-900/10 dark:via-transparent dark:to-pink-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      
+      <CardContent className="p-7 relative z-10">
+        <div className="flex items-start justify-between mb-5">
+          <div className={`p-3 rounded-2xl bg-gradient-to-br ${colorClasses[color]} shadow-lg`}>
+            <Icon className="h-5 w-5 text-white" />
+          </div>
+          {trend && (
+            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+              trend === 'up' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300 ring-1 ring-inset ring-emerald-600/20' : 
+              'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300 ring-1 ring-inset ring-red-600/20'
+            }`}>
+              <TrendingUp className={`h-3.5 w-3.5 ${trend === 'down' ? 'rotate-180' : ''}`} />
+              {trendValue}
+            </div>
+          )}
         </div>
-      </div>
-
-      {/* Stats Cards - Same style as Executive Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">TOTAL PROJECTS</p>
-                <p className="text-3xl font-bold mt-2">{projects.length}</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                <Target className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">ACTIVE</p>
-                <p className="text-3xl font-bold mt-2">{activeProjects}</p>
-                <p className="text-xs text-green-600 dark:text-green-500 mt-1">In Progress</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                <Activity className="h-6 w-6 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">TOTAL BUDGET</p>
-                <p className="text-3xl font-bold mt-2">€{(totalBudget / 1000).toFixed(1)}K</p>
-                <p className="text-xs text-muted-foreground mt-1">Allocated</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">AVG HEALTH</p>
-                <p className="text-3xl font-bold mt-2">
-                  {Math.round(projects.reduce((sum, p) => sum + getHealthScore(p), 0) / projects.length || 0)}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">Portfolio Score</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* AI Insights Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            AI Insights
-            <Badge variant="outline" className="ml-auto">AI-Powered</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {aiInsights.map((insight, idx) => (
-            <div
-              key={idx}
-              className="flex items-start gap-3 p-4 rounded-lg border hover:bg-accent/50 transition-colors"
-            >
-              {insight.type === "critical" && (
-                <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
-              )}
-              {insight.type === "warning" && (
-                <Clock className="h-5 w-5 text-yellow-500 mt-0.5 flex-shrink-0" />
-              )}
-              {insight.type === "success" && (
-                <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-              )}
-              <div className="flex-1">
-                <p className="font-medium">{insight.message}</p>
-                {insight.action && (
-                  <p className="text-sm text-muted-foreground mt-1">💡 {insight.action}</p>
-                )}
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Project Cards - Simple Grid */}
-      <div>
-        <h2 className="text-xl font-bold mb-4">Active Projects</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {projects.map((project) => {
-            const healthScore = getHealthScore(project);
-            const budgetTotal = parseFloat(project.budget) || 0;
-            const budgetSpent = project.expenses_total || 0;
-            const budgetPercentage = budgetTotal > 0 ? (budgetSpent / budgetTotal) * 100 : 0;
-
-            return (
-              <Card key={project.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{project.name}</CardTitle>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="outline" className="capitalize">
-                          {project.methodology}
-                        </Badge>
-                        <Badge variant="outline" className="capitalize">
-                          {project.status}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className={`text-2xl font-bold ${getHealthColor(healthScore)}`}>
-                        {healthScore}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Health</div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Progress */}
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-muted-foreground">Progress</span>
-                      <span className="font-medium">{project.progress}%</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-blue-600 transition-all"
-                        style={{ width: `${project.progress}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Budget */}
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-muted-foreground flex items-center gap-1">
-                        <DollarSign className="h-3 w-3" />
-                        Budget
-                      </span>
-                      <span className={`font-medium ${budgetPercentage > 100 ? 'text-red-600' : ''}`}>
-                        €{budgetSpent.toLocaleString()} / €{budgetTotal.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all ${
-                          budgetPercentage > 100 ? 'bg-red-600' :
-                          budgetPercentage > 80 ? 'bg-yellow-600' : 'bg-green-600'
-                        }`}
-                        style={{ width: `${Math.min(budgetPercentage, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Team */}
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2 border-t">
-                    <Users className="h-4 w-4" />
-                    <span>{project.team_members_count} team members</span>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-widest">
+            {title}
+          </p>
+          <h3 className={`text-4xl font-bold bg-gradient-to-br ${colorClasses[color]} bg-clip-text text-transparent leading-none`}>
+            {value}
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{subtitle}</p>
         </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const ProjectManagerDashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const { t, language } = useLanguage();
+  const currencyCode = getCurrencyFromLanguage(language);
+  const [aiSummaryOpen, setAiSummaryOpen] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSummary, setAiSummary] = useState("");
+
+  const { data: projectsData } = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
+
+  const projects = Array.isArray(projectsData) ? projectsData : (projectsData?.results || []);
+
+  const totalProjects = projects.length;
+  const activeProjects = projects.filter((p: any) => p.status === 'in_progress' || p.status === 'active').length;
+  const completedProjects = projects.filter((p: any) => p.status === 'completed').length;
+  const atRiskProjects = projects.filter((p: any) => p.health_status === 'at_risk' || p.health_status === 'critical').length;
+  const totalBudget = projects.reduce((sum: number, p: any) => sum + (parseFloat(p.budget) || 0), 0);
+  const totalSpent = projects.reduce((sum: number, p: any) => sum + (p.expenses_total || 0), 0);
+  const avgProgress = projects.length > 0 
+    ? Math.round(projects.reduce((sum: number, p: any) => sum + (p.progress || 0), 0) / projects.length)
+    : 0;
+
+  const projectStatusCounts = projects.reduce((acc: Record<string, number>, p: any) => {
+    const status = p.status || 'pending';
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {});
+
+  const projectSegments = [
+    { label: 'Planning', value: projectStatusCounts['planning'] || 0, color: '#8B5CF6' },
+    { label: 'Pending', value: projectStatusCounts['pending'] || 0, color: '#f59e0b' },
+    { label: 'In Progress', value: projectStatusCounts['in_progress'] || 0, color: '#3b82f6' },
+    { label: 'Completed', value: projectStatusCounts['completed'] || 0, color: '#10b981' },
+  ].filter(s => s.value > 0);
+
+  const formattedProjects = projects.map((p: any) => ({
+    id: String(p.id), 
+    name: p.name, 
+    status: p.status, 
+    health_status: p.health_status,
+    progress: p.progress || 0, 
+    budget: p.budget || 0, 
+    expenses_total: p.expenses_total || 0,
+    end_date: p.end_date,
+    team_members_count: p.team_members_count || 0,
+  }));
+
+  const handleAIGenerate = async (selectedPrograms: any[], selectedProjects: any[]) => {
+    setAiLoading(true);
+    setAiSummary("");
+    try {
+      const langInst = language === 'nl' ? '**BELANGRIJK: Antwoord in het Nederlands.**' : '**Respond in English.**';
+      const prompt = `${langInst}\n\nAnalyze my ${selectedProjects.length} projects.\n\n## Summary\nProvide analysis.`;
+      const response = await callAI(prompt);
+      setAiSummary(response);
+    } catch (error) {
+      setAiSummary("## Error\n\nUnable to generate summary.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleModal = (e: CustomEvent) => {
+      if (e.detail.modal === 'ai-insights') setAiSummaryOpen(true);
+    };
+
+    window.addEventListener('ai-commander-modal', handleModal as EventListener);
+    return () => {
+      window.removeEventListener('ai-commander-modal', handleModal as EventListener);
+    };
+  }, []);
+
+  return (
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-violet-900/20">
+      <div className="absolute top-0 -left-4 w-[28rem] h-[28rem] bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
+      <div className="absolute top-0 -right-4 w-[28rem] h-[28rem] bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
+      <div className="absolute bottom-0 left-20 w-[28rem] h-[28rem] bg-violet-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000" />
+
+      <div className="relative z-10 p-8 md:p-10 space-y-8 max-w-[1800px] mx-auto">
+        <div className="text-center mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+            <Sparkles className="h-4 w-4" />
+            <span>📊 Project Manager Dashboard</span>
+            <Badge className="ml-1 bg-green-500 text-white text-xs">AI-Powered</Badge>
+          </div>
+
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+            <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
+              My Projects
+            </span>
+          </h1>
+          
+          <p className="text-gray-600 dark:text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
+            Track and manage your project deliverables
+          </p>
+
+          <AICommander 
+            isNL={language === 'nl'} 
+            programs={[]}
+            projects={formattedProjects}
+          />
+
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-6">
+            {language === 'nl' 
+              ? '⌘K om te zoeken • Navigeer, creëer, analyseer en rapporteer met AI' 
+              : '⌘K to search • Navigate, create, analyze and report with AI'}
+          </p>
+        </div>
+
+        <AISummaryModal 
+          isOpen={aiSummaryOpen} 
+          onClose={() => setAiSummaryOpen(false)} 
+          onGenerate={handleAIGenerate} 
+          programs={[]} 
+          projects={formattedProjects} 
+          isLoading={aiLoading} 
+          content={aiSummary} 
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
+          <StatCard title="My Projects" value={totalProjects} subtitle="Total projects" icon={FolderKanban} color="blue" />
+          <StatCard title="Active" value={activeProjects} subtitle="In progress" icon={Activity} color="emerald" />
+          <StatCard title="Completed" value={completedProjects} subtitle="Delivered" icon={CheckCircle2} color="purple" />
+          <StatCard title="At Risk" value={atRiskProjects} subtitle="Need attention" icon={AlertTriangle} color="red" />
+          <StatCard title="Budget" value={formatBudget(totalBudget, currencyCode)} subtitle="Total allocated" icon={DollarSign} color="amber" />
+          <StatCard title="Progress" value={`${avgProgress}%`} subtitle="Average completion" icon={Target} color="emerald" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl">
+            <CardHeader className="border-b border-purple-100 dark:border-purple-900/30 pb-5">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-3.5 text-xl font-bold text-gray-900 dark:text-gray-100">
+                  <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <FolderKanban className="h-5 w-5 text-white" />
+                  </div>
+                  Project Status
+                </CardTitle>
+                <Badge className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 ring-1 ring-inset ring-blue-600/20 font-mono text-sm font-semibold px-3 py-1">
+                  {totalProjects} Total
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="flex items-center justify-center py-14">
+              <DonutChart 
+                total={totalProjects} 
+                segments={projectSegments.length > 0 ? projectSegments : [{ label: 'Pending', value: 1, color: '#f59e0b' }]} 
+                centerLabel="Projects" 
+              />
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl">
+            <CardHeader className="border-b border-purple-100 dark:border-purple-900/30 pb-5">
+              <CardTitle className="flex items-center gap-3.5 text-xl font-bold text-gray-900 dark:text-gray-100">
+                <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
+                  <DollarSign className="h-5 w-5 text-white" />
+                </div>
+                Budget Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-7 space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Budget</p>
+                  <p className="text-3xl font-bold">{formatBudget(totalBudget, currencyCode)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground">Spent</p>
+                  <p className="text-3xl font-bold text-amber-600">{formatBudget(totalSpent, currencyCode)}</p>
+                </div>
+              </div>
+              <Progress value={totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0} className="h-3" />
+              <p className="text-sm text-muted-foreground text-center">
+                {totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0}% of budget utilized
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl">
+          <CardHeader className="border-b border-purple-100 dark:border-purple-900/30">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">My Projects</CardTitle>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => navigate('/projects')}
+                className="font-bold ring-2 ring-inset ring-purple-200 hover:ring-purple-300 hover:bg-purple-50 dark:ring-purple-800 dark:hover:ring-purple-700 dark:hover:bg-purple-900/20 border-0 rounded-xl"
+              >
+                View All <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-7">
+            <div className="overflow-x-auto rounded-2xl ring-1 ring-purple-100 dark:ring-purple-900/50">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-b border-purple-100 dark:border-purple-900/50">
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Project Name</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">End Date</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Team</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Budget</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Progress</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Status</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Health</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-purple-50 dark:divide-purple-900/20">
+                  {formattedProjects.length > 0 ? formattedProjects.map((project) => (
+                    <tr 
+                      key={project.id} 
+                      className="hover:bg-gradient-to-r hover:from-purple-50/50 hover:to-pink-50/50 dark:hover:from-purple-900/10 dark:hover:to-pink-900/10 cursor-pointer transition-colors"
+                      onClick={() => navigate(`/projects/${project.id}`)}
+                    >
+                      <td className="py-4 px-6">
+                        <span className="font-bold text-gray-900 dark:text-gray-100">{project.name}</span>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-gray-400" />
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                            {project.end_date ? new Date(project.end_date).toLocaleDateString() : '—'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-gray-400" />
+                          <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">{project.team_members_count}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">{formatBudget(parseFloat(String(project.budget)) || 0, currencyCode)}</span>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-3">
+                          <Progress value={project.progress} className="h-2 w-24 bg-purple-100 dark:bg-purple-900/30" />
+                          <span className="text-sm font-mono font-bold text-gray-600 dark:text-gray-400 min-w-[3ch] tabular-nums">{project.progress}%</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6"><StatusBadge status={project.status} /></td>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center justify-center">
+                          <HealthIndicator health={project.health_status} />
+                        </div>
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan={7} className="py-20 text-center">
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center ring-4 ring-purple-50 dark:ring-purple-900/20">
+                            <FolderKanban className="h-8 w-8 text-purple-400" />
+                          </div>
+                          <p className="text-gray-500 dark:text-gray-400 font-medium">No projects assigned</p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
