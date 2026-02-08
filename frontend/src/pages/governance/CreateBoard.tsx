@@ -17,6 +17,7 @@ const CreateBoard: React.FC = () => {
   const [portfolios, setPortfolios] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: "",
+    board_type: "steering_committee",
     description: "",
     portfolio: "",
   });

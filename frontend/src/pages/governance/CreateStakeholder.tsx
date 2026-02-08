@@ -18,7 +18,7 @@ const CreateStakeholder: React.FC = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    role: "",
+    role: "key_stakeholder",
     organization: "",
     portfolio: "",
     interest_level: "medium",
@@ -200,14 +200,21 @@ const CreateStakeholder: React.FC = () => {
                   <Label htmlFor="role" className="text-base font-semibold">
                     Role <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="role"
+                  <Select
                     value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    placeholder="e.g., Executive Sponsor"
-                    required
-                    className="h-12 text-base"
-                  />
+                    onValueChange={(value) => setFormData({ ...formData, role: value })}
+                  >
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="executive_sponsor">Executive Sponsor</SelectItem>
+                      <SelectItem value="senior_responsible_owner">Senior Responsible Owner</SelectItem>
+                      <SelectItem value="business_change_manager">Business Change Manager</SelectItem>
+                      <SelectItem value="project_executive">Project Executive</SelectItem>
+                      <SelectItem value="key_stakeholder">Key Stakeholder</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">

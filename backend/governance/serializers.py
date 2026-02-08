@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 from .models import Portfolio, GovernanceBoard, BoardMember, GovernanceStakeholder
 
 
@@ -58,11 +59,43 @@ class GovernanceStakeholderSerializer(serializers.ModelSerializer):
     user_email = serializers.EmailField(source='user.email', read_only=True)
     user_name = serializers.SerializerMethodField()
     quadrant = serializers.CharField(source='stakeholder_quadrant', read_only=True)
+    email = serializers.EmailField(write_only=True, required=False)
+    name = serializers.CharField(write_only=True, required=False)
+    organization = serializers.CharField(write_only=True, required=False)
     
     class Meta:
         model = GovernanceStakeholder
         fields = '__all__'
         read_only_fields = ['id', 'created_at']
+        extra_kwargs = {
+            'user': {'required': False},
+        }
     
     def get_user_name(self, obj):
         return obj.user.get_full_name() or obj.user.email
+
+    def validate(self, data):
+        if not data.get('user') and not data.get('email'):
+            raise serializers.ValidationError("Either 'user' or 'email' must be provided.")
+        return data
+
+    def create(self, validated_data):
+        User = get_user_model()
+        email = validated_data.pop('email', None)
+        name = validated_data.pop('name', '')
+        validated_data.pop('organization', None)
+        
+        if email and 'user' not in validated_data:
+            first_name = name.split()[0] if name else ''
+            last_name = ' '.join(name.split()[1:]) if name and len(name.split()) > 1 else ''
+            user, created = User.objects.get_or_create(
+                email=email,
+                defaults={
+                    'username': email,
+                    'first_name': first_name,
+                    'last_name': last_name,
+                }
+            )
+            validated_data['user'] = user
+        
+        return super().create(validated_data)

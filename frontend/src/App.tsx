@@ -29,8 +29,10 @@ import Index from "./pages/Index";
 import ReportsPage from "./pages/reports/ReportsPage";
 import CreatePortfolio from "./pages/governance/CreatePortfolio";
 import CreateBoard from "./pages/governance/CreateBoard";
+import BoardDetail from "./pages/governance/BoardDetail";
 import CreateStakeholder from "./pages/governance/CreateStakeholder";
 import Portfolios from "./pages/governance/Portfolios";
+import PortfolioDetail from "./pages/governance/PortfolioDetail";
 import GovernanceBoards from "./pages/governance/GovernanceBoards";
 import Stakeholders from "./pages/governance/Stakeholders";
 import Landing from "./pages/Landing";
@@ -774,7 +776,9 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
               {/* Governance */}
               <Route path="/governance/portfolios" element={<ProtectedPage><Portfolios /></ProtectedPage>} />
+              <Route path="/governance/portfolios/:id" element={<ProtectedPage><PortfolioDetail /></ProtectedPage>} />
               <Route path="/governance/boards" element={<ProtectedPage><GovernanceBoards /></ProtectedPage>} />
+              <Route path="/governance/boards/:id" element={<ProtectedPage><BoardDetail /></ProtectedPage>} />
               <Route path="/governance/stakeholders" element={<ProtectedPage><Stakeholders /></ProtectedPage>} />
               <Route path="/governance/portfolios/new" element={<ProtectedPage><CreatePortfolio /></ProtectedPage>} />
               <Route path="/governance/boards/new" element={<ProtectedPage><CreateBoard /></ProtectedPage>} />

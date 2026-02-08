@@ -795,6 +795,11 @@ export function AppSidebar() {
         url: "/governance/portfolios", 
         icon: Briefcase,
         feature: null,
+        children: [
+          { title: "Portfolios", url: "/governance/portfolios", icon: Briefcase },
+          { title: "Boards", url: "/governance/boards", icon: Shield },
+          { title: "Stakeholders", url: "/governance/stakeholders", icon: Users },
+        ],
       });
     }
 
@@ -889,6 +894,48 @@ export function AppSidebar() {
                 const isLocked = isItemLocked(item.feature);
                 const isActive = location.pathname === item.url || 
                                  (item.isProgramLink && isProgramContext);
+                const isGovActive = item.children && location.pathname.startsWith('/governance');
+
+                // Render collapsible for items with children
+                if (item.children && !isCollapsed) {
+                  return (
+                    <Collapsible key={item.url} defaultOpen={isGovActive} className="group/governance">
+                      <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton className={cn(
+                            isGovActive && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                          )}>
+                            <item.icon className="h-4 w-4" />
+                            <span>{item.title}</span>
+                            <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/governance:rotate-90" />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <SidebarMenuSub>
+                            {item.children.map((child) => (
+                              <SidebarMenuSubItem key={child.url}>
+                                <SidebarMenuSubButton asChild>
+                                  <NavLink
+                                    to={child.url}
+                                    end
+                                    className={({ isActive }) =>
+                                      isActive
+                                        ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                                        : "hover:bg-sidebar-accent/50 text-sidebar-foreground"
+                                    }
+                                  >
+                                    <child.icon className="h-4 w-4" />
+                                    <span>{child.title}</span>
+                                  </NavLink>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            ))}
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      </SidebarMenuItem>
+                    </Collapsible>
+                  );
+                }
 
                 return (
                   <SidebarMenuItem key={item.url}>
