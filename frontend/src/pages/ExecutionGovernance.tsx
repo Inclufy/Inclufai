@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, Save, Building2, AlertCircle, Users, Briefcase, Calendar } from "lucide-react";
 import { useState } from "react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const ExecutionGovernance = () => {
+  const { pt } = usePageTranslations();
   const [isStructureOpen, setIsStructureOpen] = useState(true);
   const [isImpactOpen, setIsImpactOpen] = useState(true);
 
@@ -20,7 +22,7 @@ const ExecutionGovernance = () => {
           </div>
           <Button className="bg-primary hover:bg-primary/90">
             <Save className="h-4 w-4 mr-2" />
-            Save
+            {pt("Save")}
           </Button>
         </div>
 

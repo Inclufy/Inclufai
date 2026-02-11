@@ -1,447 +1,78 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { useProject } from '@/hooks/useApi';
-import { kanbanApi, KanbanBoard as IKanbanBoard, KanbanColumn, KanbanCard } from '@/lib/kanbanApi';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  Columns, Plus, AlertTriangle, Clock, User, MoreHorizontal, 
-  Loader2, AlertCircle, Settings, Ban
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Loader2, Layout, ChevronLeft, ChevronRight, Ban, Clock, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 
 const KanbanBoard = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id);
-  
-  const [board, setBoard] = useState<IKanbanBoard | null>(null);
-  const [columns, setColumns] = useState<KanbanColumn[]>([]);
-  const [cards, setCards] = useState<KanbanCard[]>([]);
+  const [columns, setColumns] = useState<any[]>([]);
+  const [cards, setCards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  // Dialog state
-  const [showAddCardDialog, setShowAddCardDialog] = useState(false);
-  const [selectedColumn, setSelectedColumn] = useState<number | null>(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    card_type: 'task',
-    priority: 'medium',
-    due_date: '',
-    estimated_hours: '',
-  });
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  useEffect(() => {
-    if (id) {
-      loadData();
-    }
-  }, [id]);
+  const fetchData = async () => { try { const [cRes, crRes] = await Promise.all([fetch(`/api/v1/projects/${id}/kanban/columns/`, { headers }), fetch(`/api/v1/projects/${id}/kanban/cards/`, { headers })]); if (cRes.ok) { const d = await cRes.json(); setColumns((Array.isArray(d) ? d : d.results || []).sort((a: any, b: any) => (a.order || 0) - (b.order || 0))); } if (crRes.ok) { const d = await crRes.json(); setCards(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
+  useEffect(() => { fetchData(); }, [id]);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Initialize board if not exists
-      const boardRes = await kanbanApi.board.initialize(id!);
-      setBoard(boardRes);
-      
-      // Fetch columns and cards
-      const [columnsRes, cardsRes] = await Promise.all([
-        kanbanApi.columns.getAll(id!),
-        kanbanApi.cards.getAll(id!),
-      ]);
-      
-      setColumns(columnsRes);
-      setCards(cardsRes);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load board');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const moveCard = async (cardId: number, targetColumnId: number) => { try { const r = await fetch(`/api/v1/projects/${id}/kanban/cards/${cardId}/move/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify({ column: targetColumnId }) }); if (r.ok) fetchData(); else { const err = await r.json().catch(() => ({})); toast.error(err.detail || err.error || "Verplaatsen mislukt"); } } catch { toast.error("Verplaatsen mislukt"); } };
+  const toggleBlocked = async (cardId: number) => { try { const r = await fetch(`/api/v1/projects/${id}/kanban/cards/${cardId}/toggle_blocked/`, { method: "POST", headers: jsonHeaders }); if (r.ok) fetchData(); } catch { toast.error("Toggle mislukt"); } };
 
-  const handleCreateCard = async () => {
-    if (!selectedColumn) return;
-    
-    try {
-      const data: Partial<KanbanCard> = {
-        column: selectedColumn,
-        title: formData.title,
-        description: formData.description || undefined,
-        card_type: formData.card_type as any,
-        priority: formData.priority as any,
-        due_date: formData.due_date || undefined,
-        estimated_hours: formData.estimated_hours ? parseFloat(formData.estimated_hours) : undefined,
-      };
-      
-      await kanbanApi.cards.create(id!, data);
-      setShowAddCardDialog(false);
-      setFormData({
-        title: '',
-        description: '',
-        card_type: 'task',
-        priority: 'medium',
-        due_date: '',
-        estimated_hours: '',
-      });
-      loadData();
-    } catch (err: any) {
-      alert(err.message || 'Failed to create card');
-    }
-  };
+  const priorityColors: Record<string, string> = { critical: "border-l-red-500", high: "border-l-orange-400", medium: "border-l-yellow-400", low: "border-l-green-400" };
+  const typeColors: Record<string, string> = { feature: "bg-blue-100 text-blue-700", bug: "bg-red-100 text-red-700", task: "bg-gray-100 text-gray-700", improvement: "bg-purple-100 text-purple-700" };
 
-  const handleMoveCard = async (cardId: number, newColumnId: number) => {
-    try {
-      await kanbanApi.cards.move(id!, cardId, { column_id: newColumnId });
-      loadData();
-    } catch (err: any) {
-      alert(err.message || 'Failed to move card');
-    }
-  };
-
-  const handleToggleBlocked = async (cardId: number) => {
-    try {
-      const reason = prompt('Block reason (leave empty to unblock):');
-      await kanbanApi.cards.toggleBlocked(id!, cardId, reason || undefined);
-      loadData();
-    } catch (err: any) {
-      alert(err.message || 'Failed to toggle blocked status');
-    }
-  };
-
-  const getColumnCards = (columnId: number) => cards.filter(c => c.column === columnId);
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'critical': return 'bg-red-100 text-red-700 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-700 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'bug': return 'bg-red-500';
-      case 'feature': return 'bg-green-500';
-      case 'improvement': return 'bg-blue-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  // Calculate metrics
-  const totalCards = cards.length;
-  const blockedCards = cards.filter(c => c.is_blocked).length;
-  const inProgressCards = cards.filter(c => {
-    const col = columns.find(col => col.id === c.column);
-    return col?.column_type === 'in_progress';
-  }).length;
-
-  if (loading) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader />
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader />
-        <div className="p-6">
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="pt-4 flex items-center gap-2 text-red-600">
-              <AlertCircle className="h-5 w-5" />
-              <span>{error}</span>
-              <Button variant="outline" size="sm" onClick={loadData}>Retry</Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
-    <div className="min-h-full bg-background">
-      <ProjectHeader />
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Columns className="h-6 w-6 text-blue-600" />
-              Kanban Board
-            </h1>
-            <p className="text-muted-foreground">Visualize work and limit WIP</p>
-          </div>
-          <Button onClick={() => { setSelectedColumn(columns[0]?.id); setShowAddCardDialog(true); }}>
-            <Plus className="h-4 w-4 mr-2" />Add Card
-          </Button>
-        </div>
-
-        {/* Quick Metrics */}
-        <div className="grid grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Total Cards</p>
-              <p className="text-2xl font-bold">{totalCards}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">In Progress</p>
-              <p className="text-2xl font-bold text-blue-600">{inProgressCards}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Blocked</p>
-              <p className="text-2xl font-bold text-red-600">{blockedCards}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Columns</p>
-              <p className="text-2xl font-bold">{columns.length}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Board */}
-        <div className="flex gap-4 overflow-x-auto pb-4">
-          {columns.map((column) => {
-            const columnCards = getColumnCards(column.id);
-            const isOverWip = column.wip_limit && columnCards.length > column.wip_limit;
-            
-            return (
-              <div 
-                key={column.id} 
-                className={`flex-shrink-0 w-72 rounded-lg ${isOverWip ? 'ring-2 ring-red-500' : ''}`}
-                style={{ backgroundColor: column.color + '20' }}
-              >
-                <div className="p-3 border-b" style={{ borderColor: column.color }}>
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-semibold">{column.name}</h3>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary">{columnCards.length}</Badge>
-                      {column.wip_limit && (
-                        <Badge variant={isOverWip ? 'destructive' : 'outline'}>
-                          WIP: {column.wip_limit}
-                        </Badge>
-                      )}
-                    </div>
+    <div className="min-h-full bg-background"><ProjectHeader />
+      <div className="p-6 space-y-4">
+        <div className="flex items-center gap-3"><Layout className="h-6 w-6 text-violet-500" /><h1 className="text-2xl font-bold">Kanban Board</h1></div>
+        {columns.length === 0 ? <Card className="p-8 text-center"><Layout className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">No board configured yet</h3><p className="text-muted-foreground">Initialize from dashboard or configure columns</p></Card> : (
+          <div className="flex gap-4 overflow-x-auto pb-4" style={{ minHeight: "400px" }}>
+            {columns.map((col, ci) => {
+              const colCards = cards.filter(c => c.column === col.id).sort((a, b) => (a.order || 0) - (b.order || 0));
+              const isOverWip = col.wip_limit && colCards.length > col.wip_limit;
+              return (
+                <div key={col.id} className="flex-shrink-0 w-72">
+                  <div className={`rounded-t-lg p-3 flex items-center justify-between ${isOverWip ? "bg-red-100 border-red-300" : "bg-muted"}`}>
+                    <div className="flex items-center gap-2"><span className="font-semibold text-sm">{col.name}</span><Badge variant="outline" className="text-xs">{colCards.length}</Badge></div>
+                    {col.wip_limit && <Badge variant={isOverWip ? "destructive" : "outline"} className="text-xs">WIP: {col.wip_limit}</Badge>}
                   </div>
-                  {isOverWip && (
-                    <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                      <AlertTriangle className="h-3 w-3" />
-                      WIP limit exceeded!
-                    </p>
-                  )}
-                </div>
-                
-                <div className="p-3 space-y-3 min-h-[400px]">
-                  {columnCards.map((card) => (
-                    <Card 
-                      key={card.id} 
-                      className={`cursor-pointer hover:shadow-md transition-shadow ${card.is_blocked ? 'border-red-300 bg-red-50' : ''}`}
-                    >
-                      <CardContent className="p-3">
-                        {card.is_blocked && (
-                          <div className="flex items-center gap-1 text-red-600 text-xs mb-2">
-                            <AlertTriangle className="h-3 w-3" />
-                            <span>Blocked: {card.blocked_reason || 'No reason'}</span>
+                  <div className="bg-muted/30 rounded-b-lg p-2 space-y-2 min-h-[300px] border border-t-0">
+                    {colCards.map(card => {
+                      const prevCol = ci > 0 ? columns[ci - 1] : null;
+                      const nextCol = ci < columns.length - 1 ? columns[ci + 1] : null;
+                      return (
+                        <div key={card.id} className={`bg-background rounded-lg border-l-4 ${card.is_blocked ? "border-l-red-500 bg-red-50" : priorityColors[card.priority] || "border-l-gray-300"} p-3 shadow-sm`}>
+                          <div className="flex items-center gap-1 mb-1 flex-wrap">
+                            {card.card_type && <Badge className={`text-xs ${typeColors[card.card_type] || ""}`}>{card.card_type}</Badge>}
+                            {card.is_blocked && <Badge variant="destructive" className="text-xs gap-1"><Ban className="h-3 w-3" /> Blocked</Badge>}
                           </div>
-                        )}
-                        
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${getTypeColor(card.card_type)}`} />
-                            <Badge className={`${getPriorityColor(card.priority)} text-xs`}>
-                              {card.priority}
-                            </Badge>
+                          <p className="text-sm font-medium mb-2">{card.title}</p>
+                          {card.assigned_to_name && <p className="text-xs text-muted-foreground mb-2">👤 {card.assigned_to_name}</p>}
+                          <div className="flex items-center justify-between">
+                            <div className="flex gap-1">
+                              {prevCol && <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => moveCard(card.id, prevCol.id)}><ChevronLeft className="h-3.5 w-3.5" /></Button>}
+                              {nextCol && <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => moveCard(card.id, nextCol.id)}><ChevronRight className="h-3.5 w-3.5" /></Button>}
+                            </div>
+                            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => toggleBlocked(card.id)}>{card.is_blocked ? "Unblock" : "Block"}</Button>
                           </div>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-6 w-6"
-                            onClick={() => handleToggleBlocked(card.id)}
-                          >
-                            <Ban className="h-3 w-3" />
-                          </Button>
                         </div>
-                        
-                        <h4 className="font-medium text-sm mb-2">{card.title}</h4>
-                        
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          {card.due_date && (
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {card.due_date}
-                            </div>
-                          )}
-                          {card.assignee_name && (
-                            <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center text-white text-xs">
-                              {card.assignee_name.charAt(0)}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Move buttons */}
-                        <div className="flex gap-1 mt-2">
-                          {columns.map((col, idx) => {
-                            if (col.id === card.column) return null;
-                            const currentIdx = columns.findIndex(c => c.id === card.column);
-                            const isNext = idx === currentIdx + 1;
-                            const isPrev = idx === currentIdx - 1;
-                            if (!isNext && !isPrev) return null;
-                            
-                            return (
-                              <Button 
-                                key={col.id}
-                                size="sm" 
-                                variant="ghost" 
-                                className="text-xs h-6"
-                                onClick={() => handleMoveCard(card.id, col.id)}
-                              >
-                                {isNext ? '→' : '←'} {col.name}
-                              </Button>
-                            );
-                          })}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                  
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start text-muted-foreground"
-                    onClick={() => { setSelectedColumn(column.id); setShowAddCardDialog(true); }}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />Add
-                  </Button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Add Card Dialog */}
-      <Dialog open={showAddCardDialog} onOpenChange={setShowAddCardDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Card</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Column</label>
-              <Select 
-                value={selectedColumn?.toString()} 
-                onValueChange={(val) => setSelectedColumn(parseInt(val))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select column" />
-                </SelectTrigger>
-                <SelectContent>
-                  {columns.map(col => (
-                    <SelectItem key={col.id} value={col.id.toString()}>
-                      {col.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium">Title</label>
-              <Input 
-                value={formData.title}
-                onChange={(e) => setFormData({...formData, title: e.target.value})}
-                placeholder="Card title"
-              />
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium">Description</label>
-              <Textarea 
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                placeholder="Describe the work..."
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Type</label>
-                <Select value={formData.card_type} onValueChange={(val) => setFormData({...formData, card_type: val})}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="task">Task</SelectItem>
-                    <SelectItem value="bug">Bug</SelectItem>
-                    <SelectItem value="feature">Feature</SelectItem>
-                    <SelectItem value="improvement">Improvement</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium">Priority</label>
-                <Select value={formData.priority} onValueChange={(val) => setFormData({...formData, priority: val})}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="critical">Critical</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Due Date</label>
-                <Input 
-                  type="date"
-                  value={formData.due_date}
-                  onChange={(e) => setFormData({...formData, due_date: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Estimated Hours</label>
-                <Input 
-                  type="number"
-                  value={formData.estimated_hours}
-                  onChange={(e) => setFormData({...formData, estimated_hours: e.target.value})}
-                  placeholder="4"
-                />
-              </div>
-            </div>
+              );
+            })}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddCardDialog(false)}>Cancel</Button>
-            <Button onClick={handleCreateCard} disabled={!formData.title || !selectedColumn}>Create Card</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-          {/* Methodology Help Panel */}
-          <MethodologyHelpPanel methodology="kanban" />
+        )}
+      </div>
     </div>
   );
 };

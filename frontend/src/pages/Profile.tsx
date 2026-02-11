@@ -8,8 +8,10 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { User, Shield, CreditCard, LogOut, Mail, Calendar } from 'lucide-react';
 import SubscriptionTab from '@/components/profile/SubscriptionTab';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const PersonalInfoTab = () => {
+  const { pt } = usePageTranslations();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -48,7 +50,7 @@ const PersonalInfoTab = () => {
             <div className="flex items-center gap-3">
               <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               <div>
-                <p className="font-medium text-gray-900 dark:text-gray-100">Role</p>
+                <p className="font-medium text-gray-900 dark:text-gray-100">{pt("Role")}</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Your account role</p>
               </div>
             </div>
@@ -66,7 +68,7 @@ const PersonalInfoTab = () => {
               </div>
             </div>
             <Badge className="bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20">
-              Active
+              {pt("Active")}
             </Badge>
           </div>
         </div>

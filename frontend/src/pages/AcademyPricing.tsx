@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // ============================================
 // BRAND COLORS
@@ -36,6 +37,7 @@ const BRAND = {
 // LOGO COMPONENT
 // ============================================
 const ProjeXtPalLogo = ({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) => {
+  const { pt } = usePageTranslations();
   const sizes = {
     sm: { width: 48, height: 20, text: 'text-lg', gap: 'gap-2' },
     md: { width: 64, height: 26, text: 'text-xl', gap: 'gap-3' },
@@ -574,7 +576,7 @@ const AcademyPricing = () => {
                   <th className="text-left py-4 px-4 font-medium">{isNL ? 'Functie' : 'Feature'}</th>
                   <th className="py-4 px-4 text-center font-medium">Free</th>
                   <th className="py-4 px-4 text-center font-medium" style={{ color: BRAND.purple }}>Professional</th>
-                  <th className="py-4 px-4 text-center font-medium">Team</th>
+                  <th className="py-4 px-4 text-center font-medium">{pt("Team")}</th>
                   <th className="py-4 px-4 text-center font-medium">Enterprise</th>
                 </tr>
               </thead>

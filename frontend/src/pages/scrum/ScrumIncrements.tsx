@@ -1,281 +1,57 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  Package, Rocket, CheckCircle, Plus, Calendar, 
-  TrendingUp, ArrowLeft, Loader2, ExternalLink
-} from 'lucide-react';
-
-interface Increment {
-  id: number;
-  version: string;
-  sprint_name: string;
-  description: string;
-  is_released: boolean;
-  release_date?: string;
-  meets_dod: boolean;
-  test_coverage?: number;
-  completed_tasks_count: number;
-}
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, Plus, Package, Trash2, Pencil, Rocket } from "lucide-react";
+import { toast } from "sonner";
 
 const ScrumIncrements = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const [loading, setLoading] = useState(false);
-  const [increments, setIncrements] = useState<Increment[]>([
-    {
-      id: 1,
-      version: 'v1.2.0',
-      sprint_name: 'Sprint 4',
-      description: 'User authentication, profile management, password reset',
-      is_released: true,
-      release_date: '2026-01-15',
-      meets_dod: true,
-      test_coverage: 87.5,
-      completed_tasks_count: 12
-    },
-    {
-      id: 2,
-      version: 'v1.3.0',
-      sprint_name: 'Sprint 5',
-      description: 'Pricing system, subscription management, payment integration',
-      is_released: false,
-      meets_dod: true,
-      test_coverage: 92.3,
-      completed_tasks_count: 15
-    }
-  ]);
-  const [showNewIncrement, setShowNewIncrement] = useState(false);
-  const [newIncrement, setNewIncrement] = useState({
-    version: '',
-    description: '',
-    sprint_name: ''
-  });
+  const [increments, setIncrements] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ name: "", description: "", version: "" });
 
-  const createIncrement = async () => {
-    // TODO: API call
-    const increment: Increment = {
-      id: increments.length + 1,
-      ...newIncrement,
-      is_released: false,
-      meets_dod: false,
-      completed_tasks_count: 0
-    };
-    setIncrements([increment, ...increments]);
-    setNewIncrement({ version: '', description: '', sprint_name: '' });
-    setShowNewIncrement(false);
-  };
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  const releaseIncrement = async (incrementId: number) => {
-    setIncrements(increments.map(inc => 
-      inc.id === incrementId 
-        ? { ...inc, is_released: true, release_date: new Date().toISOString().split('T')[0] }
-        : inc
-    ));
-  };
+  const fetchData = async () => { try { const r = await fetch(`/api/v1/projects/${id}/scrum/increments/`, { headers }); if (r.ok) { const d = await r.json(); setIncrements(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
+  useEffect(() => { fetchData(); }, [id]);
+
+  const openCreate = () => { setEditing(null); setForm({ name: "", description: "", version: "" }); setDialogOpen(true); };
+  const openEdit = (inc: any) => { setEditing(inc); setForm({ name: inc.name || "", description: inc.description || "", version: inc.version || "" }); setDialogOpen(true); };
+  const handleSave = async () => { if (!form.name) { toast.error("Naam verplicht"); return; } setSubmitting(true); try { const url = editing ? `/api/v1/projects/${id}/scrum/increments/${editing.id}/` : `/api/v1/projects/${id}/scrum/increments/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(form) }); if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } finally { setSubmitting(false); } };
+  const handleRelease = async (incId: number) => { try { const r = await fetch(`/api/v1/projects/${id}/scrum/increments/${incId}/release/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Released!"); fetchData(); } } catch { toast.error("Release mislukt"); } };
+  const handleDelete = async (incId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`/api/v1/projects/${id}/scrum/increments/${incId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
+
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
-    <div className="min-h-full bg-background">
-      <ProjectHeader />
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <Link to={`/projects/${id}/scrum/overview`}>
-              <Button variant="ghost" size="sm" className="mb-2">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Terug naar Overview
-              </Button>
-            </Link>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Package className="h-6 w-6 text-purple-600" />
-              Product Increments
-            </h1>
-            <p className="text-muted-foreground">Track opgeleverde werk en releases</p>
-          </div>
-
-          <Dialog open={showNewIncrement} onOpenChange={setShowNewIncrement}>
-            <DialogTrigger asChild>
-              <Button className="bg-purple-600 hover:bg-purple-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Nieuw Increment
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Nieuw Increment Maken</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div>
-                  <label className="text-sm font-medium">Versie</label>
-                  <Input
-                    value={newIncrement.version}
-                    onChange={(e) => setNewIncrement({ ...newIncrement, version: e.target.value })}
-                    placeholder="v1.4.0"
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Sprint</label>
-                  <Input
-                    value={newIncrement.sprint_name}
-                    onChange={(e) => setNewIncrement({ ...newIncrement, sprint_name: e.target.value })}
-                    placeholder="Sprint 6"
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Beschrijving</label>
-                  <Textarea
-                    value={newIncrement.description}
-                    onChange={(e) => setNewIncrement({ ...newIncrement, description: e.target.value })}
-                    placeholder="Wat zit er in dit increment..."
-                    rows={3}
-                    className="mt-1"
-                  />
-                </div>
-                <Button 
-                  onClick={createIncrement} 
-                  className="w-full bg-purple-600 hover:bg-purple-700"
-                  disabled={!newIncrement.version || !newIncrement.description}
-                >
-                  Increment Aanmaken
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {/* Summary Stats */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Totaal Increments</p>
-                  <p className="text-2xl font-bold">{increments.length}</p>
-                </div>
-                <Package className="h-8 w-8 text-purple-500 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Released</p>
-                  <p className="text-2xl font-bold">{increments.filter(i => i.is_released).length}</p>
-                </div>
-                <Rocket className="h-8 w-8 text-green-500 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">DoD Compliant</p>
-                  <p className="text-2xl font-bold">{increments.filter(i => i.meets_dod).length}</p>
-                </div>
-                <CheckCircle className="h-8 w-8 text-blue-500 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Increments List */}
-        <div className="space-y-4">
-          {increments.map((increment) => (
-            <Card key={increment.id} className={increment.is_released ? 'border-green-200 bg-green-50' : ''}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Package className="h-5 w-5 text-purple-600" />
-                    <div>
-                      <CardTitle className="text-lg">{increment.version}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{increment.sprint_name}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    {increment.is_released ? (
-                      <Badge className="bg-green-600">
-                        <Rocket className="h-3 w-3 mr-1" />
-                        Released
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-yellow-600">In Development</Badge>
-                    )}
-                    {increment.meets_dod && (
-                      <Badge variant="outline" className="border-blue-600 text-blue-600">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        DoD ✓
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm mb-4">{increment.description}</p>
-                
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Voltooide Tasks</p>
-                    <p className="text-lg font-semibold">{increment.completed_tasks_count}</p>
-                  </div>
-                  {increment.test_coverage !== undefined && (
-                    <div>
-                      <p className="text-xs text-muted-foreground">Test Coverage</p>
-                      <p className="text-lg font-semibold">{increment.test_coverage}%</p>
-                    </div>
-                  )}
-                  {increment.release_date && (
-                    <div>
-                      <p className="text-xs text-muted-foreground">Release Datum</p>
-                      <p className="text-lg font-semibold">
-                        {new Date(increment.release_date).toLocaleDateString('nl-NL')}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {!increment.is_released && (
-                  <Button 
-                    onClick={() => releaseIncrement(increment.id)}
-                    variant="outline"
-                    className="border-green-600 text-green-600 hover:bg-green-50"
-                  >
-                    <Rocket className="h-4 w-4 mr-2" />
-                    Release to Production
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {increments.length === 0 && (
-          <Card className="border-dashed">
-            <CardContent className="py-12 text-center">
-              <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground mb-4">Nog geen increments gemaakt</p>
-              <Button onClick={() => setShowNewIncrement(true)} variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                Maak je eerste increment
-              </Button>
-            </CardContent>
-          </Card>
+    <div className="min-h-full bg-background"><ProjectHeader />
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Package className="h-6 w-6 text-green-500" /><h1 className="text-2xl font-bold">{pt("Increments")}</h1><Badge variant="outline">{increments.length}</Badge></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Create")}</Button></div>
+        {increments.length === 0 ? <Card className="p-8 text-center"><Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No increments yet")}</h3></Card> : (
+          <div className="space-y-3">{increments.map(inc => (<Card key={inc.id}><CardContent className="p-4 flex items-center justify-between"><div><div className="flex items-center gap-2 mb-1"><p className="font-medium">{inc.name}</p>{inc.version && <Badge variant="outline">{inc.version}</Badge>}<Badge variant={inc.status === "released" ? "default" : "secondary"}>{inc.status}</Badge></div>{inc.description && <p className="text-sm text-muted-foreground">{inc.description}</p>}</div><div className="flex gap-1">{inc.status !== "released" && <Button variant="ghost" size="sm" onClick={() => handleRelease(inc.id)}><Rocket className="h-4 w-4 text-blue-500" /></Button>}<Button variant="ghost" size="sm" onClick={() => openEdit(inc)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(inc.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button></div></CardContent></Card>))}</div>
         )}
       </div>
-      <MethodologyHelpPanel methodology="agile" />
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Create")} Increment</DialogTitle></DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2"><Label>{pt("Name")} *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+          <div className="space-y-2"><Label>Version</Label><Input value={form.version} onChange={(e) => setForm({ ...form, version: e.target.value })} /></div>
+          <div className="space-y-2"><Label>{pt("Description")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+          <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleSave} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div>
+        </div>
+      </DialogContent></Dialog>
     </div>
   );
 };

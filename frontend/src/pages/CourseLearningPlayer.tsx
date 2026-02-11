@@ -34,6 +34,7 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAcademyUser } from "@/hooks/useAcademyUser";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // ============================================
 // BRAND COLORS
@@ -53,6 +54,7 @@ const BRAND = {
 // LOGO COMPONENT
 // ============================================
 const ProjeXtPalLogo = ({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) => {
+  const { pt } = usePageTranslations();
   const sizes = {
     sm: { width: 40, height: 16, text: 'text-base', gap: 'gap-1.5' },
     md: { width: 48, height: 20, text: 'text-lg', gap: 'gap-2' },
@@ -1251,7 +1253,7 @@ const CourseLearningPlayer = () => {
                         </div>
                         <Button variant="outline" size="sm">
                           <Download className="w-4 h-4 mr-2" />
-                          Download
+                          {pt("Download")}
                         </Button>
                       </CardContent>
                     </Card>

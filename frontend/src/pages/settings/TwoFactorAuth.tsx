@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Shield, ShieldCheck, ShieldOff, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 interface StatusResponse {
   has_2fa: boolean;
@@ -17,6 +18,7 @@ interface SetupResponse {
 }
 
 const TwoFactorAuth = () => {
+  const { pt } = usePageTranslations();
   const [has2FA, setHas2FA] = useState(false);
   const [loading, setLoading] = useState(true);
   const [setupMode, setSetupMode] = useState(false);
@@ -144,7 +146,7 @@ const TwoFactorAuth = () => {
                 <div className="flex gap-2">
                   <Input type="text" placeholder="000000" maxLength={6} value={verificationCode} onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))} className="w-32" />
                   <Button onClick={verifySetup} disabled={submitting}>{submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verify & Enable'}</Button>
-                  <Button variant="outline" onClick={() => setSetupMode(false)}>Cancel</Button>
+                  <Button variant="outline" onClick={() => setSetupMode(false)}>{pt("Cancel")}</Button>
                 </div>
               </div>
             </div>

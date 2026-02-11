@@ -1,305 +1,44 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  Users, Plus, Edit2, Trash2, Crown, FileText, 
-  Palette, Code, TestTube, Rocket, Loader2
-} from 'lucide-react';
-
-interface TeamMember {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  phase: string;
-  allocation: number;
-  responsibilities: string[];
-}
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Plus, Users, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 const WaterfallTeam = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  
-  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showDialog, setShowDialog] = useState(false);
-  
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    role: 'developer',
-    phase: 'development',
-    allocation: '100',
-  });
-
-  const roles = [
-    { value: 'project_manager', label: 'Project Manager', icon: Crown, color: 'bg-amber-500' },
-    { value: 'business_analyst', label: 'Business Analyst', icon: FileText, color: 'bg-blue-500' },
-    { value: 'architect', label: 'Solution Architect', icon: Palette, color: 'bg-purple-500' },
-    { value: 'developer', label: 'Developer', icon: Code, color: 'bg-orange-500' },
-    { value: 'tester', label: 'QA Tester', icon: TestTube, color: 'bg-green-500' },
-    { value: 'devops', label: 'DevOps Engineer', icon: Rocket, color: 'bg-red-500' },
-  ];
-
-  const phases = [
-    { value: 'requirements', label: 'Requirements' },
-    { value: 'design', label: 'Design' },
-    { value: 'development', label: 'Development' },
-    { value: 'testing', label: 'Testing' },
-    { value: 'deployment', label: 'Deployment' },
-    { value: 'maintenance', label: 'Maintenance' },
-  ];
-
-  useEffect(() => {
-    loadTeam();
-  }, [id]);
-
-  const loadTeam = async () => {
-    setLoading(true);
-    setTimeout(() => {
-      setMembers([
-        { id: 1, name: 'Robert Smith', email: 'robert@company.com', role: 'project_manager', phase: 'all', allocation: 100, responsibilities: ['Project Planning', 'Stakeholder Communication', 'Risk Management'] },
-        { id: 2, name: 'Anna Martinez', email: 'anna@company.com', role: 'business_analyst', phase: 'requirements', allocation: 100, responsibilities: ['Requirements Gathering', 'Documentation', 'User Stories'] },
-        { id: 3, name: 'David Chen', email: 'david@company.com', role: 'architect', phase: 'design', allocation: 80, responsibilities: ['System Architecture', 'Technical Design', 'Code Reviews'] },
-        { id: 4, name: 'Emma Wilson', email: 'emma@company.com', role: 'developer', phase: 'development', allocation: 100, responsibilities: ['Frontend Development', 'API Integration'] },
-        { id: 5, name: 'James Brown', email: 'james@company.com', role: 'developer', phase: 'development', allocation: 100, responsibilities: ['Backend Development', 'Database Design'] },
-        { id: 6, name: 'Sarah Johnson', email: 'sarah@company.com', role: 'tester', phase: 'testing', allocation: 100, responsibilities: ['Test Planning', 'Automation', 'UAT Coordination'] },
-        { id: 7, name: 'Mike Davis', email: 'mike@company.com', role: 'devops', phase: 'deployment', allocation: 50, responsibilities: ['CI/CD Pipeline', 'Infrastructure', 'Monitoring'] },
-      ]);
-      setLoading(false);
-    }, 500);
-  };
-
-  const handleSave = () => {
-    setShowDialog(false);
-    setForm({ name: '', email: '', role: 'developer', phase: 'development', allocation: '100' });
-  };
-
-  const handleDelete = (memberId: number) => {
-    if (!confirm('Remove this team member?')) return;
-    setMembers(members.filter(m => m.id !== memberId));
-  };
-
-  const getRoleInfo = (roleValue: string) => {
-    return roles.find(r => r.value === roleValue) || roles[3];
-  };
-
-  const getPhaseLabel = (phaseValue: string) => {
-    if (phaseValue === 'all') return 'All Phases';
-    return phases.find(p => p.value === phaseValue)?.label || phaseValue;
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader />
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        </div>
-      </div>
-    );
-  }
-
-  const membersByRole = roles.map(role => ({
-    ...role,
-    members: members.filter(m => m.role === role.value)
-  })).filter(r => r.members.length > 0);
-
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ name: "", role: "developer", email: "", department: "" });
+  const token = localStorage.getItem("access_token"); const headers: Record<string, string> = { Authorization: `Bearer ${token}` }; const jsonHeaders = { ...headers, "Content-Type": "application/json" };
+  const fetchData = async () => { try { const r = await fetch(`/api/v1/projects/${id}/waterfall/team/`, { headers }); if (r.ok) { const d = await r.json(); setMembers(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
+  useEffect(() => { fetchData(); }, [id]);
+  const openCreate = () => { setEditing(null); setForm({ name: "", role: "developer", email: "", department: "" }); setDialogOpen(true); };
+  const openEdit = (m: any) => { setEditing(m); setForm({ name: m.name || "", role: m.role || "developer", email: m.email || "", department: m.department || "" }); setDialogOpen(true); };
+  const handleSave = async () => { if (!form.name) { toast.error("Naam verplicht"); return; } setSubmitting(true); try { const url = editing ? `/api/v1/projects/${id}/waterfall/team/${editing.id}/` : `/api/v1/projects/${id}/waterfall/team/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(form) }); if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } finally { setSubmitting(false); } };
+  const handleDelete = async (mId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`/api/v1/projects/${id}/waterfall/team/${mId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
+  const roleColors: Record<string, string> = { project_manager: "bg-purple-100 text-purple-700", developer: "bg-green-100 text-green-700", tester: "bg-amber-100 text-amber-700", analyst: "bg-blue-100 text-blue-700", designer: "bg-pink-100 text-pink-700" };
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
   return (
-    <div className="min-h-full bg-background">
-      <ProjectHeader />
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Users className="h-6 w-6 text-blue-600" />
-              Project Team
-            </h1>
-            <p className="text-muted-foreground">Team members by role and phase</p>
-          </div>
-          <Button onClick={() => setShowDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Member
-          </Button>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Team Size</p>
-              <p className="text-2xl font-bold">{members.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Total FTE</p>
-              <p className="text-2xl font-bold">
-                {(members.reduce((sum, m) => sum + m.allocation, 0) / 100).toFixed(1)}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Developers</p>
-              <p className="text-2xl font-bold">{members.filter(m => m.role === 'developer').length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Current Phase</p>
-              <p className="text-lg font-bold text-blue-600">Development</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Team by Role */}
-        {membersByRole.map((roleGroup) => (
-          <Card key={roleGroup.value}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <roleGroup.icon className={`h-5 w-5 ${roleGroup.color.replace('bg-', 'text-')}`} />
-                {roleGroup.label}
-                <Badge variant="outline">{roleGroup.members.length}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                {roleGroup.members.map((member) => (
-                  <div key={member.id} className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/50">
-                    <Avatar className="h-12 w-12">
-                      <AvatarFallback className={roleGroup.color + ' text-white'}>
-                        {member.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{member.name}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {member.allocation}%
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{member.email}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge className="bg-blue-100 text-blue-700 text-xs">
-                          {getPhaseLabel(member.phase)}
-                        </Badge>
-                      </div>
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {member.responsibilities.map((resp, idx) => (
-                          <Badge key={idx} variant="outline" className="text-xs">{resp}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="icon">
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-red-600" onClick={() => handleDelete(member.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-
-        {/* RACI Matrix Hint */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="pt-4">
-            <h3 className="font-semibold text-blue-900 mb-2">Waterfall Team Structure</h3>
-            <ul className="space-y-1 text-sm text-blue-800">
-              <li>• Clear role definitions with specific phase assignments</li>
-              <li>• Resources allocated based on project phase</li>
-              <li>• Formal handoffs between phase teams</li>
-              <li>• Document responsibilities in RACI matrix</li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Add Member Dialog */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Team Member</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Name</label>
-              <Input 
-                value={form.name}
-                onChange={(e) => setForm({...form, name: e.target.value})}
-                placeholder="Full name"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Email</label>
-              <Input 
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({...form, email: e.target.value})}
-                placeholder="email@company.com"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Role</label>
-              <Select value={form.role} onValueChange={(v) => setForm({...form, role: v})}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map(role => (
-                    <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-sm font-medium">Primary Phase</label>
-              <Select value={form.phase} onValueChange={(v) => setForm({...form, phase: v})}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Phases</SelectItem>
-                  {phases.map(phase => (
-                    <SelectItem key={phase.value} value={phase.value}>{phase.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-sm font-medium">Allocation (%)</label>
-              <Input 
-                type="number"
-                value={form.allocation}
-                onChange={(e) => setForm({...form, allocation: e.target.value})}
-                min="0"
-                max="100"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={!form.name || !form.email}>Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-          {/* Methodology Help Panel */}
-          <MethodologyHelpPanel methodology="waterfall" />
+    <div className="min-h-full bg-background"><ProjectHeader /><div className="p-6 space-y-6">
+      <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Users className="h-6 w-6 text-blue-500" /><h1 className="text-2xl font-bold">{pt("Team")}</h1><Badge variant="outline">{members.length}</Badge></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add Member")}</Button></div>
+      {members.length === 0 ? <Card className="p-8 text-center"><Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No team members yet")}</h3></Card> : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{members.map(m => (<Card key={m.id} className="group relative"><CardContent className="p-4"><div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex gap-1"><Button variant="ghost" size="sm" onClick={() => openEdit(m)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(m.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div><div className="flex items-center gap-3 mb-2"><div className="h-10 w-10 rounded-full bg-cyan-100 flex items-center justify-center"><span className="font-semibold text-cyan-600">{m.name?.charAt(0)?.toUpperCase()}</span></div><div><p className="font-medium">{m.name}</p>{m.email && <p className="text-xs text-muted-foreground">{m.email}</p>}</div></div><Badge className={`text-xs ${roleColors[m.role] || "bg-gray-100 text-gray-700"}`}>{m.role?.replace("_", " ")}</Badge>{m.department && <span className="text-xs text-muted-foreground ml-2">{m.department}</span>}</CardContent></Card>))}</div>
+      )}
+    </div>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} Member</DialogTitle></DialogHeader><div className="space-y-4"><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>{pt("Name")} *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div><div className="space-y-2"><Label>{pt("Email")}</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>{pt("Role")}</Label><Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="project_manager">Project Manager</SelectItem><SelectItem value="analyst">Analyst</SelectItem><SelectItem value="designer">Designer</SelectItem><SelectItem value="developer">Developer</SelectItem><SelectItem value="tester">Tester</SelectItem></SelectContent></Select></div><div className="space-y-2"><Label>Department</Label><Input value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} /></div></div><div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleSave} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div></div></DialogContent></Dialog>
     </div>
   );
 };
-
 export default WaterfallTeam;

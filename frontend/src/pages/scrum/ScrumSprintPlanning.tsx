@@ -1,280 +1,70 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  Calendar, Clock, Target, CheckCircle, 
-  Play, Save, Loader2, Plus, X, ArrowLeft
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Loader2, Plus, Target, Pencil, Trash2, Play, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 
 const ScrumSprintPlanning = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [planning, setPlanning] = useState({
-    sprint_name: '',
-    scheduled_date: '',
-    duration_minutes: 120,
-    team_capacity: 0,
-    committed_story_points: 0,
-    sprint_goal: '',
-    success_criteria: [] as string[],
-    decisions: [] as string[],
-    notes: ''
-  });
-  const [newCriteria, setNewCriteria] = useState('');
-  const [newDecision, setNewDecision] = useState('');
+  const [plannings, setPlannings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ sprint_goal: "", capacity_hours: "", selected_items_summary: "", notes: "" });
 
-  const savePlanning = async () => {
-    setSaving(true);
-    try {
-      // TODO: API call to save sprint planning
-      console.log('Saving planning:', planning);
-      setTimeout(() => {
-        setSaving(false);
-        navigate(`/projects/${id}/scrum/overview`);
-      }, 1000);
-    } catch (error) {
-      console.error('Failed to save planning:', error);
-      setSaving(false);
-    }
-  };
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  const addCriteria = () => {
-    if (!newCriteria.trim()) return;
-    setPlanning({
-      ...planning,
-      success_criteria: [...planning.success_criteria, newCriteria]
-    });
-    setNewCriteria('');
-  };
+  const fetchData = async () => { try { const r = await fetch(`/api/v1/projects/${id}/scrum/sprint-planning/`, { headers }); if (r.ok) { const d = await r.json(); setPlannings(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
+  useEffect(() => { fetchData(); }, [id]);
 
-  const removeCriteria = (index: number) => {
-    setPlanning({
-      ...planning,
-      success_criteria: planning.success_criteria.filter((_, i) => i !== index)
-    });
-  };
+  const handleCreate = async () => { setSubmitting(true); try { const r = await fetch(`/api/v1/projects/${id}/scrum/sprint-planning/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify(form) }); if (r.ok) { toast.success("Planning aangemaakt"); setDialogOpen(false); fetchData(); } else toast.error("Aanmaken mislukt"); } catch { toast.error("Aanmaken mislukt"); } finally { setSubmitting(false); } };
+  const handleAction = async (pId: number, action: string) => { try { const r = await fetch(`/api/v1/projects/${id}/scrum/sprint-planning/${pId}/${action}/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Actie uitgevoerd"); fetchData(); } } catch { toast.error("Actie mislukt"); } };
+  const handleDelete = async (pId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`/api/v1/projects/${id}/scrum/sprint-planning/${pId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
 
-  const addDecision = () => {
-    if (!newDecision.trim()) return;
-    setPlanning({
-      ...planning,
-      decisions: [...planning.decisions, newDecision]
-    });
-    setNewDecision('');
-  };
-
-  const removeDecision = (index: number) => {
-    setPlanning({
-      ...planning,
-      decisions: planning.decisions.filter((_, i) => i !== index)
-    });
-  };
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
     <div className="min-h-full bg-background">
       <ProjectHeader />
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
-        {/* Header */}
+      <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <Link to={`/projects/${id}/scrum/overview`}>
-              <Button variant="ghost" size="sm" className="mb-2">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Terug naar Overview
-              </Button>
-            </Link>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Calendar className="h-6 w-6 text-purple-600" />
-              Sprint Planning
-            </h1>
-            <p className="text-muted-foreground">Plan je sprint en definieer doelen</p>
-          </div>
-          <Button 
-            onClick={savePlanning} 
-            disabled={saving || !planning.sprint_name}
-            className="bg-purple-600 hover:bg-purple-700"
-          >
-            {saving ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4 mr-2" />
-            )}
-            Opslaan
-          </Button>
+          <div className="flex items-center gap-3"><Target className="h-6 w-6 text-blue-500" /><h1 className="text-2xl font-bold">{pt("Sprint Planning")}</h1></div>
+          <Button onClick={() => { setForm({ sprint_goal: "", capacity_hours: "", selected_items_summary: "", notes: "" }); setDialogOpen(true); }} className="gap-2"><Plus className="h-4 w-4" /> {pt("New Planning")}</Button>
         </div>
 
-        {/* Sprint Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Sprint Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Sprint Naam *</label>
-                <Input
-                  value={planning.sprint_name}
-                  onChange={(e) => setPlanning({ ...planning, sprint_name: e.target.value })}
-                  placeholder="bijv. Sprint 5"
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Geplande Datum</label>
-                <Input
-                  type="datetime-local"
-                  value={planning.scheduled_date}
-                  onChange={(e) => setPlanning({ ...planning, scheduled_date: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="text-sm font-medium">Duur (minuten)</label>
-                <Input
-                  type="number"
-                  value={planning.duration_minutes}
-                  onChange={(e) => setPlanning({ ...planning, duration_minutes: parseInt(e.target.value) || 0 })}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Team Capaciteit (SP)</label>
-                <Input
-                  type="number"
-                  value={planning.team_capacity}
-                  onChange={(e) => setPlanning({ ...planning, team_capacity: parseInt(e.target.value) || 0 })}
-                  placeholder="Story points"
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Toegewezen Punten</label>
-                <Input
-                  type="number"
-                  value={planning.committed_story_points}
-                  onChange={(e) => setPlanning({ ...planning, committed_story_points: parseInt(e.target.value) || 0 })}
-                  className="mt-1"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Sprint Goal */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
-              Sprint Goal
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Doel Omschrijving</label>
-              <Textarea
-                value={planning.sprint_goal}
-                onChange={(e) => setPlanning({ ...planning, sprint_goal: e.target.value })}
-                placeholder="Wat willen we deze sprint bereiken?"
-                className="mt-1"
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Succescriteria</label>
-              {planning.success_criteria.map((criteria, index) => (
-                <div key={index} className="flex items-center gap-2 mt-2">
-                  <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
-                  <span className="flex-1">{criteria}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeCriteria(index)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+        {plannings.length === 0 ? <Card className="p-8 text-center"><Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No sprint planning sessions yet")}</h3></Card> : (
+          <div className="space-y-3">{plannings.map(p => (
+            <Card key={p.id}><CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2"><Badge variant={p.status === "completed" ? "default" : p.status === "in_progress" ? "secondary" : "outline"}>{p.status}</Badge>
+                <div className="flex gap-1">
+                  {p.status === "planned" && <Button variant="ghost" size="sm" onClick={() => handleAction(p.id, "start_meeting")}><Play className="h-4 w-4 text-green-500" /></Button>}
+                  {p.status === "in_progress" && <Button variant="ghost" size="sm" onClick={() => handleAction(p.id, "complete_meeting")}><CheckCircle2 className="h-4 w-4 text-green-500" /></Button>}
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
-              ))}
-              <div className="flex gap-2 mt-3">
-                <Input
-                  value={newCriteria}
-                  onChange={(e) => setNewCriteria(e.target.value)}
-                  placeholder="Voeg succescriterium toe..."
-                  onKeyPress={(e) => e.key === 'Enter' && addCriteria()}
-                />
-                <Button onClick={addCriteria} size="sm">
-                  <Plus className="h-4 w-4" />
-                </Button>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Key Decisions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Belangrijke Beslissingen</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {planning.decisions.map((decision, index) => (
-              <div key={index} className="flex items-start gap-2 p-3 bg-muted rounded">
-                <CheckCircle className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
-                <span className="flex-1">{decision}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeDecision(index)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-            <div className="flex gap-2 mt-4">
-              <Input
-                value={newDecision}
-                onChange={(e) => setNewDecision(e.target.value)}
-                placeholder="Voeg beslissing toe..."
-                onKeyPress={(e) => e.key === 'Enter' && addDecision()}
-              />
-              <Button onClick={addDecision}>
-                <Plus className="h-4 w-4 mr-2" />
-                Toevoegen
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Meeting Notes */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Meeting Notities</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={planning.notes}
-              onChange={(e) => setPlanning({ ...planning, notes: e.target.value })}
-              placeholder="Voeg planning meeting notities toe..."
-              rows={6}
-            />
-          </CardContent>
-        </Card>
+              {p.sprint_goal && <p className="font-medium">{p.sprint_goal}</p>}
+              {p.capacity_hours && <p className="text-sm text-muted-foreground">Capacity: {p.capacity_hours}h</p>}
+              {p.notes && <p className="text-sm mt-1">{p.notes}</p>}
+            </CardContent></Card>
+          ))}</div>
+        )}
       </div>
-      <MethodologyHelpPanel methodology="agile" />
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{pt("New Planning")}</DialogTitle></DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2"><Label>{pt("Sprint Goal")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.sprint_goal} onChange={(e) => setForm({ ...form, sprint_goal: e.target.value })} /></div>
+          <div className="space-y-2"><Label>{pt("Notes")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+          <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleCreate} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Create")}</Button></div>
+        </div>
+      </DialogContent></Dialog>
     </div>
   );
 };

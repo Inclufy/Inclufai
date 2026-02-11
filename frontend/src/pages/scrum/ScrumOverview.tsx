@@ -1,271 +1,99 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { useProject } from '@/hooks/useApi';
-import { scrumApi, ScrumDashboard } from '@/lib/scrumApi';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  LayoutDashboard, Target, Users, Clock, TrendingUp, 
-  CheckCircle, Loader2, ArrowRight, Zap, Calendar
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Loader2, RefreshCw, Zap, Target, Users, BarChart3, ListChecks, ChevronRight } from "lucide-react";
+import { toast } from "sonner";
 
 const ScrumOverview = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id);
-  
-  const [dashboard, setDashboard] = useState<ScrumDashboard | null>(null);
+  const navigate = useNavigate();
+  const [dashboard, setDashboard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (id) {
-      loadDashboard();
-    }
-  }, [id]);
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
 
-  const loadDashboard = async () => {
+  const fetchDashboard = async () => {
     try {
-      setLoading(true);
-      const data = await scrumApi.dashboard.get(id!);
-      setDashboard(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load dashboard');
-    } finally {
-      setLoading(false);
-    }
+      const r = await fetch(`/api/v1/projects/${id}/scrum/dashboard/`, { headers });
+      if (r.ok) setDashboard(await r.json());
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
-  const initializeBacklog = async () => {
-    try {
-      await scrumApi.backlog.initialize(id!);
-      loadDashboard();
-    } catch (err: any) {
-      alert(err.message || 'Failed to initialize backlog');
-    }
-  };
+  useEffect(() => { fetchDashboard(); }, [id]);
 
-  if (loading) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader />
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-        </div>
-      </div>
-    );
-  }
+  const nav = (path: string) => navigate(`/projects/${id}/scrum/${path}`);
 
-  if (!dashboard?.has_backlog) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader />
-        <div className="p-6">
-          <Card className="max-w-lg mx-auto mt-12">
-            <CardContent className="pt-8 pb-8 text-center">
-              <Target className="h-16 w-16 mx-auto mb-4 text-purple-600" />
-              <h2 className="text-xl font-semibold mb-2">Scrum Not Initialized</h2>
-              <p className="text-muted-foreground mb-6">
-                Create a Product Backlog to start managing your Scrum project.
-              </p>
-              <Button onClick={initializeBacklog} size="lg" className="bg-purple-600 hover:bg-purple-700">
-                Initialize Scrum
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
-  const sprintProgress = dashboard.active_sprint 
-    ? ((dashboard.active_sprint.completed_points || 0) / (dashboard.active_sprint.total_points || 1)) * 100
-    : 0;
+  const d = dashboard || {};
 
   return (
     <div className="min-h-full bg-background">
       <ProjectHeader />
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <LayoutDashboard className="h-6 w-6 text-purple-600" />
-              Scrum Overview
-            </h1>
-            <p className="text-muted-foreground">Dashboard for your Scrum project</p>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-blue-600 flex items-center justify-center"><Zap className="h-5 w-5 text-white" /></div>
+            <div><h1 className="text-2xl font-bold">Scrum Dashboard</h1><p className="text-sm text-muted-foreground">{d.project_name || ""}</p></div>
           </div>
-          <Link to={`/projects/${id}/scrum/sprint-board`}>
-            <Button className="bg-purple-600 hover:bg-purple-700">
-              <Zap className="h-4 w-4 mr-2" />
-              Sprint Board
-            </Button>
-          </Link>
+          <Button variant="outline" onClick={fetchDashboard} className="gap-2"><RefreshCw className="h-4 w-4" /> {pt("Refresh")}</Button>
         </div>
 
-        {/* Active Sprint */}
-        {dashboard.active_sprint ? (
-          <Card className="border-purple-200 bg-purple-50">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-purple-600" />
-                  Active Sprint: {dashboard.active_sprint.name}
-                </span>
-                <Badge className="bg-purple-600">In Progress</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-4 gap-4 mb-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Goal</p>
-                  <p className="font-medium">{dashboard.active_sprint.goal || 'No goal set'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Duration</p>
-                  <p className="font-medium">
-                    {new Date(dashboard.active_sprint.start_date).toLocaleDateString()} - {new Date(dashboard.active_sprint.end_date).toLocaleDateString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Story Points</p>
-                  <p className="font-medium">
-                    {dashboard.active_sprint.completed_points || 0} / {dashboard.active_sprint.total_points || 0}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Days Remaining</p>
-                  <p className="font-medium">{dashboard.active_sprint.days_remaining || 0}</p>
-                </div>
-              </div>
-              <Progress value={sprintProgress} className="h-3" />
-              <p className="text-sm text-muted-foreground mt-2">{sprintProgress.toFixed(0)}% complete</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="border-dashed">
-            <CardContent className="py-8 text-center">
-              <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground mb-4">No active sprint</p>
-              <Link to={`/projects/${id}/scrum/sprint-board`}>
-                <Button variant="outline">Start a Sprint</Button>
-              </Link>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Key Metrics */}
-        <div className="grid grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Backlog Items</p>
-                  <p className="text-2xl font-bold">{dashboard.backlog_items_count || 0}</p>
-                </div>
-                <Target className="h-8 w-8 text-purple-500 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Points</p>
-                  <p className="text-2xl font-bold">{dashboard.total_story_points || 0}</p>
-                </div>
-                <TrendingUp className="h-8 w-8 text-blue-500 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Avg Velocity</p>
-                  <p className="text-2xl font-bold">{dashboard.average_velocity?.toFixed(1) || 'N/A'}</p>
-                </div>
-                <Zap className="h-8 w-8 text-yellow-500 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Team Size</p>
-                  <p className="text-2xl font-bold">{dashboard.team_size || 0}</p>
-                </div>
-                <Users className="h-8 w-8 text-green-500 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Active Sprint")}</p><p className="text-2xl font-bold">{d.active_sprint?.name || "None"}</p>{d.active_sprint && <p className="text-xs text-muted-foreground">{d.active_sprint.start_date} → {d.active_sprint.end_date}</p>}</CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Sprint Progress")}</p><p className="text-2xl font-bold">{d.active_sprint?.progress || 0}%</p><Progress value={d.active_sprint?.progress || 0} className="h-2 mt-2" /></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Backlog Items")}</p><p className="text-2xl font-bold">{d.backlog_count || 0}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Velocity")}</p><p className="text-2xl font-bold">{d.average_velocity || 0}</p><p className="text-xs text-muted-foreground">pts/sprint</p></CardContent></Card>
         </div>
 
-        {/* Velocity Trend */}
-        {dashboard.velocity_history && dashboard.velocity_history.length > 0 && (
+        {/* Active Sprint Items */}
+        {d.active_sprint?.items?.length > 0 && (
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Velocity Trend
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-end gap-2 h-32">
-                {dashboard.velocity_history.map((v, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center">
-                    <div 
-                      className="w-full bg-purple-500 rounded-t"
-                      style={{ height: `${(v.completed / Math.max(...dashboard.velocity_history!.map(x => x.completed))) * 100}%` }}
-                    />
-                    <span className="text-xs mt-1">{v.sprint}</span>
-                    <span className="text-xs text-muted-foreground">{v.completed}pts</span>
+            <CardHeader className="pb-3"><CardTitle>{pt("Sprint Items")}</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              {d.active_sprint.items.slice(0, 8).map((item: any) => (
+                <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Badge variant={item.item_type === "story" ? "default" : item.item_type === "bug" ? "destructive" : "secondary"} className="text-xs">{item.item_type}</Badge>
+                    <span className="font-medium text-sm">{item.title}</span>
                   </div>
-                ))}
-              </div>
+                  <div className="flex items-center gap-2">
+                    {item.story_points && <Badge variant="outline" className="text-xs">{item.story_points} pts</Badge>}
+                    <Badge variant="outline" className="text-xs">{item.status}</Badge>
+                  </div>
+                </div>
+              ))}
             </CardContent>
           </Card>
         )}
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-4">
-              <Link to={`/projects/${id}/scrum/backlog`}>
-                <Button variant="outline">
-                  <Target className="h-4 w-4 mr-2" />
-                  Product Backlog
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </Link>
-              <Link to={`/projects/${id}/scrum/sprint-board`}>
-                <Button variant="outline">
-                  <Zap className="h-4 w-4 mr-2" />
-                  Sprint Board
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </Link>
-              <Link to={`/projects/${id}/scrum/retrospective`}>
-                <Button variant="outline">
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Retrospective
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Quick Navigation */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: pt("Backlog"), path: "backlog", icon: ListChecks },
+            { label: pt("Sprint Board"), path: "sprint-board", icon: Target },
+            { label: pt("Daily Standup"), path: "daily-standup", icon: Users },
+            { label: pt("Velocity"), path: "velocity", icon: BarChart3 },
+            { label: pt("Sprint Planning"), path: "sprint-planning", icon: Target },
+            { label: pt("Sprint Review"), path: "sprint-review", icon: ChevronRight },
+            { label: pt("Retrospective"), path: "retrospective", icon: RefreshCw },
+            { label: pt("Definition of Done"), path: "definition-of-done", icon: ListChecks },
+          ].map(({ label, path, icon: Icon }) => (
+            <Card key={path} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => nav(path)}>
+              <CardContent className="p-4 flex items-center gap-3"><Icon className="h-5 w-5 text-muted-foreground" /><span className="font-medium text-sm">{label}</span></CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
-      <MethodologyHelpPanel methodology="agile" />
     </div>
   );
 };

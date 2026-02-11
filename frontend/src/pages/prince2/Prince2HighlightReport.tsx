@@ -1,318 +1,160 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { useProject } from '@/hooks/useApi';
-import { prince2Api, HighlightReport, Stage } from '@/lib/prince2Api';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  BarChart3, Plus, Calendar, AlertTriangle, CheckCircle2, 
-  Clock, RefreshCw, FileText, TrendingUp
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Plus, FileText, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 const Prince2HighlightReport = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id);
-  
-  const [reports, setReports] = useState<HighlightReport[]>([]);
-  const [stages, setStages] = useState<Stage[]>([]);
+  const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [selectedReport, setSelectedReport] = useState<HighlightReport | null>(null);
-  
-  const [newReport, setNewReport] = useState<Partial<HighlightReport>>({
-    overall_status: 'green'
-  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ title: "", summary: "", overall_status: "green", report_date: "", achievements: "", issues: "", risks: "", next_period_plan: "" });
 
-  useEffect(() => {
-    if (id) loadData();
-  }, [id]);
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  const loadData = async () => {
-    if (!id) return;
+  const fetchData = async () => {
     try {
-      setLoading(true);
-      const [reportData, stageData] = await Promise.all([
-        prince2Api.highlightReports.getAll(id),
-        prince2Api.stages.getAll(id)
-      ]);
-      setReports(reportData);
-      setStages(stageData);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+      const response = await fetch(`/api/v1/projects/${id}/prince2/highlight-reports/`, { headers });
+      if (response.ok) {
+        const data = await response.json();
+        setReports(Array.isArray(data) ? data : data.results || []);
+      }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
-  const createReport = async () => {
-    if (!id || !newReport.stage) return;
+  useEffect(() => { fetchData(); }, [id]);
+
+  const openCreate = () => {
+    setEditing(null);
+    setForm({ title: "", summary: "", overall_status: "green", report_date: new Date().toISOString().split("T")[0], achievements: "", issues: "", risks: "", next_period_plan: "" });
+    setDialogOpen(true);
+  };
+
+  const openEdit = (r: any) => {
+    setEditing(r);
+    setForm({ title: r.title || "", summary: r.summary || "", overall_status: r.overall_status || "green", report_date: r.report_date?.split("T")[0] || "", achievements: r.achievements || "", issues: r.issues || "", risks: r.risks || "", next_period_plan: r.next_period_plan || "" });
+    setDialogOpen(true);
+  };
+
+  const handleSave = async () => {
+    if (!form.title) { toast.error("Titel is verplicht"); return; }
+    setSubmitting(true);
     try {
-      await prince2Api.highlightReports.create(id, {
-        ...newReport,
-        report_date: new Date().toISOString().split('T')[0]
-      });
-      setShowCreateDialog(false);
-      setNewReport({ overall_status: 'green' });
-      await loadData();
-    } catch (err: any) {
-      setError(err.message);
-    }
+      const url = editing ? `/api/v1/projects/${id}/prince2/highlight-reports/${editing.id}/` : `/api/v1/projects/${id}/prince2/highlight-reports/`;
+      const method = editing ? "PATCH" : "POST";
+      const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(form) });
+      if (response.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); }
+      else toast.error("Opslaan mislukt");
+    } catch { toast.error("Opslaan mislukt"); }
+    finally { setSubmitting(false); }
   };
 
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, { bg: string; icon: any }> = {
-      green: { bg: 'bg-green-500', icon: CheckCircle2 },
-      amber: { bg: 'bg-amber-500', icon: AlertTriangle },
-      red: { bg: 'bg-red-500', icon: AlertTriangle }
-    };
-    const style = styles[status] || styles.green;
-    const Icon = style.icon;
-    return (
-      <Badge className={`${style.bg} text-white flex items-center gap-1`}>
-        <Icon className="h-3 w-3" />
-        {status.toUpperCase()}
-      </Badge>
-    );
+  const handleDelete = async (rId: number) => {
+    if (!confirm("Rapport verwijderen?")) return;
+    try {
+      const response = await fetch(`/api/v1/projects/${id}/prince2/highlight-reports/${rId}/`, { method: "DELETE", headers });
+      if (response.ok || response.status === 204) { toast.success("Verwijderd"); fetchData(); }
+    } catch { toast.error("Verwijderen mislukt"); }
   };
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
-  }
+  const statusColor = (s: string) => ({ green: "bg-green-100 text-green-700", amber: "bg-amber-100 text-amber-700", red: "bg-red-100 text-red-700" }[s] || "bg-gray-100");
+
+  if (loading) return (
+    <div className="min-h-full bg-background"><ProjectHeader />
+      <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div>
+    </div>
+  );
 
   return (
     <div className="min-h-full bg-background">
-      <ProjectHeader project={project} />
+      <ProjectHeader />
       <div className="p-6 space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <BarChart3 className="h-6 w-6 text-blue-600" />
-              Highlight Reports
-            </h1>
-            <p className="text-muted-foreground">Regular status reports to Project Board</p>
+          <div className="flex items-center gap-3">
+            <FileText className="h-6 w-6 text-purple-500" />
+            <h1 className="text-2xl font-bold">{pt("Highlight Reports")}</h1>
+            <Badge variant="outline">{reports.length}</Badge>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={loadData}>
-              <RefreshCw className="h-4 w-4 mr-2" />Refresh
-            </Button>
-            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-              <DialogTrigger asChild>
-                <Button><Plus className="h-4 w-4 mr-2" />New Report</Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader><DialogTitle>Create Highlight Report</DialogTitle></DialogHeader>
-                <div className="space-y-4 max-h-[70vh] overflow-y-auto">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Stage</Label>
-                      <Select value={newReport.stage?.toString() || ''} onValueChange={(v) => setNewReport({...newReport, stage: parseInt(v)})}>
-                        <SelectTrigger><SelectValue placeholder="Select stage" /></SelectTrigger>
-                        <SelectContent>
-                          {stages.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Overall Status</Label>
-                      <Select value={newReport.overall_status || 'green'} onValueChange={(v) => setNewReport({...newReport, overall_status: v as any})}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="green">🟢 Green - On Track</SelectItem>
-                          <SelectItem value="amber">🟡 Amber - At Risk</SelectItem>
-                          <SelectItem value="red">🔴 Red - Off Track</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Period Start</Label>
-                      <Input type="date" value={newReport.period_start || ''} onChange={(e) => setNewReport({...newReport, period_start: e.target.value})} />
-                    </div>
-                    <div>
-                      <Label>Period End</Label>
-                      <Input type="date" value={newReport.period_end || ''} onChange={(e) => setNewReport({...newReport, period_end: e.target.value})} />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Status Summary</Label>
-                    <Textarea value={newReport.status_summary || ''} onChange={(e) => setNewReport({...newReport, status_summary: e.target.value})} rows={3} />
-                  </div>
-                  <div>
-                    <Label>Work Completed This Period</Label>
-                    <Textarea value={newReport.work_completed || ''} onChange={(e) => setNewReport({...newReport, work_completed: e.target.value})} rows={3} />
-                  </div>
-                  <div>
-                    <Label>Work Planned Next Period</Label>
-                    <Textarea value={newReport.work_planned_next_period || ''} onChange={(e) => setNewReport({...newReport, work_planned_next_period: e.target.value})} rows={3} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Issues Summary</Label>
-                      <Textarea value={newReport.issues_summary || ''} onChange={(e) => setNewReport({...newReport, issues_summary: e.target.value})} rows={2} />
-                    </div>
-                    <div>
-                      <Label>Risks Summary</Label>
-                      <Textarea value={newReport.risks_summary || ''} onChange={(e) => setNewReport({...newReport, risks_summary: e.target.value})} rows={2} />
-                    </div>
-                  </div>
-                  <Button onClick={createReport} className="w-full">Create Report</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
+          <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("New Report")}</Button>
         </div>
 
-        {error && (
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="pt-4 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-              <span className="text-red-700">{error}</span>
-            </CardContent>
+        {reports.length === 0 ? (
+          <Card className="p-8 text-center">
+            <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">{pt("No highlight reports yet")}</h3>
+            <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" /> {pt("New Report")}</Button>
           </Card>
-        )}
-
-        {/* Reports List */}
-        {reports.length > 0 ? (
-          <div className="space-y-4">
-            {reports.map((report) => (
-              <Card key={report.id} className="hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => setSelectedReport(report)}>
-                <CardContent className="py-4">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-3 h-12 rounded-full ${
-                      report.overall_status === 'green' ? 'bg-green-500' :
-                      report.overall_status === 'amber' ? 'bg-amber-500' : 'bg-red-500'
-                    }`} />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-medium">{report.stage_name}</h3>
-                        {getStatusBadge(report.overall_status)}
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{report.status_summary}</p>
+        ) : (
+          <div className="space-y-3">
+            {reports.map((r) => (
+              <Card key={r.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge className={`text-xs ${statusColor(r.overall_status)}`}>{r.overall_status}</Badge>
+                      <span className="text-sm text-muted-foreground">{r.report_date}</span>
                     </div>
-                    <div className="text-right text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1 justify-end">
-                        <Calendar className="h-4 w-4" />
-                        {report.report_date}
-                      </div>
-                      <p className="mt-1">Period: {report.period_start} - {report.period_end}</p>
-                    </div>
+                    <p className="font-medium">{r.title}</p>
+                    {r.summary && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{r.summary}</p>}
+                  </div>
+                  <div className="flex gap-1 ml-4">
+                    <Button variant="ghost" size="sm" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
-        ) : (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground mb-4">No highlight reports yet</p>
-              <Button onClick={() => setShowCreateDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />Create First Report
-              </Button>
-            </CardContent>
-          </Card>
         )}
-
-        {/* Report Detail Dialog */}
-        <Dialog open={!!selectedReport} onOpenChange={() => setSelectedReport(null)}>
-          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-            {selectedReport && (
-              <>
-                <DialogHeader>
-                  <div className="flex items-center gap-3">
-                    <DialogTitle>Highlight Report - {selectedReport.stage_name}</DialogTitle>
-                    {getStatusBadge(selectedReport.overall_status)}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Report Date: {selectedReport.report_date} | Period: {selectedReport.period_start} - {selectedReport.period_end}
-                  </p>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-medium mb-2">Status Summary</h4>
-                    <p className="text-muted-foreground whitespace-pre-line">{selectedReport.status_summary}</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h4 className="font-medium mb-2 flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />Work Completed
-                      </h4>
-                      <p className="text-sm text-muted-foreground whitespace-pre-line">{selectedReport.work_completed}</p>
-                    </div>
-                    <div>
-                      <h4 className="font-medium mb-2 flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-blue-500" />Planned Next
-                      </h4>
-                      <p className="text-sm text-muted-foreground whitespace-pre-line">{selectedReport.work_planned_next_period}</p>
-                    </div>
-                  </div>
-                  {(selectedReport.issues_summary || selectedReport.risks_summary) && (
-                    <div className="grid grid-cols-2 gap-4">
-                      {selectedReport.issues_summary && (
-                        <div>
-                          <h4 className="font-medium mb-2 flex items-center gap-2">
-                            <AlertTriangle className="h-4 w-4 text-amber-500" />Issues
-                          </h4>
-                          <p className="text-sm text-muted-foreground whitespace-pre-line">{selectedReport.issues_summary}</p>
-                        </div>
-                      )}
-                      {selectedReport.risks_summary && (
-                        <div>
-                          <h4 className="font-medium mb-2 flex items-center gap-2">
-                            <AlertTriangle className="h-4 w-4 text-red-500" />Risks
-                          </h4>
-                          <p className="text-sm text-muted-foreground whitespace-pre-line">{selectedReport.risks_summary}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {selectedReport.budget_spent && (
-                    <div className="flex items-center gap-4 p-3 bg-muted rounded-lg">
-                      <TrendingUp className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Budget Spent</p>
-                        <p className="font-medium">€{Number(selectedReport.budget_spent).toLocaleString()}</p>
-                      </div>
-                      {selectedReport.budget_forecast && (
-                        <div className="ml-8">
-                          <p className="text-sm text-muted-foreground">Forecast</p>
-                          <p className="font-medium">€{Number(selectedReport.budget_forecast).toLocaleString()}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </DialogContent>
-        </Dialog>
-
-        {/* Information */}
-        <Card>
-          <CardHeader><CardTitle className="text-lg">About Highlight Reports</CardTitle></CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Highlight Reports provide regular status updates from the Project Manager to the Project Board.
-              They are typically produced at intervals defined in the Communication Management Approach 
-              (often weekly or bi-weekly) and summarize stage progress, issues, and risks.
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
-          {/* Methodology Help Panel */}
-          <MethodologyHelpPanel methodology="prince2" />
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("New Report")}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label>{pt("Title")} *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+              <div className="space-y-2"><Label>{pt("Date")}</Label><Input type="date" value={form.report_date} onChange={(e) => setForm({ ...form, report_date: e.target.value })} /></div>
+            </div>
+            <div className="space-y-2">
+              <Label>{pt("Status")}</Label>
+              <Select value={form.overall_status} onValueChange={(v) => setForm({ ...form, overall_status: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="green">🟢 Green</SelectItem>
+                  <SelectItem value="amber">🟡 Amber</SelectItem>
+                  <SelectItem value="red">🔴 Red</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2"><Label>{pt("Summary")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Achievements")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.achievements} onChange={(e) => setForm({ ...form, achievements: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Issues")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.issues} onChange={(e) => setForm({ ...form, issues: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Risks")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.risks} onChange={(e) => setForm({ ...form, risks: e.target.value })} /></div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>
+              <Button onClick={handleSave} disabled={submitting}>
+                {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

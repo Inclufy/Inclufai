@@ -10,6 +10,7 @@ import {
   ListChecks, Plus, GripVertical, ChevronDown, ChevronRight, 
   Circle, CheckCircle2, Clock, AlertCircle, Filter, Search, Loader2
 } from 'lucide-react';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -57,6 +58,7 @@ const fetchBacklogItems = async (projectId: string) => {
 };
 
 const AgileBacklog = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedEpics, setExpandedEpics] = useState<string[]>([]);
@@ -141,14 +143,14 @@ const AgileBacklog = () => {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <ListChecks className="h-6 w-6 text-primary" />
-              Product Backlog
+              {pt("Product Backlog")}
             </h1>
             <p className="text-muted-foreground">Manage your epics, stories, and tasks</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline">
               <Filter className="h-4 w-4 mr-2" />
-              Filter
+              {pt("Filter")}
             </Button>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -162,7 +164,7 @@ const AgileBacklog = () => {
           <Card>
             <CardContent className="pt-4">
               <div className="text-2xl font-bold">{stories.length}</div>
-              <div className="text-sm text-muted-foreground">Total Items</div>
+              <div className="text-sm text-muted-foreground">{pt("Total Items")}</div>
             </CardContent>
           </Card>
           <Card>
@@ -182,7 +184,7 @@ const AgileBacklog = () => {
               <div className="text-2xl font-bold">
                 {totalPoints > 0 ? Math.round((completedPoints / totalPoints) * 100) : 0}%
               </div>
-              <div className="text-sm text-muted-foreground">Progress</div>
+              <div className="text-sm text-muted-foreground">{pt("Progress")}</div>
             </CardContent>
           </Card>
         </div>

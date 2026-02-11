@@ -23,7 +23,7 @@ urlpatterns = [
     path("api/v1/governance/", include("governance.urls")),
     path("api/v1/execution/", include("execution.urls")),
     path("api/v1/sixsigma/", include("sixsigma.urls")),
-    path("api/v1/prince2/", include("prince2.urls")),
+    path("api/v1/", include("prince2.urls")),
     path("api/v1/", include("scrum.urls")),
     path("api/v1/", include("kanban.urls")),
     

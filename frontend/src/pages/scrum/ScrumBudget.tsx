@@ -1,375 +1,81 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import scrumApi from '@/lib/scrumApi';
-import { useProject } from '@/hooks/useApi';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  DollarSign, Plus, Trash2, Edit2, Loader2, 
-  TrendingUp, TrendingDown, PiggyBank, Receipt, Zap
-} from 'lucide-react';
-
-interface BudgetItem {
-  id: number;
-  sprint: string;
-  category: string;
-  description: string;
-  planned_amount: number;
-  actual_amount: number;
-}
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Plus, DollarSign, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 const ScrumBudget = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id);
-  
-  const [items, setItems] = useState<BudgetItem[]>([]);
+  const [expenses, setExpenses] = useState<any[]>([]);
+  const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [showDialog, setShowDialog] = useState(false);
-  const [editingItem, setEditingItem] = useState<BudgetItem | null>(null);
-  
-  const [form, setForm] = useState({
-    sprint: '',
-    category: '',
-    description: '',
-    planned_amount: '',
-    actual_amount: '',
-  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ title: "", amount: "", category: "labor_cost", status: "pending", date: new Date().toISOString().split("T")[0] });
 
-  useEffect(() => {
-    if (id) {
-      loadBudget();
-    }
-  }, [id]);
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  // Replace the loadBudget function (lines 47-61) with:
-
-const loadBudget = async () => {
-  try {
-    setLoading(true);
-    
-    // Load sprints from API
-    const sprints = await scrumApi.sprints.getAll(id!);
-    
-    // Transform sprints to budget items
-    const budgetItems: BudgetItem[] = [];
-    
-    sprints.forEach((sprint, index) => {
-      // Calculate hourly cost (example: 40h/sprint * team capacity * €100/hour)
-      const teamCapacity = sprint.team_capacity || 112; // Default: 3 devs * 40h - 8h meetings
-      const hourlyRate = 100; // €100 per hour (configurable)
-      const plannedAmount = teamCapacity * hourlyRate;
-      
-      // Actual = completed story points * point cost
-      const pointCost = 500; // €500 per story point (configurable)
-      const actualAmount = (sprint.completed_story_points || 0) * pointCost;
-      
-      // Development cost
-      budgetItems.push({
-        id: index * 2 + 1,
-        sprint: sprint.name,
-        category: 'Development',
-        description: `${sprint.name} development costs (${sprint.completed_story_points || 0}/${sprint.total_story_points || 0} points)`,
-        planned_amount: plannedAmount,
-        actual_amount: sprint.status === 'completed' ? actualAmount : 0,
-      });
-      
-      // Infrastructure/overhead (10% of dev cost)
-      if (sprint.status === 'completed' || sprint.status === 'active') {
-        budgetItems.push({
-          id: index * 2 + 2,
-          sprint: sprint.name,
-          category: 'Infrastructure',
-          description: 'Cloud & tooling costs',
-          planned_amount: plannedAmount * 0.1,
-          actual_amount: sprint.status === 'completed' ? actualAmount * 0.1 : 0,
-        });
-      }
-    });
-    
-    setItems(budgetItems);
-  } catch (err: any) {
-    console.error('Failed to load budget:', err);
-    setItems([]);
-  } finally {
-    setLoading(false);
-  }
-};
-
-  const handleSave = async () => {
-    setShowDialog(false);
-    setEditingItem(null);
-    setForm({ sprint: '', category: '', description: '', planned_amount: '', actual_amount: '' });
-    loadBudget();
+  const fetchData = async () => {
+    try {
+      const [eRes, pRes] = await Promise.all([
+        fetch(`/api/v1/expenses/?project=${id}`, { headers }),
+        fetch(`/api/v1/projects/${id}/`, { headers }),
+      ]);
+      if (eRes.ok) { const d = await eRes.json(); setExpenses(Array.isArray(d) ? d : d.results || []); }
+      if (pRes.ok) setProject(await pRes.json());
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
-  const handleDelete = async (itemId: number) => {
-    if (!confirm('Delete this budget item?')) return;
-    loadBudget();
-  };
+  useEffect(() => { fetchData(); }, [id]);
 
-  const openEdit = (item: BudgetItem) => {
-    setEditingItem(item);
-    setForm({
-      sprint: item.sprint,
-      category: item.category,
-      description: item.description,
-      planned_amount: item.planned_amount.toString(),
-      actual_amount: item.actual_amount.toString(),
-    });
-    setShowDialog(true);
-  };
+  const openCreate = () => { setEditing(null); setForm({ title: "", amount: "", category: "labor_cost", status: "pending", date: new Date().toISOString().split("T")[0] }); setDialogOpen(true); };
+  const openEdit = (e: any) => { setEditing(e); setForm({ title: e.title, amount: String(e.amount), category: e.category || "labor_cost", status: e.status || "pending", date: e.date?.split("T")[0] || "" }); setDialogOpen(true); };
+  const handleSave = async () => { if (!form.title || !form.amount) { toast.error("Titel en bedrag verplicht"); return; } setSubmitting(true); try { const body = { ...form, amount: parseFloat(form.amount), project: parseInt(id!) }; const url = editing ? `/api/v1/expenses/${editing.id}/` : `/api/v1/expenses/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) }); if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } finally { setSubmitting(false); } };
+  const handleDelete = async (eId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`/api/v1/expenses/${eId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(amount);
-  };
+  const totalBudget = project?.budget || 0;
+  const totalSpent = expenses.filter(e => e.status === "paid").reduce((s, e) => s + parseFloat(e.amount || 0), 0);
+  const pct = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
 
-  if (loading) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader />
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-        </div>
-      </div>
-    );
-  }
-
-  const totalPlanned = items.reduce((sum, i) => sum + i.planned_amount, 0);
-  const totalActual = items.reduce((sum, i) => sum + i.actual_amount, 0);
-  const variance = totalPlanned - totalActual;
-  const utilizationPercent = totalPlanned > 0 ? (totalActual / totalPlanned) * 100 : 0;
-
-  // Group by sprint
-  const sprints = [...new Set(items.map(i => i.sprint))];
-  const sprintBudgets = sprints.map(sprint => {
-    const sprintItems = items.filter(i => i.sprint === sprint);
-    return {
-      sprint,
-      planned: sprintItems.reduce((sum, i) => sum + i.planned_amount, 0),
-      actual: sprintItems.reduce((sum, i) => sum + i.actual_amount, 0),
-    };
-  });
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
-    <div className="min-h-full bg-background">
-      <ProjectHeader />
+    <div className="min-h-full bg-background"><ProjectHeader />
       <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <DollarSign className="h-6 w-6 text-purple-600" />
-              Scrum Budget
-            </h1>
-            <p className="text-muted-foreground">Track budget per sprint</p>
-          </div>
-          <Button onClick={() => { setEditingItem(null); setForm({ sprint: '', category: '', description: '', planned_amount: '', actual_amount: '' }); setShowDialog(true); }} className="bg-purple-600 hover:bg-purple-700">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Budget Item
-          </Button>
+        <div className="flex items-center justify-between"><div className="flex items-center gap-3"><DollarSign className="h-6 w-6 text-green-500" /><h1 className="text-2xl font-bold">{pt("Budget")}</h1></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add Expense")}</Button></div>
+        <div className="grid grid-cols-3 gap-4">
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Total Budget")}</p><p className="text-2xl font-bold">€{totalBudget.toLocaleString()}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Spent")}</p><p className="text-2xl font-bold">€{totalSpent.toLocaleString()}</p><Progress value={pct} className="h-2 mt-2" /></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Remaining")}</p><p className={`text-2xl font-bold ${totalBudget - totalSpent < 0 ? "text-red-500" : "text-green-500"}`}>€{(totalBudget - totalSpent).toLocaleString()}</p></CardContent></Card>
         </div>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Planned</p>
-                  <p className="text-2xl font-bold">{formatCurrency(totalPlanned)}</p>
-                </div>
-                <PiggyBank className="h-8 w-8 text-purple-500 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Spent</p>
-                  <p className="text-2xl font-bold">{formatCurrency(totalActual)}</p>
-                </div>
-                <Receipt className="h-8 w-8 text-blue-500 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card className={variance >= 0 ? 'border-green-200' : 'border-red-200'}>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Variance</p>
-                  <p className={`text-2xl font-bold ${variance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {variance >= 0 ? '+' : ''}{formatCurrency(variance)}
-                  </p>
-                </div>
-                {variance >= 0 ? (
-                  <TrendingDown className="h-8 w-8 text-green-500 opacity-50" />
-                ) : (
-                  <TrendingUp className="h-8 w-8 text-red-500 opacity-50" />
-                )}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Sprints</p>
-                  <p className="text-2xl font-bold">{sprints.length}</p>
-                </div>
-                <Zap className="h-8 w-8 text-yellow-500 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sprint Budget Overview */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Budget per Sprint</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {sprintBudgets.map((sb) => {
-                const sprintVariance = sb.planned - sb.actual;
-                const sprintPercent = sb.planned > 0 ? (sb.actual / sb.planned) * 100 : 0;
-                
-                return (
-                  <div key={sb.sprint} className="space-y-2">
-                    <div className="flex justify-between">
-                      <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4 text-purple-500" />
-                        <span className="font-medium">{sb.sprint}</span>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm">
-                        <span>Planned: {formatCurrency(sb.planned)}</span>
-                        <span>Actual: {formatCurrency(sb.actual)}</span>
-                        <Badge variant={sprintVariance >= 0 ? 'default' : 'destructive'} className={sprintVariance >= 0 ? 'bg-green-500' : ''}>
-                          {sprintVariance >= 0 ? 'Under' : 'Over'}
-                        </Badge>
-                      </div>
-                    </div>
-                    <Progress 
-                      value={Math.min(sprintPercent, 100)} 
-                      className={`h-2 ${sprintPercent > 100 ? 'bg-red-100' : 'bg-gray-100'}`}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Budget Items */}
-        <Card>
-          <CardHeader>
-            <CardTitle>All Budget Items</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {items.map((item) => (
-                <div 
-                  key={item.id}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">{item.sprint}</Badge>
-                      <Badge variant="secondary">{item.category}</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Planned</p>
-                      <p className="font-medium">{formatCurrency(item.planned_amount)}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Actual</p>
-                      <p className="font-medium">{formatCurrency(item.actual_amount)}</p>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(item)}>
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-red-600" onClick={() => handleDelete(item.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {expenses.length === 0 ? <Card className="p-8 text-center"><DollarSign className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No expenses yet")}</h3></Card> : (
+          <Card><CardContent className="p-0"><div className="divide-y">{expenses.map(e => (
+            <div key={e.id} className="flex items-center justify-between p-4 hover:bg-muted/50"><div><p className="font-medium">{e.title}</p><div className="flex gap-2 mt-1"><Badge variant="outline" className="text-xs">{e.category}</Badge><Badge variant={e.status === "paid" ? "default" : "secondary"} className="text-xs">{e.status}</Badge>{e.date && <span className="text-xs text-muted-foreground">{e.date}</span>}</div></div><div className="flex items-center gap-2"><span className="font-bold">€{parseFloat(e.amount).toLocaleString()}</span><Button variant="ghost" size="sm" onClick={() => openEdit(e)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(e.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></div>
+          ))}</div></CardContent></Card>
+        )}
       </div>
-
-      {/* Add/Edit Dialog */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingItem ? 'Edit Budget Item' : 'Add Budget Item'}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Sprint</label>
-              <Input 
-                value={form.sprint}
-                onChange={(e) => setForm({...form, sprint: e.target.value})}
-                placeholder="e.g., Sprint 3"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Category</label>
-              <Input 
-                value={form.category}
-                onChange={(e) => setForm({...form, category: e.target.value})}
-                placeholder="e.g., Development, Testing"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Description</label>
-              <Input 
-                value={form.description}
-                onChange={(e) => setForm({...form, description: e.target.value})}
-                placeholder="Brief description"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Planned Amount (€)</label>
-                <Input 
-                  type="number"
-                  value={form.planned_amount}
-                  onChange={(e) => setForm({...form, planned_amount: e.target.value})}
-                  placeholder="0.00"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Actual Amount (€)</label>
-                <Input 
-                  type="number"
-                  value={form.actual_amount}
-                  onChange={(e) => setForm({...form, actual_amount: e.target.value})}
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={!form.sprint || !form.category} className="bg-purple-600 hover:bg-purple-700">Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-          {/* Methodology Help Panel */}
-          <MethodologyHelpPanel methodology="scrum" />
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} Expense</DialogTitle></DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2"><Label>{pt("Title")} *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+          <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>{pt("Amount")} *</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div><div className="space-y-2"><Label>{pt("Date")}</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div></div>
+          <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>{pt("Category")}</Label><Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="labor_cost">Labor</SelectItem><SelectItem value="material_cost">Material</SelectItem><SelectItem value="software">Software</SelectItem><SelectItem value="hardware">Hardware</SelectItem><SelectItem value="travel">Travel</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select></div><div className="space-y-2"><Label>{pt("Status")}</Label><Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="pending">Pending</SelectItem><SelectItem value="paid">Paid</SelectItem><SelectItem value="cancelled">Cancelled</SelectItem></SelectContent></Select></div></div>
+          <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleSave} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div>
+        </div>
+      </DialogContent></Dialog>
     </div>
   );
 };

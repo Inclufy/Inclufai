@@ -7,8 +7,10 @@ import { useProject } from "@/hooks/useApi";
 import { MethodologyDashboard } from "@/components/dashboards";
 import { Loader2, LayoutDashboard, List } from "lucide-react";
 import { useState } from "react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const FoundationOverview = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const { data: project, isLoading, error } = useProject(id);
   const [viewMode, setViewMode] = useState<'methodology' | 'classic'>('methodology');
@@ -58,7 +60,7 @@ const FoundationOverview = () => {
         {/* View Toggle & Methodology Badge */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold">Project Overview</h2>
+            <h2 className="text-xl font-semibold">{pt("Project Overview")}</h2>
             {project?.methodology && (
               <Badge variant="outline" className="text-sm">
                 {getMethodologyLabel(project.methodology)}
@@ -73,7 +75,7 @@ const FoundationOverview = () => {
               className="gap-2"
             >
               <LayoutDashboard className="h-4 w-4" />
-              Methodology View
+              {pt("Methodology View")}
             </Button>
             <Button
               variant={viewMode === 'classic' ? 'default' : 'ghost'}
@@ -82,7 +84,7 @@ const FoundationOverview = () => {
               className="gap-2"
             >
               <List className="h-4 w-4" />
-              Classic View
+              {pt("Classic View")}
             </Button>
           </div>
         </div>
@@ -94,7 +96,7 @@ const FoundationOverview = () => {
           /* Classic View */
           <Card className="p-6">
             <div className="mb-4">
-              <h2 className="text-xl font-semibold text-foreground mb-1">Project Overview</h2>
+              <h2 className="text-xl font-semibold text-foreground mb-1">{pt("Project Overview")}</h2>
               <p className="text-sm text-muted-foreground">
                 View and manage all aspects of your project foundation.
               </p>
@@ -104,19 +106,19 @@ const FoundationOverview = () => {
               {project && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   <div className="p-4 rounded-lg border bg-muted/30">
-                    <p className="text-sm text-muted-foreground">Status</p>
+                    <p className="text-sm text-muted-foreground">{pt("Status")}</p>
                     <p className="font-medium capitalize">{project.status?.replace('_', ' ')}</p>
                   </div>
                   <div className="p-4 rounded-lg border bg-muted/30">
-                    <p className="text-sm text-muted-foreground">Budget</p>
+                    <p className="text-sm text-muted-foreground">{pt("Budget")}</p>
                     <p className="font-medium">${parseFloat(project.budget || 0).toLocaleString()}</p>
                   </div>
                   <div className="p-4 rounded-lg border bg-muted/30">
-                    <p className="text-sm text-muted-foreground">Start Date</p>
+                    <p className="text-sm text-muted-foreground">{pt("Start Date")}</p>
                     <p className="font-medium">{project.start_date || 'Not set'}</p>
                   </div>
                   <div className="p-4 rounded-lg border bg-muted/30">
-                    <p className="text-sm text-muted-foreground">End Date</p>
+                    <p className="text-sm text-muted-foreground">{pt("End Date")}</p>
                     <p className="font-medium">{project.end_date || 'Not set'}</p>
                   </div>
                 </div>

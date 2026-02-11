@@ -7,10 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
 export default function VerifyEmail() {
+  const { pt } = usePageTranslations();
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
 
@@ -193,7 +195,7 @@ export default function VerifyEmail() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Email</Label>
+              <Label>{pt("Email")}</Label>
               <Input 
                 type="email" 
                 value={userEmail} 

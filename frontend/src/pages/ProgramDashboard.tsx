@@ -31,6 +31,7 @@ import {
   AlertTriangle, CheckCircle2, ArrowRight, Loader2, Plus,
   Edit, Trash2, ArrowLeft
 } from 'lucide-react';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -87,6 +88,7 @@ const deleteProgram = async (id: string) => {
 };
 
 const ProgramDashboard = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -235,11 +237,11 @@ const ProgramDashboard = () => {
           <div className="px-6 py-4 flex justify-end gap-2">
             <Button variant="outline" disabled className="gap-2">
               <Edit className="h-4 w-4" />
-              Edit
+              {pt("Edit")}
             </Button>
             <Button variant="destructive" disabled className="gap-2">
               <Trash2 className="h-4 w-4" />
-              Delete
+              {pt("Delete")}
             </Button>
           </div>
         </div>
@@ -264,11 +266,11 @@ const ProgramDashboard = () => {
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleEditClick} className="gap-2">
               <Edit className="h-4 w-4" />
-              Edit
+              {pt("Edit")}
             </Button>
             <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)} className="gap-2">
               <Trash2 className="h-4 w-4" />
-              Delete
+              {pt("Delete")}
             </Button>
           </div>
         </div>
@@ -302,13 +304,13 @@ const ProgramDashboard = () => {
           </Card>
           <Card>
             <CardContent className="pt-4 text-center">
-              <p className="text-sm text-muted-foreground">Active</p>
+              <p className="text-sm text-muted-foreground">{pt("Active")}</p>
               <p className="text-3xl font-bold text-blue-600">{programMetrics.activeProjects}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4 text-center">
-              <p className="text-sm text-muted-foreground">Completed</p>
+              <p className="text-sm text-muted-foreground">{pt("Completed")}</p>
               <p className="text-3xl font-bold text-green-600">{programMetrics.completedProjects}</p>
             </CardContent>
           </Card>
@@ -320,7 +322,7 @@ const ProgramDashboard = () => {
           </Card>
           <Card className={programMetrics.atRiskProjects > 0 ? 'border-yellow-300 bg-yellow-50' : ''}>
             <CardContent className="pt-4 text-center">
-              <p className="text-sm text-muted-foreground">At Risk</p>
+              <p className="text-sm text-muted-foreground">{pt("At Risk")}</p>
               <p className={`text-3xl font-bold ${programMetrics.atRiskProjects > 0 ? 'text-yellow-600' : 'text-green-600'}`}>
                 {programMetrics.atRiskProjects}
               </p>
@@ -339,15 +341,15 @@ const ProgramDashboard = () => {
           <CardContent>
             <div className="grid grid-cols-3 gap-6 mb-4">
               <div>
-                <p className="text-sm text-muted-foreground">Total Budget</p>
+                <p className="text-sm text-muted-foreground">{pt("Total Budget")}</p>
                 <p className="text-2xl font-bold">{formatCurrency(totalBudget)}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Spent</p>
+                <p className="text-sm text-muted-foreground">{pt("Spent")}</p>
                 <p className="text-2xl font-bold text-blue-600">{formatCurrency(spentBudget)}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Remaining</p>
+                <p className="text-sm text-muted-foreground">{pt("Remaining")}</p>
                 <p className="text-2xl font-bold text-green-600">{formatCurrency(totalBudget - spentBudget)}</p>
               </div>
             </div>
@@ -380,13 +382,13 @@ const ProgramDashboard = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b text-left">
-                    <th className="pb-3">Project</th>
+                    <th className="pb-3">{pt("Project")}</th>
                     <th className="pb-3">Methodology</th>
                     <th className="pb-3">Lead</th>
-                    <th className="pb-3">Status</th>
-                    <th className="pb-3">Progress</th>
-                    <th className="pb-3">Budget</th>
-                    <th className="pb-3">Health</th>
+                    <th className="pb-3">{pt("Status")}</th>
+                    <th className="pb-3">{pt("Progress")}</th>
+                    <th className="pb-3">{pt("Budget")}</th>
+                    <th className="pb-3">{pt("Health")}</th>
                     <th className="pb-3"></th>
                   </tr>
                 </thead>
@@ -499,7 +501,7 @@ const ProgramDashboard = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-description">Description</Label>
+              <Label htmlFor="edit-description">{pt("Description")}</Label>
               <Textarea
                 id="edit-description"
                 value={editFormData.description}
@@ -517,7 +519,7 @@ const ProgramDashboard = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-objective">Strategic Objective</Label>
+              <Label htmlFor="edit-objective">{pt("Strategic Objective")}</Label>
               <Textarea
                 id="edit-objective"
                 value={editFormData.strategic_objective}
@@ -528,7 +530,7 @@ const ProgramDashboard = () => {
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              Cancel
+              {pt("Cancel")}
             </Button>
             <Button onClick={handleSaveEdit} disabled={updateMutation.isPending}>
               {updateMutation.isPending ? "Saving..." : "Save Changes"}
@@ -547,12 +549,12 @@ const ProgramDashboard = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{pt("Cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteMutation.mutate()}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {pt("Delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

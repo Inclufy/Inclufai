@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // Types
 type ProgramMethodology = 'safe' | 'msp' | 'pmi' | 'prince2_programme' | 'hybrid';
@@ -205,6 +206,7 @@ const callAI = async (prompt: string): Promise<string> => {
 };
 
 const CreateProgram = () => {
+  const { pt } = usePageTranslations();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
@@ -602,7 +604,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setAiGenerateOpen(false)}>
-                    Cancel
+                    {pt("Cancel")}
                   </Button>
                   <Button onClick={handleAIGenerate} disabled={aiLoading || !generatePrompt.trim()}>
                     {aiLoading ? (
@@ -895,7 +897,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
                   <div className="grid gap-2">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="description">Description</Label>
+                      <Label htmlFor="description">{pt("Description")}</Label>
                       <Button 
                         variant="ghost" 
                         size="sm" 
@@ -922,7 +924,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
                   <div className="grid gap-2">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="objective">Strategic Objective</Label>
+                      <Label htmlFor="objective">{pt("Strategic Objective")}</Label>
                       <Button 
                         variant="ghost" 
                         size="sm" 
@@ -970,7 +972,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="manager">Program Manager</Label>
+                      <Label htmlFor="manager">{pt("Program Manager")}</Label>
                       <Select 
                         value={formData.programManagerId}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, programManagerId: value }))}
@@ -1021,7 +1023,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="budget">Total Budget</Label>
+                      <Label htmlFor="budget">{pt("Total Budget")}</Label>
                       <Input
                         id="budget"
                         type="number"
@@ -1164,24 +1166,24 @@ Be specific and professional. Use the context to determine appropriate methodolo
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <p className="text-sm text-muted-foreground">Name</p>
+                        <p className="text-sm text-muted-foreground">{pt("Name")}</p>
                         <p className="font-medium">{formData.name || '-'}</p>
                       </div>
                       {formData.description && (
                         <div>
-                          <p className="text-sm text-muted-foreground">Description</p>
+                          <p className="text-sm text-muted-foreground">{pt("Description")}</p>
                           <p>{formData.description}</p>
                         </div>
                       )}
                       {formData.strategicObjective && (
                         <div>
-                          <p className="text-sm text-muted-foreground">Strategic Objective</p>
+                          <p className="text-sm text-muted-foreground">{pt("Strategic Objective")}</p>
                           <p>{formData.strategicObjective}</p>
                         </div>
                       )}
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-muted-foreground">Start Date</p>
+                          <p className="text-sm text-muted-foreground">{pt("Start Date")}</p>
                           <p className="font-medium">{formData.startDate || '-'}</p>
                         </div>
                         <div>
@@ -1191,7 +1193,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       </div>
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-muted-foreground">Program Manager</p>
+                          <p className="text-sm text-muted-foreground">{pt("Program Manager")}</p>
                           <p className="font-medium">
                             {formData.programManagerId 
                               ? teamMembers.find((m: any) => m.id.toString() === formData.programManagerId)?.first_name || 'Selected'
@@ -1199,7 +1201,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Budget</p>
+                          <p className="text-sm text-muted-foreground">{pt("Budget")}</p>
                           <p className="font-medium">
                             {formData.totalBudget 
                               ? new Intl.NumberFormat('nl-NL', { style: 'currency', currency: formData.currency }).format(Number(formData.totalBudget))
@@ -1250,12 +1252,12 @@ Be specific and professional. Use the context to determine appropriate methodolo
             disabled={currentStep === 1}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            {pt("Back")}
           </Button>
 
           {currentStep < 4 ? (
             <Button onClick={handleNext} disabled={!canProceed()}>
-              Next
+              {pt("Next")}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           ) : (

@@ -9,8 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Shield, ArrowLeft, Sparkles } from "lucide-react";
 import AISmartHelper from "@/components/governance/AISmartHelper";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const CreateBoard: React.FC = () => {
+  const { pt } = usePageTranslations();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -177,7 +179,7 @@ const CreateBoard: React.FC = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="description" className="text-base font-semibold">
-                  Description
+                  {pt("Description")}
                 </Label>
                 <Textarea
                   id="description"
@@ -197,7 +199,7 @@ const CreateBoard: React.FC = () => {
                   className="flex-1 h-12"
                   disabled={loading}
                 >
-                  Cancel
+                  {pt("Cancel")}
                 </Button>
                 <Button
                   type="submit"

@@ -2,8 +2,10 @@ import { Card } from "@/components/ui/card";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const ExecutionStakeholders = () => {
+  const { pt } = usePageTranslations();
   const stakeholders = [
     {
       name: "Zinedine",
@@ -56,10 +58,10 @@ const ExecutionStakeholders = () => {
               </div>
               <div className="flex gap-2 mt-4">
                 <Button variant="outline" size="sm">
-                  Edit
+                  {pt("Edit")}
                 </Button>
                 <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                  Delete
+                  {pt("Delete")}
                 </Button>
               </div>
             </Card>

@@ -1,4 +1,4 @@
-FROM node:24-alpine
+FROM node:18-alpine as build
 
 WORKDIR /app
 
@@ -7,10 +7,22 @@ RUN npm ci
 
 COPY . .
 
-ARG VITE_BACKEND_URL
-ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
+ENV VITE_BACKEND_URL=/api/v1
+ENV VITE_API_URL=/api/v1
 
-EXPOSE 8083
+RUN npm run build
 
-# Use dev mode - no build, hot reload
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "8083"]
+FROM nginx:alpine
+
+RUN echo 'server { \
+    listen 80; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    location / { \
+        try_files $uri $uri/ /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
+
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

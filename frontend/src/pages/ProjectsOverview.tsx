@@ -77,6 +77,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // API functions
 const fetchProjects = async () => {
@@ -165,6 +166,7 @@ interface ProjectFormData {
 }
 
 const ProjectsOverview = () => {
+  const { pt } = usePageTranslations();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useLanguage();
@@ -688,7 +690,7 @@ Respond in this EXACT JSON format only, no other text:
                   <div className="flex justify-start pt-2">
                     <Button variant="outline" onClick={() => setWizardStep('idea')}>
                       <ArrowLeft className="h-4 w-4 mr-2" />
-                      Back
+                      {pt("Back")}
                     </Button>
                   </div>
                 </div>
@@ -716,7 +718,7 @@ Respond in this EXACT JSON format only, no other text:
                     </div>
 
                     <div className="grid gap-2">
-                      <Label htmlFor="description">Description</Label>
+                      <Label htmlFor="description">{pt("Description")}</Label>
                       <Textarea
                         id="description"
                         value={formData.description}
@@ -771,7 +773,7 @@ Respond in this EXACT JSON format only, no other text:
                       </div>
 
                       <div className="grid gap-2">
-                        <Label htmlFor="priority">Priority</Label>
+                        <Label htmlFor="priority">{pt("Priority")}</Label>
                         <Select 
                           value={formData.priority} 
                           onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}
@@ -780,10 +782,10 @@ Respond in this EXACT JSON format only, no other text:
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="low">Low</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="high">High</SelectItem>
-                            <SelectItem value="critical">Critical</SelectItem>
+                            <SelectItem value="low">{pt("Low")}</SelectItem>
+                            <SelectItem value="medium">{pt("Medium")}</SelectItem>
+                            <SelectItem value="high">{pt("High")}</SelectItem>
+                            <SelectItem value="critical">{pt("Critical")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -792,7 +794,7 @@ Respond in this EXACT JSON format only, no other text:
                     <div className="grid gap-2">
                       <Label htmlFor="startDate" className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
-                        Start Date
+                        {pt("Start Date")}
                       </Label>
                       <Input
                         id="startDate"
@@ -820,7 +822,7 @@ Respond in this EXACT JSON format only, no other text:
                   <div className="flex justify-between pt-2">
                     <Button variant="outline" onClick={() => setWizardStep('methodology')}>
                       <ArrowLeft className="h-4 w-4 mr-2" />
-                      Back
+                      {pt("Back")}
                     </Button>
                     <Button onClick={handleGoToReview}>
                       Review
@@ -922,7 +924,7 @@ Respond in this EXACT JSON format only, no other text:
                     </Button>
                     <Button onClick={handleCreateProject} size="lg" className="gap-2">
                       <Sparkles className="h-4 w-4" />
-                      Create Project
+                      {pt("Create Project")}
                     </Button>
                   </div>
                 </div>

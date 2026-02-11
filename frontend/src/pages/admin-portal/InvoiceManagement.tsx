@@ -59,6 +59,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // ============================================================
 // TYPES
@@ -98,9 +99,10 @@ interface Company {
 // API CONFIG
 // ============================================================
 
-const API_BASE_URL = '/api/v1';
+const API_BASE_URL = '/api/v1/subscriptions';
 
 const getAuthHeaders = () => {
+  const { pt } = usePageTranslations();
   const token = localStorage.getItem('access_token');
   return {
     'Authorization': `Bearer ${token}`,
@@ -609,7 +611,7 @@ export default function InvoiceManagement() {
                   <TableHead>{isNL ? 'Vervaldatum' : 'Due Date'}</TableHead>
                   <TableHead>{isNL ? 'Periode' : 'Period'}</TableHead>
                   <TableHead>{isNL ? 'Bedrag' : 'Amount'}</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{pt("Status")}</TableHead>
                   <TableHead className="text-right">{isNL ? 'Acties' : 'Actions'}</TableHead>
                 </TableRow>
               </TableHeader>

@@ -35,6 +35,7 @@ import AICommander from "@/components/AICommander";
 import { formatBudget, getCurrencyFromLanguage } from "@/lib/currencies";
 import { CreditCard, ArrowUpRight, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const fetchProjects = async () => {
   const token = localStorage.getItem("access_token");
@@ -98,6 +99,7 @@ interface DonutChartProps {
 }
 
 const DonutChart = ({ total, segments, centerLabel }: DonutChartProps) => {
+  const { pt } = usePageTranslations();
   const radius = 80;
   const strokeWidth = 20;
   const normalizedRadius = radius - strokeWidth / 2;
@@ -487,12 +489,12 @@ const Index = () => {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
-          <StatCard title="Programs" value={totalPrograms} subtitle={t.app.totalPrograms} icon={Building2} color="purple" />
-          <StatCard title="Projects" value={totalProjects} subtitle={t.app.totalProjects} icon={FolderKanban} color="blue" />
-          <StatCard title="Active" value={activeProjects} subtitle={t.app.inProgress} icon={Activity} color="emerald" trend="up" trendValue="+12%" />
-          <StatCard title="At Risk" value={atRiskProjects} subtitle={t.app.requiresAttention} icon={AlertTriangle} color="red" />
-          <StatCard title="Budget" value={formatBudget(totalBudget, currencyCode)} subtitle={t.app.totalAllocated} icon={DollarSign} color="amber" />
-          <StatCard title="Progress" value={`${avgProgress}%`} subtitle="Average Completion" icon={Target} color="emerald" />
+          <StatCard title={pt("Programs")} value={totalPrograms} subtitle={t.app.totalPrograms} icon={Building2} color="purple" />
+          <StatCard title={pt("Projects")} value={totalProjects} subtitle={t.app.totalProjects} icon={FolderKanban} color="blue" />
+          <StatCard title={pt("Active")} value={activeProjects} subtitle={t.app.inProgress} icon={Activity} color="emerald" trend="up" trendValue="+12%" />
+          <StatCard title={pt("At Risk")} value={atRiskProjects} subtitle={t.app.requiresAttention} icon={AlertTriangle} color="red" />
+          <StatCard title={pt("Budget")} value={formatBudget(totalBudget, currencyCode)} subtitle={t.app.totalAllocated} icon={DollarSign} color="amber" />
+          <StatCard title={pt("Progress")} value={`${avgProgress}%`} subtitle="Average Completion" icon={Target} color="emerald" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -672,7 +674,7 @@ const Index = () => {
                   <thead>
                     <tr className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-b border-purple-100 dark:border-purple-900/50">
                       <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{t.app.name}</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">End Date</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("End Date")}</th>
                       <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{t.app.budget}</th>
                       <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{t.app.progress}</th>
                       <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{t.app.status}</th>
@@ -723,7 +725,7 @@ const Index = () => {
                               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold shadow-lg rounded-xl"
                             >
                               <Sparkles className="h-4 w-4 mr-2" />
-                              Create Project
+                              {pt("Create Project")}
                             </Button>
                           </div>
                         </td>

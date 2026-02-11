@@ -876,6 +876,10 @@ class MilestoneViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         project_id = self.request.query_params.get("project")
         if project_id:
             qs = qs.filter(project_id=project_id)
+        
+        program_id = self.request.query_params.get("program")
+        if program_id:
+            qs = qs.filter(project__program_id=program_id)
         return qs
 
 
@@ -972,6 +976,10 @@ class ExpenseViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         project_id = self.request.query_params.get("project")
         if project_id:
             qs = qs.filter(project_id=project_id)
+        
+        program_id = self.request.query_params.get("program")
+        if program_id:
+            qs = qs.filter(project__program_id=program_id)
         category = self.request.query_params.get("category")
         if category:
             qs = qs.filter(category=category)
@@ -998,6 +1006,10 @@ class ProjectActivityViewSet(CompanyScopedQuerysetMixin, viewsets.ReadOnlyModelV
         project_id = self.request.query_params.get("project")
         if project_id:
             qs = qs.filter(project_id=project_id)
+        
+        program_id = self.request.query_params.get("program")
+        if program_id:
+            qs = qs.filter(project__program_id=program_id)
         return qs[:5]
 
 
@@ -1143,6 +1155,10 @@ class ApprovalStageViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         project_id = self.request.query_params.get("project")
         if project_id:
             qs = qs.filter(project_id=project_id)
+        
+        program_id = self.request.query_params.get("program")
+        if program_id:
+            qs = qs.filter(project__program_id=program_id)
         return qs
 
     def perform_create(self, serializer):
@@ -1579,6 +1595,10 @@ class ProjectEventViewSet(viewsets.ModelViewSet):
         if project_id:
             qs = qs.filter(project_id=project_id)
 
+        program_id = self.request.query_params.get("program")
+        if program_id:
+            qs = qs.filter(project__program_id=program_id)    
+
         # Filter by date range if provided
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
@@ -1692,6 +1712,10 @@ class TimeEntryViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         project_id = self.request.query_params.get("project")
         if project_id:
             qs = qs.filter(project_id=project_id)
+        
+        program_id = self.request.query_params.get("program")
+        if program_id:
+            qs = qs.filter(project__program_id=program_id)
         
         # Filter by user (only admins/PMs can view other users' entries)
         user_id = self.request.query_params.get("user")
@@ -1942,6 +1966,10 @@ class ProjectTeamRateViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         project_id = self.request.query_params.get("project")
         if project_id:
             qs = qs.filter(project_id=project_id)
+        
+        program_id = self.request.query_params.get("program")
+        if program_id:
+            qs = qs.filter(project__program_id=program_id)
         return qs.filter(is_active=True)
 
     @action(detail=True, methods=["patch"])

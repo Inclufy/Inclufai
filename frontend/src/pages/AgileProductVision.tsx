@@ -8,8 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { ProjectHeader } from '@/components/ProjectHeader';
 import { useProject } from '@/hooks/useApi';
 import { Target, Users, Lightbulb, CheckCircle2, Edit, Save, Plus, Trash2 } from 'lucide-react';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const AgileProductVision = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const { data: project } = useProject(id);
   const [isEditing, setIsEditing] = useState(false);
@@ -38,10 +40,10 @@ const AgileProductVision = () => {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5 text-primary" />
-              Product Vision
+              {pt("Product Vision")}
             </CardTitle>
             <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)}>
-              {isEditing ? <><Save className="h-4 w-4 mr-2" />Save</> : <><Edit className="h-4 w-4 mr-2" />Edit</>}
+              {isEditing ? <><Save className="h-4 w-4 mr-2" />{pt("Save")}</> : <><Edit className="h-4 w-4 mr-2" />{pt("Edit")}</>}
             </Button>
           </CardHeader>
           <CardContent>
@@ -116,7 +118,7 @@ const AgileProductVision = () => {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
-              User Personas
+              {pt("User Personas")}
             </CardTitle>
             <Button size="sm">
               <Plus className="h-4 w-4 mr-2" />

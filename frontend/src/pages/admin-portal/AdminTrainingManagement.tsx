@@ -44,6 +44,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // Safe import for useLanguage - fallback if not available
 let useLanguage: () => { language: string };
@@ -181,6 +182,7 @@ const api = {
 // MAIN COMPONENT
 // ============================================
 const AdminTrainingManagement = () => {
+  const { pt } = usePageTranslations();
   const { language } = useLanguage();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('courses');
@@ -546,7 +548,7 @@ const AdminTrainingManagement = () => {
                   <TableHead>{isNL ? 'Studenten' : 'Students'}</TableHead>
                   <TableHead>{isNL ? 'Omzet' : 'Revenue'}</TableHead>
                   <TableHead>Rating</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{pt("Status")}</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -613,7 +615,7 @@ const AdminTrainingManagement = () => {
                   <TableHead>{isNL ? 'Cursus' : 'Course'}</TableHead>
                   <TableHead>{isNL ? 'Datum' : 'Date'}</TableHead>
                   <TableHead>{isNL ? 'Voortgang' : 'Progress'}</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{pt("Status")}</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -676,7 +678,7 @@ const AdminTrainingManagement = () => {
                   <TableHead>{isNL ? 'Cursussen' : 'Courses'}</TableHead>
                   <TableHead>{isNL ? 'Teamgrootte' : 'Team Size'}</TableHead>
                   <TableHead>{isNL ? 'Datum' : 'Date'}</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{pt("Status")}</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>

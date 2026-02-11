@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ProjectHeader } from '@/components/ProjectHeader';
 import { Shield, Users, Calendar, FileText, CheckCircle2, Clock, AlertCircle, Loader2, Plus } from 'lucide-react';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -28,6 +29,7 @@ const fetchProgramRisks = async (programId: string) => {
 };
 
 const ProgramGovernance = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
 
   const { data: governance, isLoading: govLoading } = useQuery({
@@ -85,7 +87,7 @@ const ProgramGovernance = () => {
               </CardTitle>
               <Button size="sm">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Member
+                {pt("Add Member")}
               </Button>
             </div>
           </CardHeader>
@@ -133,7 +135,7 @@ const ProgramGovernance = () => {
                 </CardTitle>
                 <Button size="sm" variant="outline">
                   <Plus className="h-4 w-4 mr-2" />
-                  Schedule
+                  {pt("Schedule")}
                 </Button>
               </div>
             </CardHeader>
@@ -223,9 +225,9 @@ const ProgramGovernance = () => {
                   <tr className="border-b text-left">
                     <th className="pb-3">ID</th>
                     <th className="pb-3">Decision</th>
-                    <th className="pb-3">Date</th>
-                    <th className="pb-3">Impact</th>
-                    <th className="pb-3">Status</th>
+                    <th className="pb-3">{pt("Date")}</th>
+                    <th className="pb-3">{pt("Impact")}</th>
+                    <th className="pb-3">{pt("Status")}</th>
                   </tr>
                 </thead>
                 <tbody>

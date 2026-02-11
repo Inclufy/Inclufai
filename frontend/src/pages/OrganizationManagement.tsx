@@ -51,6 +51,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 interface Organization {
   id: number;
@@ -78,6 +79,7 @@ interface Plan {
 }
 
 export default function OrganizationManagement() {
+  const { pt } = usePageTranslations();
   const { language } = useLanguage();
   const isNL = language === 'nl';
 
@@ -401,7 +403,7 @@ export default function OrganizationManagement() {
                   <TableHead>{isNL ? 'Gebruikers' : 'Users'}</TableHead>
                   <TableHead>{isNL ? 'Abonnement' : 'Subscription'}</TableHead>
                   <TableHead>{isNL ? 'Cyclus' : 'Cycle'}</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{pt("Status")}</TableHead>
                   <TableHead>{isNL ? 'Aangemaakt' : 'Created'}</TableHead>
                   <TableHead className="text-right">{isNL ? 'Acties' : 'Actions'}</TableHead>
                 </TableRow>

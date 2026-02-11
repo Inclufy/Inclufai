@@ -1,336 +1,89 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  Target, Edit2, Plus, Trash2, CheckCircle, 
-  Users, Lightbulb, Star, Loader2
-} from 'lucide-react';
-
-interface Goal {
-  id: number;
-  title: string;
-  description: string;
-  priority: 'high' | 'medium' | 'low';
-  status: 'not_started' | 'in_progress' | 'achieved';
-}
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, Save, Eye, Plus, Pencil, Trash2, Target } from "lucide-react";
+import { toast } from "sonner";
 
 const AgileProductVision = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  
+  const [vision, setVision] = useState<any>(null);
+  const [goals, setGoals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [showGoalDialog, setShowGoalDialog] = useState(false);
-  
-  const [vision, setVision] = useState({
-    statement: '',
-    targetAudience: '',
-    problemStatement: '',
-    uniqueValue: '',
-    successCriteria: '',
-  });
-  
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [goalForm, setGoalForm] = useState({ title: '', description: '', priority: 'medium' });
+  const [saving, setSaving] = useState(false);
+  const [goalDialog, setGoalDialog] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<any>(null);
+  const [visionForm, setVisionForm] = useState({ vision_statement: "", target_group: "", needs: "", product: "", business_goals: "" });
+  const [goalForm, setGoalForm] = useState({ title: "", description: "", target_date: "", status: "active" });
 
-  useEffect(() => {
-    loadVision();
-  }, [id]);
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  const loadVision = async () => {
-    setLoading(true);
-    setTimeout(() => {
-      setVision({
-        statement: 'To create an intuitive project management platform that empowers teams to deliver value faster through streamlined collaboration and real-time visibility.',
-        targetAudience: 'Mid-size technology companies with distributed teams who need flexible, methodology-agnostic project management solutions.',
-        problemStatement: 'Teams struggle with fragmented tools, lack of visibility across projects, and rigid methodologies that don\'t fit their unique workflows.',
-        uniqueValue: 'A unified platform that adapts to your methodology - whether Agile, Waterfall, or hybrid - with AI-powered insights and seamless integrations.',
-        successCriteria: '• 50% reduction in time to project visibility\n• 90% user adoption within 3 months\n• NPS score > 50\n• 30% improvement in on-time delivery',
-      });
-      setGoals([
-        { id: 1, title: 'Launch MVP', description: 'Core features for Agile project management', priority: 'high', status: 'achieved' },
-        { id: 2, title: 'Multi-methodology Support', description: 'Support for Scrum, Kanban, Waterfall, and PRINCE2', priority: 'high', status: 'in_progress' },
-        { id: 3, title: 'AI Assistant Integration', description: 'AI-powered recommendations and insights', priority: 'medium', status: 'in_progress' },
-        { id: 4, title: 'Enterprise Features', description: 'SSO, audit logs, advanced permissions', priority: 'medium', status: 'not_started' },
+  const fetchData = async () => {
+    try {
+      const [vRes, gRes] = await Promise.all([
+        fetch(`/api/v1/projects/${id}/agile/vision/`, { headers }),
+        fetch(`/api/v1/projects/${id}/agile/goals/`, { headers }),
       ]);
-      setLoading(false);
-    }, 500);
+      if (vRes.ok) { const d = await vRes.json(); setVision(d); setVisionForm({ vision_statement: d.vision_statement || "", target_group: d.target_group || "", needs: d.needs || "", product: d.product || "", business_goals: d.business_goals || "" }); }
+      if (gRes.ok) { const d = await gRes.json(); setGoals(Array.isArray(d) ? d : d.results || []); }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
-  const handleSaveVision = () => {
-    setIsEditing(false);
-    // Save to API
-  };
+  useEffect(() => { fetchData(); }, [id]);
 
-  const handleAddGoal = () => {
-    const newGoal: Goal = {
-      id: Date.now(),
-      title: goalForm.title,
-      description: goalForm.description,
-      priority: goalForm.priority as Goal['priority'],
-      status: 'not_started',
-    };
-    setGoals([...goals, newGoal]);
-    setShowGoalDialog(false);
-    setGoalForm({ title: '', description: '', priority: 'medium' });
-  };
+  const saveVision = async () => { setSaving(true); try { const r = await fetch(`/api/v1/projects/${id}/agile/vision/`, { method: "PUT", headers: jsonHeaders, body: JSON.stringify(visionForm) }); if (r.ok) { setVision(await r.json()); toast.success("Vision opgeslagen"); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } finally { setSaving(false); } };
 
-  const handleDeleteGoal = (goalId: number) => {
-    if (!confirm('Delete this goal?')) return;
-    setGoals(goals.filter(g => g.id !== goalId));
-  };
+  const openCreateGoal = () => { setEditingGoal(null); setGoalForm({ title: "", description: "", target_date: "", status: "active" }); setGoalDialog(true); };
+  const openEditGoal = (g: any) => { setEditingGoal(g); setGoalForm({ title: g.title || "", description: g.description || "", target_date: g.target_date?.split("T")[0] || "", status: g.status || "active" }); setGoalDialog(true); };
+  const saveGoal = async () => { if (!goalForm.title) { toast.error("Titel verplicht"); return; } try { const url = editingGoal ? `/api/v1/projects/${id}/agile/goals/${editingGoal.id}/` : `/api/v1/projects/${id}/agile/goals/`; const method = editingGoal ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(goalForm) }); if (r.ok) { toast.success("Opgeslagen"); setGoalDialog(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } };
+  const deleteGoal = async (gId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`/api/v1/projects/${id}/agile/goals/${gId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
 
-  const getStatusBadge = (status: Goal['status']) => {
-    switch (status) {
-      case 'achieved': return <Badge className="bg-green-500">Achieved</Badge>;
-      case 'in_progress': return <Badge className="bg-blue-500">In Progress</Badge>;
-      default: return <Badge variant="outline">Not Started</Badge>;
-    }
-  };
+  const Field = ({ label, field }: { label: string; field: string }) => (<div className="space-y-2"><Label>{label}</Label><textarea className="w-full min-h-[80px] px-3 py-2 border rounded-md bg-background resize-y" value={(visionForm as any)[field] || ""} onChange={(e) => setVisionForm({ ...visionForm, [field]: e.target.value })} /></div>);
 
-  const getPriorityBadge = (priority: Goal['priority']) => {
-    switch (priority) {
-      case 'high': return <Badge variant="destructive">High</Badge>;
-      case 'medium': return <Badge className="bg-yellow-500">Medium</Badge>;
-      default: return <Badge variant="outline">Low</Badge>;
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader />
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
-    <div className="min-h-full bg-background">
-      <ProjectHeader />
+    <div className="min-h-full bg-background"><ProjectHeader />
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Target className="h-6 w-6 text-emerald-600" />
-              Product Vision
-            </h1>
-            <p className="text-muted-foreground">Define and communicate the product direction</p>
-          </div>
-          <Button onClick={() => setIsEditing(!isEditing)}>
-            <Edit2 className="h-4 w-4 mr-2" />
-            {isEditing ? 'Cancel' : 'Edit Vision'}
-          </Button>
+          <div className="flex items-center gap-3"><Eye className="h-6 w-6 text-indigo-500" /><h1 className="text-2xl font-bold">{pt("Product Vision")}</h1></div>
+          <Button onClick={saveVision} disabled={saving} className="gap-2">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {pt("Save")}</Button>
         </div>
 
-        {/* Vision Statement */}
-        <Card className="border-emerald-200 bg-emerald-50/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-emerald-600" />
-              Vision Statement
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isEditing ? (
-              <Textarea 
-                value={vision.statement}
-                onChange={(e) => setVision({...vision, statement: e.target.value})}
-                rows={3}
-                className="bg-white"
-              />
-            ) : (
-              <p className="text-lg font-medium text-emerald-900">{vision.statement}</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Vision Details */}
-        <div className="grid grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Target Audience
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isEditing ? (
-                <Textarea 
-                  value={vision.targetAudience}
-                  onChange={(e) => setVision({...vision, targetAudience: e.target.value})}
-                  rows={3}
-                />
-              ) : (
-                <p className="text-muted-foreground">{vision.targetAudience}</p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="h-5 w-5" />
-                Problem Statement
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isEditing ? (
-                <Textarea 
-                  value={vision.problemStatement}
-                  onChange={(e) => setVision({...vision, problemStatement: e.target.value})}
-                  rows={3}
-                />
-              ) : (
-                <p className="text-muted-foreground">{vision.problemStatement}</p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Unique Value Proposition</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isEditing ? (
-                <Textarea 
-                  value={vision.uniqueValue}
-                  onChange={(e) => setVision({...vision, uniqueValue: e.target.value})}
-                  rows={3}
-                />
-              ) : (
-                <p className="text-muted-foreground">{vision.uniqueValue}</p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5" />
-                Success Criteria
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isEditing ? (
-                <Textarea 
-                  value={vision.successCriteria}
-                  onChange={(e) => setVision({...vision, successCriteria: e.target.value})}
-                  rows={4}
-                />
-              ) : (
-                <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-sans">
-                  {vision.successCriteria}
-                </pre>
-              )}
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card><CardHeader><CardTitle>Vision</CardTitle></CardHeader><CardContent className="space-y-4"><Field label="Vision Statement" field="vision_statement" /><Field label={pt("Product")} field="product" /></CardContent></Card>
+          <Card><CardHeader><CardTitle>Target & Needs</CardTitle></CardHeader><CardContent className="space-y-4"><Field label={pt("Target Group")} field="target_group" /><Field label={pt("Needs")} field="needs" /><Field label={pt("Business Goals")} field="business_goals" /></CardContent></Card>
         </div>
 
-        {isEditing && (
-          <div className="flex justify-end">
-            <Button onClick={handleSaveVision}>Save Vision</Button>
-          </div>
-        )}
-
-        {/* Product Goals */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Product Goals</CardTitle>
-            <Button size="sm" onClick={() => setShowGoalDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Goal
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {goals.map((goal) => (
-                <div key={goal.id} className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium">{goal.title}</span>
-                      {getPriorityBadge(goal.priority)}
-                      {getStatusBadge(goal.status)}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{goal.description}</p>
-                  </div>
-                  <Button variant="ghost" size="icon" className="text-red-600" onClick={() => handleDeleteGoal(goal.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Vision Tips */}
-        <Card className="bg-emerald-50 border-emerald-200">
-          <CardContent className="pt-4">
-            <h3 className="font-semibold text-emerald-900 mb-2">Effective Product Vision</h3>
-            <ul className="space-y-1 text-sm text-emerald-800">
-              <li>• <strong>Inspiring:</strong> Motivates the team and stakeholders</li>
-              <li>• <strong>Clear:</strong> Easy to understand and communicate</li>
-              <li>• <strong>Stable:</strong> Provides long-term direction</li>
-              <li>• <strong>Measurable:</strong> Has clear success criteria</li>
-            </ul>
-          </CardContent>
+        <Card><CardHeader className="flex flex-row items-center justify-between"><CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" /> {pt("Product Goals")} ({goals.length})</CardTitle><Button size="sm" onClick={openCreateGoal}><Plus className="h-4 w-4 mr-1" /> {pt("Add")}</Button></CardHeader>
+          <CardContent>{goals.length === 0 ? <p className="text-muted-foreground text-center py-4">No goals yet</p> : (
+            <div className="space-y-2">{goals.map(g => (
+              <div key={g.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div><p className="font-medium">{g.title}</p>{g.description && <p className="text-sm text-muted-foreground">{g.description}</p>}<div className="flex gap-2 mt-1"><Badge variant={g.status === "achieved" ? "default" : "outline"}>{g.status}</Badge>{g.target_date && <span className="text-xs text-muted-foreground">{g.target_date}</span>}</div></div>
+                <div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => openEditGoal(g)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => deleteGoal(g.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div>
+              </div>
+            ))}</div>
+          )}</CardContent>
         </Card>
       </div>
-
-      {/* Add Goal Dialog */}
-      <Dialog open={showGoalDialog} onOpenChange={setShowGoalDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Product Goal</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Goal Title</label>
-              <Input 
-                value={goalForm.title}
-                onChange={(e) => setGoalForm({...goalForm, title: e.target.value})}
-                placeholder="e.g., Launch mobile app"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Description</label>
-              <Textarea 
-                value={goalForm.description}
-                onChange={(e) => setGoalForm({...goalForm, description: e.target.value})}
-                placeholder="Describe the goal..."
-                rows={3}
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Priority</label>
-              <select 
-                value={goalForm.priority}
-                onChange={(e) => setGoalForm({...goalForm, priority: e.target.value})}
-                className="w-full border rounded-md p-2"
-              >
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowGoalDialog(false)}>Cancel</Button>
-            <Button onClick={handleAddGoal} disabled={!goalForm.title}>Add Goal</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-          {/* Methodology Help Panel */}
-          <MethodologyHelpPanel methodology="agile" />
+      <Dialog open={goalDialog} onOpenChange={setGoalDialog}><DialogContent><DialogHeader><DialogTitle>{editingGoal ? pt("Edit") : pt("Add")} Goal</DialogTitle></DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2"><Label>{pt("Title")} *</Label><Input value={goalForm.title} onChange={(e) => setGoalForm({ ...goalForm, title: e.target.value })} /></div>
+          <div className="space-y-2"><Label>{pt("Description")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={goalForm.description} onChange={(e) => setGoalForm({ ...goalForm, description: e.target.value })} /></div>
+          <div className="space-y-2"><Label>{pt("Target Date")}</Label><Input type="date" value={goalForm.target_date} onChange={(e) => setGoalForm({ ...goalForm, target_date: e.target.value })} /></div>
+          <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setGoalDialog(false)}>{pt("Cancel")}</Button><Button onClick={saveGoal}>{pt("Save")}</Button></div>
+        </div>
+      </DialogContent></Dialog>
     </div>
   );
 };

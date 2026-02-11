@@ -79,6 +79,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { Integration, IntegrationCategory, IntegrationStatus } from './admin.types';
 import { getIntegrationCategoryColor, getIntegrationStatusColor } from './admin.types';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // =========================
 // INTEGRATION ICONS MAP
@@ -502,12 +503,12 @@ const NewIntegrationDialog: React.FC<NewIntegrationDialogProps> = ({
                 <SelectContent>
                   <SelectItem value="authentication">Authentication</SelectItem>
                   <SelectItem value="storage">Storage</SelectItem>
-                  <SelectItem value="communication">Communication</SelectItem>
+                  <SelectItem value="communication">{"Communication"}</SelectItem>
                   <SelectItem value="project_management">Project Management</SelectItem>
                   <SelectItem value="time_tracking">Time Tracking</SelectItem>
                   <SelectItem value="calendar">Calendar</SelectItem>
                   <SelectItem value="payment">Payment</SelectItem>
-                  <SelectItem value="analytics">Analytics</SelectItem>
+                  <SelectItem value="analytics">{"Analytics"}</SelectItem>
                   <SelectItem value="ai">AI</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
@@ -984,7 +985,7 @@ export default function IntegrationManagement() {
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={"Status"} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{language === 'nl' ? 'Alle Status' : 'All Status'}</SelectItem>

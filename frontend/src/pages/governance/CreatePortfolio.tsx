@@ -10,8 +10,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Briefcase, ArrowLeft, Sparkles } from "lucide-react";
 import AISmartHelper from "@/components/governance/AISmartHelper";
 import { Badge } from "@/components/ui/badge";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const CreatePortfolio: React.FC = () => {
+  const { pt } = usePageTranslations();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -152,7 +154,7 @@ const CreatePortfolio: React.FC = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="description" className="text-base font-semibold">
-                  Description
+                  {pt("Description")}
                 </Label>
                 <Textarea
                   id="description"
@@ -172,7 +174,7 @@ const CreatePortfolio: React.FC = () => {
                   className="flex-1 h-12"
                   disabled={loading}
                 >
-                  Cancel
+                  {pt("Cancel")}
                 </Button>
                 <Button
                   type="submit"

@@ -1,256 +1,194 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { useProject } from '@/hooks/useApi';
-import { prince2Api, ProjectTolerance } from '@/lib/prince2Api';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  Target, Clock, DollarSign, Layers, Award, AlertTriangle, 
-  Plus, Edit, Save, RefreshCw, CheckCircle2, XCircle
-} from 'lucide-react';
-
-const TOLERANCE_ICONS: Record<string, any> = {
-  time: Clock,
-  cost: DollarSign,
-  scope: Layers,
-  quality: CheckCircle2,
-  benefit: Award,
-  risk: AlertTriangle
-};
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Plus, AlertTriangle, Pencil, Trash2, Zap } from "lucide-react";
+import { toast } from "sonner";
 
 const Prince2Tolerances = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id);
-  
-  const [tolerances, setTolerances] = useState<ProjectTolerance[]>([]);
+  const [tolerances, setTolerances] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editData, setEditData] = useState<Partial<ProjectTolerance>>({});
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ tolerance_type: "time", planned_value: "", actual_value: "", deviation_percentage: "0", is_exceeded: false });
 
-  useEffect(() => {
-    if (id) loadTolerances();
-  }, [id]);
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  const loadTolerances = async () => {
-    if (!id) return;
+  const fetchData = async () => {
     try {
-      setLoading(true);
-      const data = await prince2Api.tolerances.getAll(id);
-      setTolerances(data);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+      const response = await fetch(`/api/v1/projects/${id}/prince2/tolerances/`, { headers });
+      if (response.ok) {
+        const data = await response.json();
+        setTolerances(Array.isArray(data) ? data : data.results || []);
+      }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
+
+  useEffect(() => { fetchData(); }, [id]);
 
   const initializeTolerances = async () => {
-    if (!id) return;
     try {
-      await prince2Api.tolerances.initialize(id);
-      await loadTolerances();
-    } catch (err: any) {
-      setError(err.message);
-    }
+      const response = await fetch(`/api/v1/projects/${id}/prince2/tolerances/initialize/`, {
+        method: "POST", headers: jsonHeaders,
+      });
+      if (response.ok) { toast.success("Toleranties geïnitialiseerd"); fetchData(); }
+      else toast.error("Initialiseren mislukt");
+    } catch { toast.error("Initialiseren mislukt"); }
   };
 
-  const startEditing = (tol: ProjectTolerance) => {
-    setEditingId(tol.id);
-    setEditData(tol);
+  const openCreate = () => {
+    setEditing(null);
+    setForm({ tolerance_type: "time", planned_value: "", actual_value: "", deviation_percentage: "0", is_exceeded: false });
+    setDialogOpen(true);
   };
 
-  const saveEditing = async () => {
-    if (!id || !editingId) return;
+  const openEdit = (t: any) => {
+    setEditing(t);
+    setForm({
+      tolerance_type: t.tolerance_type || "time",
+      planned_value: t.planned_value || "",
+      actual_value: t.actual_value || "",
+      deviation_percentage: String(t.deviation_percentage || 0),
+      is_exceeded: t.is_exceeded || false,
+    });
+    setDialogOpen(true);
+  };
+
+  const handleSave = async () => {
+    setSubmitting(true);
     try {
-      await prince2Api.tolerances.update(id, editingId, editData);
-      setEditingId(null);
-      setEditData({});
-      await loadTolerances();
-    } catch (err: any) {
-      setError(err.message);
-    }
+      const body = { ...form, deviation_percentage: parseFloat(form.deviation_percentage) };
+      const url = editing ? `/api/v1/projects/${id}/prince2/tolerances/${editing.id}/` : `/api/v1/projects/${id}/prince2/tolerances/`;
+      const method = editing ? "PATCH" : "POST";
+      const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
+      if (response.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); }
+      else toast.error("Opslaan mislukt");
+    } catch { toast.error("Opslaan mislukt"); }
+    finally { setSubmitting(false); }
   };
 
-  const cancelEditing = () => {
-    setEditingId(null);
-    setEditData({});
+  const handleDelete = async (tId: number) => {
+    if (!confirm("Tolerantie verwijderen?")) return;
+    try {
+      const response = await fetch(`/api/v1/projects/${id}/prince2/tolerances/${tId}/`, { method: "DELETE", headers });
+      if (response.ok || response.status === 204) { toast.success("Verwijderd"); fetchData(); }
+    } catch { toast.error("Verwijderen mislukt"); }
   };
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
-  }
+  if (loading) return (
+    <div className="min-h-full bg-background"><ProjectHeader />
+      <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div>
+    </div>
+  );
 
   return (
     <div className="min-h-full bg-background">
-      <ProjectHeader project={project} />
+      <ProjectHeader />
       <div className="p-6 space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Target className="h-6 w-6 text-purple-600" />
-              Project Tolerances
-            </h1>
-            <p className="text-muted-foreground">Permitted deviation before escalation</p>
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-6 w-6 text-amber-500" />
+            <h1 className="text-2xl font-bold">{pt("Tolerances")}</h1>
+            <Badge variant="outline">{tolerances.length}</Badge>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={loadTolerances}>
-              <RefreshCw className="h-4 w-4 mr-2" />Refresh
-            </Button>
             {tolerances.length === 0 && (
-              <Button onClick={initializeTolerances}>
-                <Plus className="h-4 w-4 mr-2" />Initialize Tolerances
+              <Button variant="outline" onClick={initializeTolerances} className="gap-2">
+                <Zap className="h-4 w-4" /> Initialize
               </Button>
             )}
+            <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add")}</Button>
           </div>
         </div>
 
-        {error && (
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="pt-4 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-              <span className="text-red-700">{error}</span>
-            </CardContent>
+        {tolerances.length === 0 ? (
+          <Card className="p-8 text-center">
+            <AlertTriangle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">{pt("No tolerances defined")}</h3>
+            <Button onClick={initializeTolerances} className="gap-2"><Zap className="h-4 w-4" /> Initialize Defaults</Button>
           </Card>
-        )}
-
-        {/* Tolerances Grid */}
-        {tolerances.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tolerances.map((tol) => {
-              const Icon = TOLERANCE_ICONS[tol.tolerance_type] || Target;
-              const isEditing = editingId === tol.id;
-              
-              return (
-                <Card key={tol.id} className={tol.is_exceeded ? 'border-red-300 bg-red-50/50' : ''}>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Icon className={`h-5 w-5 ${tol.is_exceeded ? 'text-red-500' : 'text-purple-500'}`} />
-                        <CardTitle className="text-base">{tol.tolerance_type_display}</CardTitle>
-                      </div>
-                      {tol.is_exceeded && <Badge className="bg-red-500">Exceeded</Badge>}
-                      {!isEditing && (
-                        <Button variant="ghost" size="sm" onClick={() => startEditing(tol)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {isEditing ? (
-                      <div className="space-y-3">
-                        <div>
-                          <Label className="text-xs">Description</Label>
-                          <Textarea 
-                            value={editData.description || ''} 
-                            onChange={(e) => setEditData({...editData, description: e.target.value})}
-                            rows={2}
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <Label className="text-xs">Plus Tolerance</Label>
-                            <Input 
-                              value={editData.plus_tolerance || ''} 
-                              onChange={(e) => setEditData({...editData, plus_tolerance: e.target.value})}
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs">Minus Tolerance</Label>
-                            <Input 
-                              value={editData.minus_tolerance || ''} 
-                              onChange={(e) => setEditData({...editData, minus_tolerance: e.target.value})}
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <Label className="text-xs">Current Status</Label>
-                          <Input 
-                            value={editData.current_status || ''} 
-                            onChange={(e) => setEditData({...editData, current_status: e.target.value})}
-                          />
-                        </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" onClick={saveEditing} className="flex-1">
-                            <Save className="h-4 w-4 mr-1" />Save
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={cancelEditing}>Cancel</Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <p className="text-sm text-muted-foreground">{tol.description}</p>
-                        <div className="grid grid-cols-2 gap-4 pt-2">
-                          <div className="text-center p-2 rounded bg-green-50 border border-green-200">
-                            <p className="text-xs text-muted-foreground">Plus</p>
-                            <p className="font-medium text-green-700">{tol.plus_tolerance || 'N/A'}</p>
-                          </div>
-                          <div className="text-center p-2 rounded bg-red-50 border border-red-200">
-                            <p className="text-xs text-muted-foreground">Minus</p>
-                            <p className="font-medium text-red-700">{tol.minus_tolerance || 'N/A'}</p>
-                          </div>
-                        </div>
-                        {tol.current_status && (
-                          <div className="pt-2 border-t">
-                            <p className="text-xs text-muted-foreground">Current Status</p>
-                            <p className="text-sm font-medium">{tol.current_status}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
         ) : (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Target className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground mb-4">No tolerances defined yet</p>
-              <Button onClick={initializeTolerances}>
-                <Plus className="h-4 w-4 mr-2" />Initialize Default Tolerances
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {tolerances.map((t) => (
+              <Card key={t.id} className={`${t.is_exceeded ? "border-red-300 bg-red-50/50" : ""}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <Badge variant={t.is_exceeded ? "destructive" : "secondary"} className="text-xs capitalize">
+                      {t.tolerance_type}
+                    </Badge>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => openEdit(t)}><Pencil className="h-3.5 w-3.5" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(t.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span className="text-muted-foreground">{pt("Planned")}:</span><span>{t.planned_value || "-"}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">{pt("Actual")}:</span><span>{t.actual_value || "-"}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">{pt("Deviation")}:</span>
+                      <span className={t.is_exceeded ? "text-red-600 font-bold" : ""}>{t.deviation_percentage || 0}%</span>
+                    </div>
+                  </div>
+                  {t.is_exceeded && (
+                    <div className="mt-3 flex items-center gap-1 text-red-600 text-xs">
+                      <AlertTriangle className="h-3.5 w-3.5" /> Tolerance exceeded
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
-
-        {/* Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">About Tolerances</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="prose prose-sm max-w-none text-muted-foreground">
-              <p>
-                Tolerances define the permitted deviation from plan before escalation is required. 
-                In PRINCE2, tolerances are set at each management level:
-              </p>
-              <ul className="mt-2 space-y-1">
-                <li><strong>Corporate/Programme</strong> → Project tolerances (set for Project Board)</li>
-                <li><strong>Project Board</strong> → Stage tolerances (set for Project Manager)</li>
-                <li><strong>Project Manager</strong> → Work Package tolerances (set for Team Managers)</li>
-              </ul>
-              <p className="mt-3">
-                If a forecast indicates tolerances will be exceeded, an Exception Report must be raised 
-                to the next management level for guidance.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
-          {/* Methodology Help Panel */}
-          <MethodologyHelpPanel methodology="prince2" />
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} Tolerance</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Type</Label>
+              <Select value={form.tolerance_type} onValueChange={(v) => setForm({ ...form, tolerance_type: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="time">Time</SelectItem>
+                  <SelectItem value="cost">Cost</SelectItem>
+                  <SelectItem value="quality">Quality</SelectItem>
+                  <SelectItem value="scope">Scope</SelectItem>
+                  <SelectItem value="risk">Risk</SelectItem>
+                  <SelectItem value="benefit">Benefit</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label>{pt("Planned")}</Label><Input value={form.planned_value} onChange={(e) => setForm({ ...form, planned_value: e.target.value })} /></div>
+              <div className="space-y-2"><Label>{pt("Actual")}</Label><Input value={form.actual_value} onChange={(e) => setForm({ ...form, actual_value: e.target.value })} /></div>
+            </div>
+            <div className="space-y-2"><Label>{pt("Deviation")} %</Label><Input type="number" value={form.deviation_percentage} onChange={(e) => setForm({ ...form, deviation_percentage: e.target.value })} /></div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" checked={form.is_exceeded} onChange={(e) => setForm({ ...form, is_exceeded: e.target.checked })} />
+              <Label>Tolerance exceeded</Label>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>
+              <Button onClick={handleSave} disabled={submitting}>
+                {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

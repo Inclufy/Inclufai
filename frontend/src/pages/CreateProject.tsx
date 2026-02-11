@@ -49,6 +49,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MethodologyOnboardingWizard } from '@/components/MethodologyOnboardingWizard';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // Types
 type ProjectMethodology = 'prince2' | 'agile' | 'scrum' | 'kanban' | 'waterfall' | 'lean_six_sigma_green' | 'lean_six_sigma_black' | 'hybrid';
@@ -166,6 +167,7 @@ const callAI = async (prompt: string): Promise<string> => {
 };
 
 const CreateProject = () => {
+  const { pt } = usePageTranslations();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
@@ -523,7 +525,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setAiGenerateOpen(false)}>
-                    Cancel
+                    {pt("Cancel")}
                   </Button>
                   <Button onClick={handleAIGenerate} disabled={aiLoading || !generatePrompt.trim()}>
                     {aiLoading ? (
@@ -779,7 +781,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
                   <div className="grid gap-2">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="description">Description</Label>
+                      <Label htmlFor="description">{pt("Description")}</Label>
                       <Button 
                         variant="ghost" 
                         size="sm" 
@@ -854,7 +856,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
                   <div className="grid md:grid-cols-3 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="budget">Budget</Label>
+                      <Label htmlFor="budget">{pt("Budget")}</Label>
                       <Input
                         id="budget"
                         type="number"
@@ -880,7 +882,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       </Select>
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="priority">Priority</Label>
+                      <Label htmlFor="priority">{pt("Priority")}</Label>
                       <Select 
                         value={formData.priority}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}
@@ -889,10 +891,10 @@ Be specific and professional. Use the context to determine appropriate methodolo
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="critical">Critical</SelectItem>
+                          <SelectItem value="low">{pt("Low")}</SelectItem>
+                          <SelectItem value="medium">{pt("Medium")}</SelectItem>
+                          <SelectItem value="high">{pt("High")}</SelectItem>
+                          <SelectItem value="critical">{pt("Critical")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -938,12 +940,12 @@ Be specific and professional. Use the context to determine appropriate methodolo
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <p className="text-sm text-muted-foreground">Name</p>
+                        <p className="text-sm text-muted-foreground">{pt("Name")}</p>
                         <p className="font-medium">{formData.name || '-'}</p>
                       </div>
                       {formData.description && (
                         <div>
-                          <p className="text-sm text-muted-foreground">Description</p>
+                          <p className="text-sm text-muted-foreground">{pt("Description")}</p>
                           <p>{formData.description}</p>
                         </div>
                       )}
@@ -955,21 +957,21 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       )}
                       <div className="grid md:grid-cols-3 gap-4">
                         <div>
-                          <p className="text-sm text-muted-foreground">Start Date</p>
+                          <p className="text-sm text-muted-foreground">{pt("Start Date")}</p>
                           <p className="font-medium">{formData.startDate || '-'}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">End Date</p>
+                          <p className="text-sm text-muted-foreground">{pt("End Date")}</p>
                           <p className="font-medium">{formData.endDate || '-'}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Priority</p>
+                          <p className="text-sm text-muted-foreground">{pt("Priority")}</p>
                           <Badge variant="outline" className="capitalize">{formData.priority}</Badge>
                         </div>
                       </div>
                       {formData.budget && (
                         <div>
-                          <p className="text-sm text-muted-foreground">Budget</p>
+                          <p className="text-sm text-muted-foreground">{pt("Budget")}</p>
                           <p className="font-medium">
                             {new Intl.NumberFormat('nl-NL', { style: 'currency', currency: formData.currency }).format(Number(formData.budget))}
                           </p>
@@ -995,7 +997,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
           {currentStep < 3 ? (
             <Button onClick={handleNext} disabled={!canProceed()}>
-              Next
+              {pt("Next")}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           ) : (
@@ -1008,7 +1010,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
               ) : (
                 <>
                   <Check className="h-4 w-4 mr-2" />
-                  Create Project
+                  {pt("Create Project")}
                 </>
               )}
             </Button>

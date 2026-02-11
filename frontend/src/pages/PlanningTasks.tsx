@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useState } from "react";
 import { ChevronRight } from "lucide-react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 interface Task {
   id: string;
@@ -20,6 +21,7 @@ interface Task {
 }
 
 const PlanningTasks = () => {
+  const { pt } = usePageTranslations();
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: "1",
@@ -59,7 +61,7 @@ const PlanningTasks = () => {
       <ProjectHeader />
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Tasks</h1>
+          <h1 className="text-2xl font-bold text-foreground">{pt("Tasks")}</h1>
           <Button className="bg-primary hover:bg-primary-hover">Add Task</Button>
         </div>
 
@@ -69,25 +71,25 @@ const PlanningTasks = () => {
               <thead className="bg-muted/30 border-b border-border">
                 <tr>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                    Task
+                    {pt("Task")}
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                    Status
+                    {pt("Status")}
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                    Priority
+                    {pt("Priority")}
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                    Due Date
+                    {pt("Due Date")}
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground uppercase tracking-wider">
                     Assignee
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                    Progress
+                    {pt("Progress")}
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                    Actions
+                    {pt("Actions")}
                   </th>
                 </tr>
               </thead>
@@ -138,13 +140,13 @@ const PlanningTasks = () => {
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm">
-                          Edit
+                          {pt("Edit")}
                         </Button>
                         <Button className="bg-success hover:bg-success/90" size="sm">
                           Mark Complete
                         </Button>
                         <Button variant="destructive" size="sm">
-                          Delete
+                          {pt("Delete")}
                         </Button>
                       </div>
                     </td>

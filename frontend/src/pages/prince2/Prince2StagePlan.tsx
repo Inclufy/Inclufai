@@ -1,358 +1,134 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { useProject } from '@/hooks/useApi';
-import { prince2Api, Stage, StagePlan } from '@/lib/prince2Api';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  Calendar, Plus, Edit, Save, CheckCircle2, Play, 
-  RefreshCw, AlertTriangle, Clock, DollarSign, Target
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Plus, FileText, Pencil, Trash2, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 
 const Prince2StagePlan = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id);
-  
-  const [stages, setStages] = useState<Stage[]>([]);
-  const [stagePlans, setStagePlans] = useState<StagePlan[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [stages, setStages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
-  const [showCreatePlan, setShowCreatePlan] = useState(false);
-  const [newPlan, setNewPlan] = useState<Partial<StagePlan>>({});
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ stage: "", objectives: "", deliverables: "", activities: "", resource_plan: "", budget: "", schedule: "" });
 
-  useEffect(() => {
-    if (id) loadData();
-  }, [id]);
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  const loadData = async () => {
-    if (!id) return;
+  const fetchData = async () => {
     try {
-      setLoading(true);
-      const [stageData, planData] = await Promise.all([
-        prince2Api.stages.getAll(id),
-        prince2Api.stagePlans.getAll(id)
+      const [plRes, stRes] = await Promise.all([
+        fetch(`/api/v1/projects/${id}/prince2/stage-plans/`, { headers }),
+        fetch(`/api/v1/projects/${id}/prince2/stages/`, { headers }),
       ]);
-      setStages(stageData);
-      setStagePlans(planData);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+      if (plRes.ok) { const d = await plRes.json(); setPlans(Array.isArray(d) ? d : d.results || []); }
+      if (stRes.ok) { const d = await stRes.json(); setStages(Array.isArray(d) ? d : d.results || []); }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
-  const createStagePlan = async () => {
-    if (!id || !selectedStage) return;
+  useEffect(() => { fetchData(); }, [id]);
+
+  const openCreate = () => { setEditing(null); setForm({ stage: stages[0]?.id?.toString() || "", objectives: "", deliverables: "", activities: "", resource_plan: "", budget: "", schedule: "" }); setDialogOpen(true); };
+  const openEdit = (p: any) => { setEditing(p); setForm({ stage: p.stage?.toString() || "", objectives: p.objectives || "", deliverables: p.deliverables || "", activities: p.activities || "", resource_plan: p.resource_plan || "", budget: p.budget || "", schedule: p.schedule || "" }); setDialogOpen(true); };
+
+  const handleSave = async () => {
+    setSubmitting(true);
     try {
-      await prince2Api.stagePlans.create(id, { ...newPlan, stage: selectedStage.id });
-      setShowCreatePlan(false);
-      setNewPlan({});
-      await loadData();
-    } catch (err: any) {
-      setError(err.message);
-    }
+      const body: any = { ...form };
+      if (form.stage) body.stage = parseInt(form.stage);
+      const url = editing ? `/api/v1/projects/${id}/prince2/stage-plans/${editing.id}/` : `/api/v1/projects/${id}/prince2/stage-plans/`;
+      const method = editing ? "PATCH" : "POST";
+      const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
+      if (response.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); }
+      else toast.error("Opslaan mislukt");
+    } catch { toast.error("Opslaan mislukt"); }
+    finally { setSubmitting(false); }
   };
 
-  const approvePlan = async (plan: StagePlan) => {
-    if (!id) return;
+  const handleApprove = async (planId: number) => {
     try {
-      await prince2Api.stagePlans.approve(id, plan.id);
-      await loadData();
-    } catch (err: any) {
-      setError(err.message);
-    }
+      const r = await fetch(`/api/v1/projects/${id}/prince2/stage-plans/${planId}/approve/`, { method: "POST", headers: jsonHeaders });
+      if (r.ok) { toast.success("Goedgekeurd"); fetchData(); }
+      else toast.error("Goedkeuren mislukt");
+    } catch { toast.error("Goedkeuren mislukt"); }
   };
 
-  const startStage = async (stage: Stage) => {
-    if (!id) return;
+  const handleDelete = async (planId: number) => {
+    if (!confirm("Faseplan verwijderen?")) return;
     try {
-      await prince2Api.stages.start(id, stage.id);
-      await loadData();
-    } catch (err: any) {
-      setError(err.message);
-    }
+      const r = await fetch(`/api/v1/projects/${id}/prince2/stage-plans/${planId}/`, { method: "DELETE", headers });
+      if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); }
+    } catch { toast.error("Verwijderen mislukt"); }
   };
 
-  const completeStage = async (stage: Stage) => {
-    if (!id) return;
-    try {
-      await prince2Api.stages.complete(id, stage.id);
-      await loadData();
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
+  const getStageName = (stageId: number) => stages.find(s => s.id === stageId)?.name || `Stage ${stageId}`;
 
-  const getPlanForStage = (stageId: number) => stagePlans.find(p => p.stage === stageId);
-
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      draft: 'bg-slate-100 text-slate-700',
-      approved: 'bg-green-100 text-green-700',
-      active: 'bg-blue-100 text-blue-700',
-      completed: 'bg-green-100 text-green-700',
-      planned: 'bg-slate-100 text-slate-700'
-    };
-    return <Badge className={styles[status] || ''}>{status}</Badge>;
-  };
-
-  if (loading) {
-    return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
-  }
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
     <div className="min-h-full bg-background">
-      <ProjectHeader project={project} />
+      <ProjectHeader />
       <div className="p-6 space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Calendar className="h-6 w-6 text-blue-600" />
-              Stage Plans
-            </h1>
-            <p className="text-muted-foreground">Detailed plans for each management stage</p>
-          </div>
-          <Button variant="outline" onClick={loadData}>
-            <RefreshCw className="h-4 w-4 mr-2" />Refresh
-          </Button>
+          <div className="flex items-center gap-3"><FileText className="h-6 w-6 text-indigo-500" /><h1 className="text-2xl font-bold">{pt("Stage Plans")}</h1><Badge variant="outline">{plans.length}</Badge></div>
+          <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Create Plan")}</Button>
         </div>
 
-        {error && (
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="pt-4 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-              <span className="text-red-700">{error}</span>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Stages with Plans */}
-        <div className="space-y-4">
-          {stages.map((stage) => {
-            const plan = getPlanForStage(stage.id);
-            return (
-              <Card key={stage.id} className={stage.status === 'active' ? 'border-blue-300 bg-blue-50/30' : ''}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        stage.status === 'completed' ? 'bg-green-100 text-green-600' :
-                        stage.status === 'active' ? 'bg-blue-100 text-blue-600' :
-                        'bg-slate-100 text-slate-400'
-                      }`}>
-                        {stage.status === 'completed' ? <CheckCircle2 className="h-5 w-5" /> : stage.order}
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          {stage.name}
-                          {getStatusBadge(stage.status)}
-                        </CardTitle>
-                        <CardDescription>
-                          {stage.planned_start_date} - {stage.planned_end_date}
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {stage.status === 'planned' && !plan && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedStage(stage);
-                            setShowCreatePlan(true);
-                          }}
-                        >
-                          <Plus className="h-4 w-4 mr-1" />Create Plan
-                        </Button>
-                      )}
-                      {stage.status === 'planned' && plan?.status === 'approved' && (
-                        <Button size="sm" onClick={() => startStage(stage)}>
-                          <Play className="h-4 w-4 mr-1" />Start Stage
-                        </Button>
-                      )}
-                      {stage.status === 'active' && (
-                        <Button size="sm" variant="outline" onClick={() => completeStage(stage)}>
-                          <CheckCircle2 className="h-4 w-4 mr-1" />Complete
-                        </Button>
-                      )}
-                    </div>
+        {plans.length === 0 ? (
+          <Card className="p-8 text-center"><FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold mb-2">{pt("No stage plan created yet")}</h3><Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" /> {pt("Create Plan")}</Button></Card>
+        ) : (
+          <div className="space-y-4">{plans.map((p) => (
+            <Card key={p.id}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2"><Badge variant="secondary">{getStageName(p.stage)}</Badge><Badge variant={p.status === "approved" ? "default" : "outline"}>{p.status}</Badge></div>
+                  <div className="flex gap-1">
+                    {p.status !== "approved" && <Button variant="ghost" size="sm" onClick={() => handleApprove(p.id)} className="text-green-600"><CheckCircle2 className="h-4 w-4" /></Button>}
+                    <Button variant="ghost" size="sm" onClick={() => openEdit(p)}><Pencil className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
-                </CardHeader>
-                
-                {/* Stage Progress */}
-                <CardContent className="pt-0">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="flex-1">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Progress</span>
-                        <span>{stage.progress_percentage}%</span>
-                      </div>
-                      <Progress value={stage.progress_percentage} />
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Work Packages</p>
-                      <p className="font-medium">{stage.work_packages_count || 0}</p>
-                    </div>
-                  </div>
-
-                  {/* Plan Details */}
-                  {plan ? (
-                    <div className="border rounded-lg p-4 bg-white">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-medium">Stage Plan</h4>
-                        <div className="flex items-center gap-2">
-                          {getStatusBadge(plan.status)}
-                          {plan.status === 'draft' && (
-                            <Button size="sm" variant="outline" onClick={() => approvePlan(plan)}>
-                              <CheckCircle2 className="h-4 w-4 mr-1" />Approve
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <p className="text-muted-foreground">Budget</p>
-                          <p className="font-medium">€{Number(plan.budget || 0).toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Resources</p>
-                          <p className="font-medium">{plan.resource_requirements || 'Not specified'}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Version</p>
-                          <p className="font-medium">{plan.version}</p>
-                        </div>
-                      </div>
-
-                      {plan.plan_description && (
-                        <div className="mt-3 pt-3 border-t">
-                          <p className="text-sm text-muted-foreground">{plan.plan_description}</p>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="border rounded-lg p-4 bg-slate-50 text-center">
-                      <p className="text-muted-foreground">No stage plan created yet</p>
-                    </div>
-                  )}
-
-                  {/* Stage Tolerances */}
-                  {(stage.time_tolerance || stage.cost_tolerance) && (
-                    <div className="mt-4 grid grid-cols-4 gap-4">
-                      {stage.time_tolerance && (
-                        <div className="p-3 bg-blue-50 rounded-lg">
-                          <div className="flex items-center gap-2 text-blue-600 mb-1">
-                            <Clock className="h-4 w-4" />
-                            <span className="text-xs font-medium">Time</span>
-                          </div>
-                          <p className="text-sm font-medium">{stage.time_tolerance}</p>
-                        </div>
-                      )}
-                      {stage.cost_tolerance && (
-                        <div className="p-3 bg-green-50 rounded-lg">
-                          <div className="flex items-center gap-2 text-green-600 mb-1">
-                            <DollarSign className="h-4 w-4" />
-                            <span className="text-xs font-medium">Cost</span>
-                          </div>
-                          <p className="text-sm font-medium">{stage.cost_tolerance}</p>
-                        </div>
-                      )}
-                      {stage.scope_tolerance && (
-                        <div className="p-3 bg-purple-50 rounded-lg">
-                          <div className="flex items-center gap-2 text-purple-600 mb-1">
-                            <Target className="h-4 w-4" />
-                            <span className="text-xs font-medium">Scope</span>
-                          </div>
-                          <p className="text-sm font-medium">{stage.scope_tolerance}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-
-          {stages.length === 0 && (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">No stages defined yet</p>
-                <p className="text-sm text-muted-foreground mt-1">Initialize stages from the dashboard first</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  {p.objectives && <div><span className="font-medium text-muted-foreground">{pt("Objectives")}:</span><p className="mt-1">{p.objectives}</p></div>}
+                  {p.deliverables && <div><span className="font-medium text-muted-foreground">{pt("Deliverables")}:</span><p className="mt-1">{p.deliverables}</p></div>}
+                  {p.activities && <div><span className="font-medium text-muted-foreground">{pt("Activities")}:</span><p className="mt-1">{p.activities}</p></div>}
+                  {p.budget && <div><span className="font-medium text-muted-foreground">{pt("Budget")}:</span><p className="mt-1">{p.budget}</p></div>}
+                </div>
               </CardContent>
             </Card>
-          )}
-        </div>
-
-        {/* Create Plan Dialog */}
-        <Dialog open={showCreatePlan} onOpenChange={setShowCreatePlan}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Create Stage Plan</DialogTitle>
-              {selectedStage && <p className="text-sm text-muted-foreground">Stage: {selectedStage.name}</p>}
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Plan Description</Label>
-                <Textarea 
-                  value={newPlan.plan_description || ''} 
-                  onChange={(e) => setNewPlan({...newPlan, plan_description: e.target.value})}
-                  rows={3}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Budget (€)</Label>
-                  <Input 
-                    type="number"
-                    value={newPlan.budget || ''} 
-                    onChange={(e) => setNewPlan({...newPlan, budget: parseFloat(e.target.value)})}
-                  />
-                </div>
-                <div>
-                  <Label>Resource Requirements</Label>
-                  <Input 
-                    value={newPlan.resource_requirements || ''} 
-                    onChange={(e) => setNewPlan({...newPlan, resource_requirements: e.target.value})}
-                  />
-                </div>
-              </div>
-              <div>
-                <Label>Quality Approach</Label>
-                <Textarea 
-                  value={newPlan.quality_approach || ''} 
-                  onChange={(e) => setNewPlan({...newPlan, quality_approach: e.target.value})}
-                  rows={2}
-                />
-              </div>
-              <div>
-                <Label>Dependencies</Label>
-                <Textarea 
-                  value={newPlan.dependencies || ''} 
-                  onChange={(e) => setNewPlan({...newPlan, dependencies: e.target.value})}
-                  rows={2}
-                />
-              </div>
-              <Button onClick={createStagePlan} className="w-full">Create Plan</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+          ))}</div>
+        )}
       </div>
 
-          {/* Methodology Help Panel */}
-          <MethodologyHelpPanel methodology="prince2" />
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Create")} {pt("Stage Plan")}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            {stages.length > 0 && <div className="space-y-2"><Label>Stage</Label><Select value={form.stage} onValueChange={(v) => setForm({ ...form, stage: v })}><SelectTrigger><SelectValue placeholder="Select stage" /></SelectTrigger><SelectContent>{stages.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}</SelectContent></Select></div>}
+            <div className="space-y-2"><Label>{pt("Objectives")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.objectives} onChange={(e) => setForm({ ...form, objectives: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Deliverables")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.deliverables} onChange={(e) => setForm({ ...form, deliverables: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Activities")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.activities} onChange={(e) => setForm({ ...form, activities: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label>{pt("Budget")}</Label><Input value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} /></div>
+              <div className="space-y-2"><Label>{pt("Schedule")}</Label><Input value={form.schedule} onChange={(e) => setForm({ ...form, schedule: e.target.value })} /></div>
+            </div>
+            <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleSave} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

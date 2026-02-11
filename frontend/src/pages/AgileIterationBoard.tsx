@@ -10,6 +10,7 @@ import {
   Plus, MoreHorizontal, Clock, MessageSquare,
   Paperclip, CheckSquare, AlertTriangle, Zap, Loader2
 } from 'lucide-react';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -58,6 +59,7 @@ const fetchIterationData = async (projectId: string) => {
 };
 
 const AgileIterationBoard = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
 
   const { data, isLoading } = useQuery({
@@ -166,17 +168,17 @@ const AgileIterationBoard = () => {
             </div>
             <div className="bg-white/10 rounded-lg p-3">
               <div className="text-2xl font-bold">{donePoints}</div>
-              <div className="text-sm text-emerald-100">Completed</div>
+              <div className="text-sm text-emerald-100">{pt("Completed")}</div>
             </div>
             <div className="bg-white/10 rounded-lg p-3">
               <div className="text-2xl font-bold">{inProgressPoints}</div>
-              <div className="text-sm text-emerald-100">In Progress</div>
+              <div className="text-sm text-emerald-100">{pt("In Progress")}</div>
             </div>
             <div className="bg-white/10 rounded-lg p-3">
               <div className="text-2xl font-bold">
                 {totalPoints > 0 ? Math.round((donePoints / totalPoints) * 100) : 0}%
               </div>
-              <div className="text-sm text-emerald-100">Progress</div>
+              <div className="text-sm text-emerald-100">{pt("Progress")}</div>
             </div>
           </div>
         </div>
@@ -206,7 +208,7 @@ const AgileIterationBoard = () => {
                         {task.blocked && (
                           <div className="flex items-center gap-1 text-red-600 text-xs mb-2">
                             <AlertTriangle className="h-3 w-3" />
-                            <span>Blocked</span>
+                            <span>{pt("Blocked")}</span>
                           </div>
                         )}
                         <div className="flex items-start justify-between mb-2">

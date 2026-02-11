@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Square, Circle, Triangle, Pentagon, Hexagon, Octagon } from "lucide-react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const PlanningWorkflowDiagram = () => {
+  const { pt } = usePageTranslations();
   const shapes = [
     { name: "Rectangle", icon: Square, color: "text-primary" },
     { name: "Snip Rectangle", icon: Square, color: "text-primary" },
@@ -53,7 +55,7 @@ const PlanningWorkflowDiagram = () => {
                   Add End
                 </Button>
                 <Button variant="outline" size="sm" className="text-xs text-muted-foreground">
-                  Delete
+                  {pt("Delete")}
                 </Button>
                 <Button className="bg-purple-600 hover:bg-purple-700 text-white text-xs" size="sm">
                   Clear All
@@ -95,7 +97,7 @@ const PlanningWorkflowDiagram = () => {
           {/* Canvas Area */}
           <Card className="p-6 min-h-[600px] relative bg-muted/20">
             <div className="absolute top-4 right-4">
-              <Button className="bg-success hover:bg-success/90">Save</Button>
+              <Button className="bg-success hover:bg-success/90">{pt("Save")}</Button>
             </div>
             <div className="flex items-center justify-center h-full text-muted-foreground">
               <p>Drag shapes here to build your workflow</p>

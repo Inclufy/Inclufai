@@ -1,422 +1,47 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { useProject } from '@/hooks/useApi';
-import { sixsigmaApi, MSAResult } from '@/lib/sixsigmaApi';
-import { Gauge, Plus, Trash2, Loader2, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Plus, Ruler, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
+const BASE = (id: string) => `/api/v1/sixsigma/projects/${id}/sixsigma`;
+
 const SixSigmaMSA = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id);
-  const { toast } = useToast();
-
+  const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [msaResults, setMsaResults] = useState<MSAResult[]>([]);
-  const [showForm, setShowForm] = useState(false);
-  const [newMsa, setNewMsa] = useState({
-    measurement_name: '',
-    study_type: 'gage_rr',
-    number_of_operators: 3,
-    number_of_parts: 10,
-    number_of_trials: 3,
-    repeatability: 0,
-    reproducibility: 0,
-    total_gage_rr: 0,
-    part_to_part: 0,
-    total_variation: 0,
-    percent_study_var: 0,
-    percent_tolerance: 0,
-    number_of_distinct_categories: 0,
-    conclusion: '',
-    recommendations: '',
-  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ measurement_system: "", study_type: "gage_rr", result: "", repeatability: "", reproducibility: "", total_grr: "", status: "planned" });
+  const token = localStorage.getItem("access_token"); const headers: Record<string, string> = { Authorization: `Bearer ${token}` }; const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  useEffect(() => {
-    if (id) loadMSA();
-  }, [id]);
-
-  const loadMSA = async () => {
-    if (!id) return;
-    setLoading(true);
-    try {
-      const data = await sixsigmaApi.msa.getAll(id);
-      setMsaResults(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load MSA results');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreate = async () => {
-    if (!id) return;
-    setSaving(true);
-    try {
-      const created = await sixsigmaApi.msa.create(id, newMsa);
-      setMsaResults([...msaResults, created]);
-      setShowForm(false);
-      setNewMsa({
-        measurement_name: '',
-        study_type: 'gage_rr',
-        number_of_operators: 3,
-        number_of_parts: 10,
-        number_of_trials: 3,
-        repeatability: 0,
-        reproducibility: 0,
-        total_gage_rr: 0,
-        part_to_part: 0,
-        total_variation: 0,
-        percent_study_var: 0,
-        percent_tolerance: 0,
-        number_of_distinct_categories: 0,
-        conclusion: '',
-        recommendations: '',
-      });
-      toast({ title: 'MSA Added', description: 'Measurement system analysis created.' });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDelete = async (msaId: number) => {
-    if (!id) return;
-    try {
-      await sixsigmaApi.msa.delete(id, msaId);
-      setMsaResults(msaResults.filter(m => m.id !== msaId));
-      toast({ title: 'Deleted', description: 'MSA result removed.' });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
-    }
-  };
-
-  const getAcceptability = (percentStudyVar: number) => {
-    if (percentStudyVar < 10) return { label: 'Excellent', color: 'bg-green-500' };
-    if (percentStudyVar < 30) return { label: 'Acceptable', color: 'bg-yellow-500' };
-    return { label: 'Unacceptable', color: 'bg-red-500' };
-  };
-
-  const getNDCAcceptability = (ndc: number) => {
-    if (ndc >= 5) return { label: 'Adequate', color: 'bg-green-500' };
-    return { label: 'Inadequate', color: 'bg-red-500' };
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader />
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </div>
-    );
-  }
-
+  const fetchData = async () => { try { const r = await fetch(`${BASE(id!)}/msa/`, { headers }); if (r.ok) { const d = await r.json(); setItems(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
+  useEffect(() => { fetchData(); }, [id]);
+  const openCreate = () => { setEditing(null); setForm({ measurement_system: "", study_type: "gage_rr", result: "", repeatability: "", reproducibility: "", total_grr: "", status: "planned" }); setDialogOpen(true); };
+  const openEdit = (i: any) => { setEditing(i); setForm({ measurement_system: i.measurement_system || "", study_type: i.study_type || "gage_rr", result: i.result || "", repeatability: String(i.repeatability || ""), reproducibility: String(i.reproducibility || ""), total_grr: String(i.total_grr || ""), status: i.status || "planned" }); setDialogOpen(true); };
+  const handleSave = async () => { if (!form.measurement_system) { toast.error("Measurement system verplicht"); return; } setSubmitting(true); try { const body: any = { ...form }; if (form.repeatability) body.repeatability = parseFloat(form.repeatability); else delete body.repeatability; if (form.reproducibility) body.reproducibility = parseFloat(form.reproducibility); else delete body.reproducibility; if (form.total_grr) body.total_grr = parseFloat(form.total_grr); else delete body.total_grr; const url = editing ? `${BASE(id!)}/msa/${editing.id}/` : `${BASE(id!)}/msa/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) }); if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } finally { setSubmitting(false); } };
+  const handleDelete = async (mId: number) => { if (!confirm("Verwijderen?")) return; try { await fetch(`${BASE(id!)}/msa/${mId}/`, { method: "DELETE", headers }); toast.success("Verwijderd"); fetchData(); } catch { toast.error("Verwijderen mislukt"); } };
+  const grrColor = (v: number) => v <= 10 ? "text-green-600" : v <= 30 ? "text-yellow-600" : "text-red-600";
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
   return (
-    <div className="min-h-full bg-background">
-      <ProjectHeader />
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Gauge className="h-6 w-6 text-cyan-600" />
-              Measurement System Analysis (MSA)
-            </h1>
-            <p className="text-muted-foreground">Validate your measurement systems before collecting data</p>
-          </div>
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add MSA Study
-          </Button>
-        </div>
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2 text-red-700">
-            <AlertCircle className="h-5 w-5" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {/* New MSA Form */}
-        {showForm && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Add MSA Study</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Measurement Name</label>
-                  <Input
-                    value={newMsa.measurement_name}
-                    onChange={(e) => setNewMsa({ ...newMsa, measurement_name: e.target.value })}
-                    placeholder="e.g., Cycle Time Measurement"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Study Type</label>
-                  <select 
-                    className="w-full h-10 rounded-md border border-input bg-background px-3"
-                    value={newMsa.study_type}
-                    onChange={(e) => setNewMsa({ ...newMsa, study_type: e.target.value })}
-                  >
-                    <option value="gage_rr">Gage R&R</option>
-                    <option value="attribute_agreement">Attribute Agreement</option>
-                    <option value="linearity">Linearity</option>
-                    <option value="bias">Bias Study</option>
-                    <option value="stability">Stability Study</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="text-sm font-medium"># Operators</label>
-                  <Input
-                    type="number"
-                    value={newMsa.number_of_operators}
-                    onChange={(e) => setNewMsa({ ...newMsa, number_of_operators: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium"># Parts</label>
-                  <Input
-                    type="number"
-                    value={newMsa.number_of_parts}
-                    onChange={(e) => setNewMsa({ ...newMsa, number_of_parts: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium"># Trials</label>
-                  <Input
-                    type="number"
-                    value={newMsa.number_of_trials}
-                    onChange={(e) => setNewMsa({ ...newMsa, number_of_trials: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-4 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Repeatability (%)</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={newMsa.repeatability}
-                    onChange={(e) => setNewMsa({ ...newMsa, repeatability: parseFloat(e.target.value) || 0 })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Reproducibility (%)</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={newMsa.reproducibility}
-                    onChange={(e) => setNewMsa({ ...newMsa, reproducibility: parseFloat(e.target.value) || 0 })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Total Gage R&R (%)</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={newMsa.total_gage_rr}
-                    onChange={(e) => setNewMsa({ ...newMsa, total_gage_rr: parseFloat(e.target.value) || 0 })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Part-to-Part (%)</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={newMsa.part_to_part}
-                    onChange={(e) => setNewMsa({ ...newMsa, part_to_part: parseFloat(e.target.value) || 0 })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="text-sm font-medium">% Study Variation</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={newMsa.percent_study_var}
-                    onChange={(e) => setNewMsa({ ...newMsa, percent_study_var: parseFloat(e.target.value) || 0 })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">% Tolerance</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={newMsa.percent_tolerance}
-                    onChange={(e) => setNewMsa({ ...newMsa, percent_tolerance: parseFloat(e.target.value) || 0 })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium"># Distinct Categories (ndc)</label>
-                  <Input
-                    type="number"
-                    value={newMsa.number_of_distinct_categories}
-                    onChange={(e) => setNewMsa({ ...newMsa, number_of_distinct_categories: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Conclusion</label>
-                <Textarea
-                  value={newMsa.conclusion}
-                  onChange={(e) => setNewMsa({ ...newMsa, conclusion: e.target.value })}
-                  placeholder="Summary of MSA results..."
-                  rows={2}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Recommendations</label>
-                <Textarea
-                  value={newMsa.recommendations}
-                  onChange={(e) => setNewMsa({ ...newMsa, recommendations: e.target.value })}
-                  placeholder="Actions to improve measurement system if needed..."
-                  rows={2}
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <Button onClick={handleCreate} disabled={saving}>
-                  {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Add MSA
-                </Button>
-                <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* MSA Results */}
-        {msaResults.length > 0 ? (
-          <div className="space-y-4">
-            {msaResults.map(msa => {
-              const acceptability = getAcceptability(msa.percent_study_var || 0);
-              const ndcAcceptability = getNDCAcceptability(msa.number_of_distinct_categories || 0);
-
-              return (
-                <Card key={msa.id}>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-lg">{msa.measurement_name}</CardTitle>
-                        <Badge variant="outline">{msa.study_type?.replace('_', ' ')}</Badge>
-                        <Badge className={acceptability.color}>{acceptability.label}</Badge>
-                      </div>
-                      <Button variant="ghost" size="sm" className="text-red-500" onClick={() => handleDelete(msa.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-6 gap-4 text-center">
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <div className="text-xs text-muted-foreground">Repeatability</div>
-                        <div className="font-bold">{msa.repeatability}%</div>
-                      </div>
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <div className="text-xs text-muted-foreground">Reproducibility</div>
-                        <div className="font-bold">{msa.reproducibility}%</div>
-                      </div>
-                      <div className={`p-3 rounded-lg ${(msa.total_gage_rr || 0) < 10 ? 'bg-green-50' : (msa.total_gage_rr || 0) < 30 ? 'bg-yellow-50' : 'bg-red-50'}`}>
-                        <div className="text-xs text-muted-foreground">Total Gage R&R</div>
-                        <div className="font-bold">{msa.total_gage_rr}%</div>
-                      </div>
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <div className="text-xs text-muted-foreground">Part-to-Part</div>
-                        <div className="font-bold">{msa.part_to_part}%</div>
-                      </div>
-                      <div className={`p-3 rounded-lg ${(msa.percent_study_var || 0) < 10 ? 'bg-green-50' : (msa.percent_study_var || 0) < 30 ? 'bg-yellow-50' : 'bg-red-50'}`}>
-                        <div className="text-xs text-muted-foreground">% Study Var</div>
-                        <div className="font-bold">{msa.percent_study_var}%</div>
-                      </div>
-                      <div className={`p-3 rounded-lg ${(msa.number_of_distinct_categories || 0) >= 5 ? 'bg-green-50' : 'bg-red-50'}`}>
-                        <div className="text-xs text-muted-foreground">NDC</div>
-                        <div className="font-bold">{msa.number_of_distinct_categories}</div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Operators: </span>
-                        {msa.number_of_operators}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Parts: </span>
-                        {msa.number_of_parts}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Trials: </span>
-                        {msa.number_of_trials}
-                      </div>
-                    </div>
-
-                    {msa.conclusion && (
-                      <div className="p-3 bg-blue-50 rounded-lg text-sm">
-                        <span className="font-medium text-blue-700">Conclusion: </span>
-                        <span className="text-blue-600">{msa.conclusion}</span>
-                      </div>
-                    )}
-
-                    {msa.recommendations && (
-                      <div className="p-3 bg-yellow-50 rounded-lg text-sm">
-                        <span className="font-medium text-yellow-700">Recommendations: </span>
-                        <span className="text-yellow-600">{msa.recommendations}</span>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Gauge className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No MSA Studies</h3>
-              <p className="text-muted-foreground mb-4">
-                Validate your measurement system before collecting baseline data.
-              </p>
-              <Button onClick={() => setShowForm(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add First MSA Study
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="pt-4">
-            <h4 className="font-medium text-blue-800 mb-2">💡 MSA Acceptability Criteria</h4>
-            <ul className="text-sm text-blue-700 space-y-1">
-              <li>• <strong>% Study Variation &lt; 10%:</strong> Excellent measurement system</li>
-              <li>• <strong>% Study Variation 10-30%:</strong> Acceptable, may need improvement</li>
-              <li>• <strong>% Study Variation &gt; 30%:</strong> Unacceptable, must improve before use</li>
-              <li>• <strong>NDC ≥ 5:</strong> System can distinguish between parts adequately</li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-      <MethodologyHelpPanel methodology="lean_six_sigma" />
+    <div className="min-h-full bg-background"><ProjectHeader /><div className="p-6 space-y-6">
+      <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Ruler className="h-6 w-6 text-green-500" /><h1 className="text-2xl font-bold">Measurement System Analysis</h1><Badge variant="outline">{items.length}</Badge></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add")}</Button></div>
+      {items.length === 0 ? <Card className="p-8 text-center"><Ruler className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">No MSA studies yet</h3></Card> : (
+        <div className="space-y-3">{items.map(i => (<Card key={i.id}><CardContent className="p-4 flex items-center justify-between"><div><div className="flex items-center gap-2 mb-1"><span className="font-medium">{i.measurement_system}</span><Badge variant="outline" className="text-xs">{i.study_type?.replace("_", " ")}</Badge><Badge variant={i.status === "completed" ? "default" : "secondary"} className="text-xs">{i.status}</Badge></div><div className="flex gap-4 text-sm">{i.repeatability != null && <span>Repeat: <strong>{i.repeatability}%</strong></span>}{i.reproducibility != null && <span>Reprod: <strong>{i.reproducibility}%</strong></span>}{i.total_grr != null && <span>GRR: <strong className={grrColor(i.total_grr)}>{i.total_grr}%</strong></span>}</div></div><div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => openEdit(i)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(i.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></CardContent></Card>))}</div>
+      )}
+    </div>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} MSA Study</DialogTitle></DialogHeader><div className="space-y-4"><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Measurement System *</Label><Input value={form.measurement_system} onChange={(e) => setForm({ ...form, measurement_system: e.target.value })} /></div><div className="space-y-2"><Label>Study Type</Label><Select value={form.study_type} onValueChange={(v) => setForm({ ...form, study_type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="gage_rr">Gage R&R</SelectItem><SelectItem value="bias">Bias</SelectItem><SelectItem value="linearity">Linearity</SelectItem><SelectItem value="stability">Stability</SelectItem></SelectContent></Select></div></div><div className="grid grid-cols-3 gap-3"><div className="space-y-2"><Label>Repeatability %</Label><Input type="number" value={form.repeatability} onChange={(e) => setForm({ ...form, repeatability: e.target.value })} /></div><div className="space-y-2"><Label>Reproducibility %</Label><Input type="number" value={form.reproducibility} onChange={(e) => setForm({ ...form, reproducibility: e.target.value })} /></div><div className="space-y-2"><Label>Total GRR %</Label><Input type="number" value={form.total_grr} onChange={(e) => setForm({ ...form, total_grr: e.target.value })} /></div></div><div className="space-y-2"><Label>Result / Conclusion</Label><textarea className="w-full min-h-[40px] px-3 py-2 border rounded-md bg-background" value={form.result} onChange={(e) => setForm({ ...form, result: e.target.value })} /></div><div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleSave} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div></div></DialogContent></Dialog>
     </div>
   );
 };
-
 export default SixSigmaMSA;

@@ -2,6 +2,7 @@ import { ProjectHeader } from "@/components/ProjectHeader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 interface Dependency {
   id: string;
@@ -12,6 +13,7 @@ interface Dependency {
 }
 
 const PlanningDependencies = () => {
+  const { pt } = usePageTranslations();
   const dependencies: Dependency[] = [
     {
       id: "1",
@@ -71,10 +73,10 @@ const PlanningDependencies = () => {
                 </div>
                 <div className="flex items-center gap-2 ml-4">
                   <Button variant="ghost" className="text-primary hover:text-primary-hover hover:bg-primary/10">
-                    Edit
+                    {pt("Edit")}
                   </Button>
                   <Button variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                    Delete
+                    {pt("Delete")}
                   </Button>
                 </div>
               </div>

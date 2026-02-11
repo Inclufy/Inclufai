@@ -38,6 +38,7 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // Use relative path - proxy handles the rest
 const API_BASE_URL = '/api/v1';
@@ -147,6 +148,7 @@ const fetchTimeEntries = async () => {
 };
 
 const formatDurationFromMinutes = (mins: number) => {
+  const { pt } = usePageTranslations();
   const h = Math.floor(mins / 60);
   const m = mins % 60;
   return `${h}h ${m.toString().padStart(2, "0")}m`;

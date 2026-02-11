@@ -1,286 +1,76 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { useProject } from '@/hooks/useApi';
-import { kanbanApi, KanbanDashboard } from '@/lib/kanbanApi';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  LayoutDashboard, Columns, AlertTriangle, Clock, TrendingUp, 
-  CheckCircle, Loader2, AlertCircle, ArrowRight
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Loader2, RefreshCw, Layout, Plus, Columns, ListChecks, BarChart3, Ban, FileText, Users, DollarSign, TrendingUp, Zap } from "lucide-react";
+import { toast } from "sonner";
 
 const KanbanOverview = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id);
-  
-  const [dashboard, setDashboard] = useState<KanbanDashboard | null>(null);
+  const navigate = useNavigate();
+  const [dashboard, setDashboard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  useEffect(() => {
-    if (id) {
-      loadDashboard();
-    }
-  }, [id]);
+  const fetchDashboard = async () => { try { const r = await fetch(`/api/v1/projects/${id}/kanban/dashboard/`, { headers }); if (r.ok) setDashboard(await r.json()); } catch (err) { console.error(err); } finally { setLoading(false); } };
+  const initialize = async () => { try { const r = await fetch(`/api/v1/projects/${id}/kanban/board/initialize/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Kanban board geïnitialiseerd"); fetchDashboard(); } else toast.error("Initialiseren mislukt"); } catch { toast.error("Initialiseren mislukt"); } };
 
-  const loadDashboard = async () => {
-    try {
-      setLoading(true);
-      const data = await kanbanApi.dashboard.get(id!);
-      setDashboard(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load dashboard');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => { fetchDashboard(); }, [id]);
+  const nav = (path: string) => navigate(`/projects/${id}/kanban/${path}`);
 
-  const initializeBoard = async () => {
-    try {
-      await kanbanApi.board.initialize(id!);
-      loadDashboard();
-    } catch (err: any) {
-      alert(err.message || 'Failed to initialize board');
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader />
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!dashboard?.has_board) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader />
-        <div className="p-6">
-          <Card className="max-w-lg mx-auto mt-12">
-            <CardContent className="pt-8 pb-8 text-center">
-              <Columns className="h-16 w-16 mx-auto mb-4 text-blue-600" />
-              <h2 className="text-xl font-semibold mb-2">Kanban Board Not Initialized</h2>
-              <p className="text-muted-foreground mb-6">
-                Create a Kanban board to start visualizing and managing your workflow.
-              </p>
-              <Button onClick={initializeBoard} size="lg">
-                Initialize Kanban Board
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
+  const d = dashboard || {};
 
   return (
-    <div className="min-h-full bg-background">
-      <ProjectHeader />
+    <div className="min-h-full bg-background"><ProjectHeader />
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <LayoutDashboard className="h-6 w-6 text-blue-600" />
-              Kanban Overview
-            </h1>
-            <p className="text-muted-foreground">Dashboard for your Kanban workflow</p>
-          </div>
-          <Link to={`/projects/${id}/kanban/board`}>
-            <Button>
-              <Columns className="h-4 w-4 mr-2" />
-              Open Board
-            </Button>
-          </Link>
+          <div className="flex items-center gap-3"><div className="h-10 w-10 rounded-lg bg-violet-600 flex items-center justify-center"><Layout className="h-5 w-5 text-white" /></div><div><h1 className="text-2xl font-bold">Kanban Dashboard</h1><p className="text-sm text-muted-foreground">{d.project_name || ""}</p></div></div>
+          <div className="flex gap-2"><Button variant="outline" onClick={initialize} className="gap-2"><Plus className="h-4 w-4" /> Initialize</Button><Button variant="outline" onClick={fetchDashboard} className="gap-2"><RefreshCw className="h-4 w-4" /> {pt("Refresh")}</Button></div>
         </div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Cards</p>
-                  <p className="text-2xl font-bold">{dashboard.total_cards}</p>
-                </div>
-                <Columns className="h-8 w-8 text-blue-500 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className={dashboard.blocked_count > 0 ? 'border-red-200' : ''}>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Blocked</p>
-                  <p className="text-2xl font-bold text-red-600">{dashboard.blocked_count}</p>
-                </div>
-                <AlertTriangle className="h-8 w-8 text-red-500 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className={dashboard.overdue_count > 0 ? 'border-orange-200' : ''}>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Overdue</p>
-                  <p className="text-2xl font-bold text-orange-600">{dashboard.overdue_count}</p>
-                </div>
-                <Clock className="h-8 w-8 text-orange-500 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Completed Today</p>
-                  <p className="text-2xl font-bold text-green-600">{dashboard.cards_completed_today}</p>
-                </div>
-                <CheckCircle className="h-8 w-8 text-green-500 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Total Cards</p><p className="text-2xl font-bold">{d.total_cards || 0}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">In Progress</p><p className="text-2xl font-bold text-blue-600">{d.in_progress || 0}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Blocked</p><p className="text-2xl font-bold text-red-600">{d.blocked_count || 0}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Avg Lead Time</p><p className="text-2xl font-bold">{d.avg_lead_time ? `${Math.round(d.avg_lead_time)}d` : "—"}</p></CardContent></Card>
         </div>
 
-        {/* WIP Violations */}
-        {dashboard.wip_violations && dashboard.wip_violations.length > 0 && (
-          <Card className="border-red-200 bg-red-50">
-            <CardHeader>
-              <CardTitle className="text-red-700 flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                WIP Limit Violations
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {dashboard.wip_violations.map((violation, i) => (
-                  <div key={i} className="flex items-center justify-between p-2 bg-white rounded border border-red-200">
-                    <span className="font-medium">{violation.column}</span>
-                    <Badge variant="destructive">
-                      {violation.count} / {violation.limit} (WIP exceeded)
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        {d.columns?.length > 0 && (
+          <Card><CardHeader className="pb-3"><CardTitle>Column Distribution</CardTitle></CardHeader><CardContent className="space-y-3">
+            {d.columns.map((c: any) => (
+              <div key={c.id || c.name} className="flex items-center gap-4"><span className="w-32 text-sm font-medium truncate">{c.name}</span><div className="flex-1"><Progress value={d.total_cards > 0 ? (c.card_count / d.total_cards) * 100 : 0} className="h-3" /></div><span className="text-sm w-8 text-right">{c.card_count || 0}</span>{c.wip_limit && <Badge variant="outline" className="text-xs">WIP: {c.wip_limit}</Badge>}</div>
+            ))}
+          </CardContent></Card>
         )}
 
-        {/* Column Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Work Distribution</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {dashboard.columns?.map((column) => {
-                const percentage = dashboard.total_cards > 0 
-                  ? ((column.cards_count || 0) / dashboard.total_cards) * 100 
-                  : 0;
-                const isOverWip = column.wip_limit && (column.cards_count || 0) > column.wip_limit;
-                
-                return (
-                  <div key={column.id} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium">{column.name}</span>
-                      <div className="flex items-center gap-2">
-                        <span>{column.cards_count || 0} cards</span>
-                        {column.wip_limit && (
-                          <Badge variant={isOverWip ? 'destructive' : 'outline'} className="text-xs">
-                            WIP: {column.wip_limit}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    <Progress 
-                      value={percentage} 
-                      className={`h-2 ${isOverWip ? 'bg-red-100' : ''}`}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Flow Metrics */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Lead Time
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">
-                {dashboard.avg_lead_time 
-                  ? `${(dashboard.avg_lead_time / 24).toFixed(1)} days` 
-                  : 'N/A'}
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Average time from creation to completion
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Cycle Time
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">
-                {dashboard.avg_cycle_time 
-                  ? `${(dashboard.avg_cycle_time / 24).toFixed(1)} days` 
-                  : 'N/A'}
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Average time from start to completion
-              </p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: "Board", path: "board", icon: Layout },
+            { label: pt("Work Items"), path: "work-items", icon: ListChecks },
+            { label: "Board Config", path: "board-configuration", icon: Columns },
+            { label: "WIP Limits", path: "wip-limits", icon: Zap },
+            { label: pt("Blocked Items"), path: "blocked-items", icon: Ban },
+            { label: pt("Flow Metrics"), path: "flow-metrics", icon: BarChart3 },
+            { label: "CFD", path: "cfd", icon: TrendingUp },
+            { label: pt("Work Policies"), path: "work-policies", icon: FileText },
+            { label: pt("Team"), path: "team", icon: Users },
+            { label: pt("Budget"), path: "budget", icon: DollarSign },
+            { label: "Continuous Improvement", path: "continuous-improvement", icon: TrendingUp },
+          ].map(({ label, path, icon: Icon }) => (
+            <Card key={path} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => nav(path)}>
+              <CardContent className="p-4 flex items-center gap-3"><Icon className="h-5 w-5 text-muted-foreground" /><span className="font-medium text-sm">{label}</span></CardContent>
+            </Card>
+          ))}
         </div>
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-4">
-              <Link to={`/projects/${id}/kanban/board`}>
-                <Button variant="outline">
-                  <Columns className="h-4 w-4 mr-2" />
-                  View Board
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </Link>
-              <Link to={`/projects/${id}/kanban/metrics`}>
-                <Button variant="outline">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Flow Metrics
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
       </div>
-      <MethodologyHelpPanel methodology="kanban" />
     </div>
   );
 };

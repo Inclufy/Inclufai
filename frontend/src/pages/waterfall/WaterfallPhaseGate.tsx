@@ -1,232 +1,81 @@
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { useProject } from '@/hooks/useApi';
-import { Layers, CheckCircle2, Clock, AlertTriangle, ArrowRight, FileCheck, Lock } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, Plus, Play, CheckCircle2, ShieldCheck, Pencil, Trash2, ListChecks } from "lucide-react";
+import { toast } from "sonner";
 
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
 const WaterfallPhaseGate = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id);
-  const [selectedPhase, setSelectedPhase] = useState(2);
+  const [phases, setPhases] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ name: "", description: "", order: "", planned_start_date: "", planned_end_date: "", gate_criteria: "" });
 
-  const phases = [
-    { 
-      id: 0, 
-      name: 'Requirements', 
-      status: 'completed', 
-      progress: 100, 
-      startDate: '2025-09-01', 
-      endDate: '2025-09-30',
-      deliverables: [
-        { name: 'Business Requirements Document', status: 'approved' },
-        { name: 'Functional Requirements', status: 'approved' },
-        { name: 'Use Case Specifications', status: 'approved' },
-      ],
-      gate: { status: 'passed', date: '2025-10-02', approver: 'Project Board' }
-    },
-    { 
-      id: 1, 
-      name: 'Design', 
-      status: 'completed', 
-      progress: 100, 
-      startDate: '2025-10-01', 
-      endDate: '2025-10-31',
-      deliverables: [
-        { name: 'System Architecture Document', status: 'approved' },
-        { name: 'Database Design', status: 'approved' },
-        { name: 'UI/UX Specifications', status: 'approved' },
-      ],
-      gate: { status: 'passed', date: '2025-11-01', approver: 'Technical Lead' }
-    },
-    { 
-      id: 2, 
-      name: 'Implementation', 
-      status: 'active', 
-      progress: 65, 
-      startDate: '2025-11-01', 
-      endDate: '2025-12-15',
-      deliverables: [
-        { name: 'Frontend Components', status: 'completed' },
-        { name: 'Backend API', status: 'in_progress' },
-        { name: 'Database Implementation', status: 'completed' },
-        { name: 'Integration Layer', status: 'in_progress' },
-      ],
-      gate: { status: 'pending', date: '2025-12-16', approver: 'Technical Lead' }
-    },
-    { 
-      id: 3, 
-      name: 'Testing', 
-      status: 'upcoming', 
-      progress: 0, 
-      startDate: '2025-12-16', 
-      endDate: '2026-01-15',
-      deliverables: [
-        { name: 'Test Plan', status: 'draft' },
-        { name: 'Test Cases', status: 'draft' },
-        { name: 'UAT Sign-off', status: 'pending' },
-      ],
-      gate: { status: 'upcoming', date: '2026-01-16', approver: 'Business Owner' }
-    },
-    { 
-      id: 4, 
-      name: 'Deployment', 
-      status: 'upcoming', 
-      progress: 0, 
-      startDate: '2026-01-16', 
-      endDate: '2026-01-31',
-      deliverables: [
-        { name: 'Deployment Plan', status: 'pending' },
-        { name: 'Training Materials', status: 'pending' },
-        { name: 'Go-Live Checklist', status: 'pending' },
-      ],
-      gate: { status: 'upcoming', date: '2026-02-01', approver: 'Project Board' }
-    },
-  ];
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': case 'approved': case 'passed': return 'bg-green-500';
-      case 'active': case 'in_progress': return 'bg-blue-500';
-      case 'pending': return 'bg-yellow-500';
-      default: return 'bg-gray-300';
-    }
-  };
+  const fetchData = async () => { try { const r = await fetch(`/api/v1/projects/${id}/waterfall/phases/`, { headers }); if (r.ok) { const d = await r.json(); setPhases(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
+  useEffect(() => { fetchData(); }, [id]);
 
-  const currentPhase = phases[selectedPhase];
+  const openCreate = () => { setEditing(null); setForm({ name: "", description: "", order: String(phases.length + 1), planned_start_date: "", planned_end_date: "", gate_criteria: "" }); setDialogOpen(true); };
+  const openEdit = (p: any) => { setEditing(p); setForm({ name: p.name || "", description: p.description || "", order: String(p.order || ""), planned_start_date: p.planned_start_date?.split("T")[0] || "", planned_end_date: p.planned_end_date?.split("T")[0] || "", gate_criteria: p.gate_criteria || "" }); setDialogOpen(true); };
+
+  const handleSave = async () => { if (!form.name) { toast.error("Naam verplicht"); return; } setSubmitting(true); try { const body: any = { ...form }; if (form.order) body.order = parseInt(form.order); const url = editing ? `/api/v1/projects/${id}/waterfall/phases/${editing.id}/` : `/api/v1/projects/${id}/waterfall/phases/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) }); if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } finally { setSubmitting(false); } };
+  const handleDelete = async (pId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`/api/v1/projects/${id}/waterfall/phases/${pId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
+  const handleAction = async (pId: number, action: string) => { try { const r = await fetch(`/api/v1/projects/${id}/waterfall/phases/${pId}/${action}/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Actie uitgevoerd"); fetchData(); } else { const err = await r.json().catch(() => ({})); toast.error(err.detail || "Actie mislukt"); } } catch { toast.error("Actie mislukt"); } };
+
+  const statusColors: Record<string, string> = { not_started: "bg-gray-100 text-gray-700", in_progress: "bg-blue-100 text-blue-700", completed: "bg-green-100 text-green-700", signed_off: "bg-purple-100 text-purple-700" };
+
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
-    <div className="min-h-full bg-background">
-      <ProjectHeader />
+    <div className="min-h-full bg-background"><ProjectHeader />
       <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Layers className="h-6 w-6 text-slate-600" />
-              Waterfall Phase Gates
-            </h1>
-            <p className="text-muted-foreground">Sequential phase progression with gate reviews</p>
-          </div>
-        </div>
-
-        {/* Phase Timeline */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              {phases.map((phase, index) => (
-                <div key={phase.id} className="flex items-center">
-                  <div 
-                    className={`flex flex-col items-center cursor-pointer transition-all ${selectedPhase === phase.id ? 'scale-110' : ''}`}
-                    onClick={() => setSelectedPhase(phase.id)}
-                  >
-                    <div className={`relative h-14 w-14 rounded-full ${getStatusColor(phase.status)} flex items-center justify-center text-white font-bold shadow-lg`}>
-                      {phase.status === 'completed' ? <CheckCircle2 className="h-7 w-7" /> : phase.status === 'upcoming' ? <Lock className="h-5 w-5" /> : phase.id + 1}
-                      {phase.gate.status === 'passed' && (
-                        <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-green-600 rounded-full flex items-center justify-center border-2 border-white">
-                          <CheckCircle2 className="h-3 w-3" />
-                        </div>
-                      )}
-                    </div>
-                    <p className={`mt-2 text-sm font-medium ${selectedPhase === phase.id ? 'text-primary' : ''}`}>{phase.name}</p>
-                    <p className="text-xs text-muted-foreground">{phase.progress}%</p>
+        <div className="flex items-center justify-between"><div className="flex items-center gap-3"><ListChecks className="h-6 w-6 text-cyan-500" /><h1 className="text-2xl font-bold">{pt("Phases")} & Gates</h1><Badge variant="outline">{phases.length}</Badge></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add Phase")}</Button></div>
+        {phases.length === 0 ? <Card className="p-8 text-center"><ListChecks className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No phases defined yet")}</h3><p className="text-muted-foreground">Initialize from dashboard or add phases manually</p></Card> : (
+          <div className="space-y-4">{phases.sort((a, b) => (a.order || 0) - (b.order || 0)).map((p, i) => (
+            <Card key={p.id} className={p.status === "in_progress" ? "border-blue-300 shadow-md" : ""}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3"><span className="text-sm font-bold text-muted-foreground">#{p.order || i + 1}</span><h3 className="font-semibold text-lg">{p.name}</h3><Badge className={statusColors[p.status] || ""}>{p.status?.replace("_", " ")}</Badge></div>
+                  <div className="flex gap-1">
+                    {p.status === "not_started" && <Button variant="outline" size="sm" onClick={() => handleAction(p.id, "start")} className="gap-1"><Play className="h-3.5 w-3.5" /> Start</Button>}
+                    {p.status === "in_progress" && <Button variant="outline" size="sm" onClick={() => handleAction(p.id, "complete")} className="gap-1"><CheckCircle2 className="h-3.5 w-3.5" /> Complete</Button>}
+                    {p.status === "completed" && <Button variant="outline" size="sm" onClick={() => handleAction(p.id, "sign-off")} className="gap-1"><ShieldCheck className="h-3.5 w-3.5" /> Sign Off</Button>}
+                    <Button variant="ghost" size="sm" onClick={() => openEdit(p)}><Pencil className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
                   </div>
-                  {index < phases.length - 1 && (
-                    <div className={`h-1 w-16 mx-2 ${phase.status === 'completed' ? 'bg-green-500' : 'bg-gray-200'}`}>
-                      {phase.gate.status === 'passed' && (
-                        <div className="relative">
-                          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                            <FileCheck className="h-4 w-4 text-green-600" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Selected Phase Details */}
-        <div className="grid grid-cols-3 gap-6">
-          <Card className="col-span-2">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>{currentPhase.name} Phase</CardTitle>
-                <Badge className={getStatusColor(currentPhase.status)}>{currentPhase.status}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-2 text-sm">
-                  <span>Progress</span>
-                  <span>{currentPhase.progress}%</span>
-                </div>
-                <Progress value={currentPhase.progress} className="h-3" />
-              </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground">Start Date</p>
-                  <p className="font-medium">{currentPhase.startDate}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">End Date</p>
-                  <p className="font-medium">{currentPhase.endDate}</p>
-                </div>
-              </div>
-              <div>
-                <h4 className="font-medium mb-3">Deliverables</h4>
-                <div className="space-y-2">
-                  {currentPhase.deliverables.map((del, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
-                      <span>{del.name}</span>
-                      <Badge className={getStatusColor(del.status)}>{del.status}</Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileCheck className="h-5 w-5" />
-                Phase Gate
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className={`p-4 rounded-lg ${currentPhase.gate.status === 'passed' ? 'bg-green-50 border-green-200' : currentPhase.gate.status === 'pending' ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50'} border`}>
-                <div className="flex items-center gap-2 mb-2">
-                  {currentPhase.gate.status === 'passed' ? <CheckCircle2 className="h-5 w-5 text-green-600" /> : <Clock className="h-5 w-5 text-yellow-600" />}
-                  <span className="font-medium capitalize">{currentPhase.gate.status}</span>
-                </div>
-                <p className="text-sm text-muted-foreground">Gate Date: {currentPhase.gate.date}</p>
-                <p className="text-sm text-muted-foreground">Approver: {currentPhase.gate.approver}</p>
-              </div>
-              
-              {currentPhase.gate.status === 'pending' && (
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm">Gate Criteria</h4>
-                  <ul className="text-sm space-y-1">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />All deliverables complete</li>
-                    <li className="flex items-center gap-2"><Clock className="h-4 w-4 text-yellow-500" />Quality review passed</li>
-                    <li className="flex items-center gap-2"><Clock className="h-4 w-4 text-gray-400" />Stakeholder sign-off</li>
-                  </ul>
-                  <Button className="w-full mt-4" disabled>Request Gate Review</Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                {p.description && <p className="text-sm text-muted-foreground mb-2">{p.description}</p>}
+                <div className="flex items-center gap-4"><Progress value={p.progress || 0} className="flex-1 h-2" /><span className="text-sm font-medium">{p.progress || 0}%</span></div>
+                {(p.planned_start_date || p.planned_end_date) && <p className="text-xs text-muted-foreground mt-2">{p.planned_start_date} → {p.planned_end_date}</p>}
+                {p.gate_criteria && <p className="text-xs mt-1"><span className="font-medium">Gate:</span> {p.gate_criteria}</p>}
+              </CardContent>
+            </Card>
+          ))}</div>
+        )}
       </div>
-
-          {/* Methodology Help Panel */}
-          <MethodologyHelpPanel methodology="waterfall" />
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent className="max-w-lg"><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} Phase</DialogTitle></DialogHeader>
+        <div className="space-y-4">
+          <div className="grid grid-cols-3 gap-3"><div className="col-span-2 space-y-2"><Label>{pt("Name")} *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div><div className="space-y-2"><Label>Order</Label><Input type="number" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} /></div></div>
+          <div className="space-y-2"><Label>{pt("Description")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+          <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>{pt("Start Date")}</Label><Input type="date" value={form.planned_start_date} onChange={(e) => setForm({ ...form, planned_start_date: e.target.value })} /></div><div className="space-y-2"><Label>{pt("End Date")}</Label><Input type="date" value={form.planned_end_date} onChange={(e) => setForm({ ...form, planned_end_date: e.target.value })} /></div></div>
+          <div className="space-y-2"><Label>Gate Criteria</Label><textarea className="w-full min-h-[40px] px-3 py-2 border rounded-md bg-background" value={form.gate_criteria} onChange={(e) => setForm({ ...form, gate_criteria: e.target.value })} /></div>
+          <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleSave} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div>
+        </div>
+      </DialogContent></Dialog>
     </div>
   );
 };

@@ -1,453 +1,62 @@
-// ============================================================
-// ADMIN DASHBOARD - PRODUCTION VERSION
-// Uses real API data from /api/v1/auth/admin/stats/
-// ============================================================
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Loader2, RefreshCw, Users, Building2, CreditCard, Activity, TrendingUp } from "lucide-react";
 
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { api } from '@/lib/api';
+const AdminDashboard = () => {
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
 
-import {
-  Users,
-  Building2,
-  CreditCard,
-  TrendingUp,
-  Activity,
-  RefreshCw,
-  UserPlus,
-  Building,
-  FileText,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  XCircle,
-} from 'lucide-react';
-
-// ============================================================
-// TYPES
-// ============================================================
-
-interface DashboardStats {
-  overview: {
-    total_users: number;
-    active_users: number;
-    total_companies: number;
-    active_subscriptions: number;
+  const fetchStats = async () => {
+    setLoading(true);
+    try {
+      const r = await fetch("/api/v1/admin/stats/", { headers });
+      if (r.ok) setStats(await r.json());
+    } catch (err) { console.error(err); } finally { setLoading(false); }
   };
-  revenue: {
-    mrr: number;
-    arr: number;
-    currency: string;
-  };
-  growth: {
-    users: number;
-    companies: number;
-    mrr: number;
-    subscriptions: number;
-  };
-  recent_activity: Array<{
-    id: string;
-    user_email: string;
-    action: string;
-    description: string;
-    created_at: string;
-    severity: string;
-  }>;
-  new_users: Array<{
-    id: number;
-    email: string;
-    full_name: string;
-    company_name: string | null;
-    is_active: boolean;
-    date_joined: string;
-  }>;
-  subscriptions_by_plan: Array<{
-    plan: string;
-    count: number;
-  }>;
-}
+  useEffect(() => { fetchStats(); }, []);
 
-// ============================================================
-// COMPONENT
-// ============================================================
-
-export default function AdminDashboard() {
-  const { language } = useLanguage();
-  const isNL = language === 'nl';
-  
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // ============================================================
-  // FETCH DATA
-  // ============================================================
-
-  const fetchDashboardStats = async () => {
-  setIsLoading(true);
-  setError(null);
-
-  try {
-    const data = await api.get<DashboardStats>('/auth/admin/stats/');
-    setStats(data);
-  } catch (err: any) {
-    console.error('Error fetching dashboard stats:', err);
-    setError(isNL ? 'Kon statistieken niet laden' : 'Failed to load statistics');
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-  useEffect(() => {
-    fetchDashboardStats();
-  }, []);
-
-  // ============================================================
-  // HELPERS
-  // ============================================================
-
-  const formatCurrency = (amount: number, currency: string = 'EUR') => {
-    return new Intl.NumberFormat('nl-NL', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('nl-NL', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const getActivityIcon = (severity: string) => {
-    switch (severity) {
-      case 'error':
-      case 'critical':
-        return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'warning':
-        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
-      default:
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-    }
-  };
-
-  const getStatusBadge = (isActive: boolean) => {
-    if (isActive) {
-      return <Badge className="bg-green-100 text-green-700">{isNL ? 'Actief' : 'Active'}</Badge>;
-    }
-    return <Badge variant="secondary">{isNL ? 'Inactief' : 'Inactive'}</Badge>;
-  };
-
-  // ============================================================
-  // LOADING STATE
-  // ============================================================
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-64" />
-          </div>
-          <Skeleton className="h-10 w-32" />
-        </div>
-        
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
-              <CardHeader className="pb-2">
-                <Skeleton className="h-4 w-24" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-20 mb-2" />
-                <Skeleton className="h-3 w-32" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // ============================================================
-  // ERROR STATE
-  // ============================================================
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <AlertCircle className="h-12 w-12 text-red-500" />
-        <p className="text-lg text-muted-foreground">{error}</p>
-        <Button onClick={fetchDashboardStats} variant="outline">
-          <RefreshCw className="mr-2 h-4 w-4" />
-          {isNL ? 'Opnieuw proberen' : 'Try again'}
-        </Button>
-      </div>
-    );
-  }
-
-  // ============================================================
-  // RENDER
-  // ============================================================
+  if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  const s = stats || {};
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {isNL ? 'Admin Dashboard' : 'Admin Dashboard'}
-          </h1>
-          <p className="text-muted-foreground">
-            {isNL ? 'Overzicht van het ProjeXtPal platform' : 'Overview of the ProjeXtPal platform'}
-          </p>
-        </div>
-        <Button onClick={fetchDashboardStats} variant="outline">
-          <RefreshCw className="mr-2 h-4 w-4" />
-          {isNL ? 'Vernieuwen' : 'Refresh'}
-        </Button>
+        <div><h1 className="text-2xl font-bold">Admin Dashboard</h1><p className="text-sm text-muted-foreground">System overview and statistics</p></div>
+        <Button variant="outline" onClick={fetchStats} className="gap-2"><RefreshCw className="h-4 w-4" /> Refresh</Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Total Users */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {isNL ? 'Totaal Gebruikers' : 'Total Users'}
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.overview.total_users.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              +{stats?.growth.users}% {isNL ? 'vs vorige maand' : 'vs last month'}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Organizations */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {isNL ? 'Organisaties' : 'Organizations'}
-            </CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.overview.total_companies}
-            </div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              +{stats?.growth.companies}% {isNL ? 'vs vorige maand' : 'vs last month'}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* MRR */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">MRR</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(stats?.revenue.mrr || 0, stats?.revenue.currency)}
-            </div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              +{stats?.growth.mrr}% {isNL ? 'vs vorige maand' : 'vs last month'}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Active Subscriptions */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {isNL ? 'Actieve Abonnementen' : 'Active Subscriptions'}
-            </CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.overview.active_subscriptions}
-            </div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              +{stats?.growth.subscriptions}% {isNL ? 'vs vorige maand' : 'vs last month'}
-            </p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card><CardContent className="p-4 flex items-center gap-4"><div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center"><Users className="h-6 w-6 text-blue-600" /></div><div><p className="text-sm text-muted-foreground">Total Users</p><p className="text-2xl font-bold">{s.total_users || s.users_count || 0}</p></div></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center gap-4"><div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center"><Building2 className="h-6 w-6 text-green-600" /></div><div><p className="text-sm text-muted-foreground">Organizations</p><p className="text-2xl font-bold">{s.total_companies || s.companies_count || s.tenants_count || 0}</p></div></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center gap-4"><div className="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center"><CreditCard className="h-6 w-6 text-purple-600" /></div><div><p className="text-sm text-muted-foreground">Active Subscriptions</p><p className="text-2xl font-bold">{s.active_subscriptions || s.subscriptions_count || 0}</p></div></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center gap-4"><div className="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center"><Activity className="h-6 w-6 text-orange-600" /></div><div><p className="text-sm text-muted-foreground">Projects</p><p className="text-2xl font-bold">{s.total_projects || s.projects_count || 0}</p></div></CardContent></Card>
       </div>
 
-      {/* Content Grid */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* New Users */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>{isNL ? 'Nieuwe Gebruikers' : 'New Users'}</CardTitle>
-              <CardDescription>
-                {isNL ? 'Recent geregistreerde gebruikers' : 'Recently registered users'}
-              </CardDescription>
+      {(s.recent_users || s.recent_signups) && (
+        <Card><CardHeader><CardTitle>Recent Activity</CardTitle></CardHeader>
+          <CardContent><div className="space-y-2">{(s.recent_users || s.recent_signups || []).slice(0, 10).map((u: any, i: number) => (
+            <div key={i} className="flex items-center justify-between p-2 border rounded hover:bg-muted/50">
+              <div className="flex items-center gap-3"><div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">{(u.first_name || u.email || "?").charAt(0).toUpperCase()}</div><div><p className="text-sm font-medium">{u.first_name ? `${u.first_name} ${u.last_name || ""}` : u.email}</p>{u.company_name && <p className="text-xs text-muted-foreground">{u.company_name}</p>}</div></div>
+              <span className="text-xs text-muted-foreground">{u.date_joined?.split("T")[0] || u.created_at?.split("T")[0]}</span>
             </div>
-            <Link to="/admin/users">
-              <Button variant="ghost" size="sm">
-                {isNL ? 'Bekijk Alle' : 'View All'}
-              </Button>
-            </Link>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {stats?.new_users && stats.new_users.length > 0 ? (
-                stats.new_users.map((user) => (
-                  <div key={user.id} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-purple-100 text-purple-700 font-medium">
-                        {user.email[0].toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{user.full_name || user.email}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {user.company_name || user.email}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      {getStatusBadge(user.is_active)}
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {formatDate(user.date_joined)}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  {isNL ? 'Geen nieuwe gebruikers' : 'No new users'}
-                </p>
-              )}
-            </div>
-          </CardContent>
+          ))}</div></CardContent>
         </Card>
+      )}
 
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>{isNL ? 'Recente Activiteit' : 'Recent Activity'}</CardTitle>
-              <CardDescription>
-                {isNL ? 'Laatste acties in het systeem' : 'Latest actions in the system'}
-              </CardDescription>
-            </div>
-            <Link to="/admin/logs">
-              <Button variant="ghost" size="sm">
-                {isNL ? 'Bekijk Alle' : 'View All'}
-              </Button>
-            </Link>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {stats?.recent_activity && stats.recent_activity.length > 0 ? (
-                stats.recent_activity.slice(0, 5).map((activity) => (
-                  <div key={activity.id} className="flex items-start space-x-3">
-                    {getActivityIcon(activity.severity)}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm">{activity.description}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(activity.created_at)}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  {isNL ? 'Geen recente activiteit' : 'No recent activity'}
-                </p>
-              )}
-            </div>
-          </CardContent>
+      {(s.plan_distribution || s.plans_breakdown) && (
+        <Card><CardHeader><CardTitle>Plan Distribution</CardTitle></CardHeader>
+          <CardContent><div className="space-y-3">{Object.entries(s.plan_distribution || s.plans_breakdown || {}).map(([plan, count]: [string, any]) => (
+            <div key={plan} className="flex items-center gap-3"><span className="w-24 text-sm font-medium">{plan}</span><div className="flex-1"><Progress value={s.total_companies ? (count / s.total_companies) * 100 : 0} className="h-3" /></div><Badge variant="outline">{count}</Badge></div>
+          ))}</div></CardContent>
         </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{isNL ? 'Snelle Acties' : 'Quick Actions'}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
-            <Link to="/admin/users">
-              <Button variant="outline" className="w-full justify-start">
-                <UserPlus className="mr-2 h-4 w-4" />
-                {isNL ? 'Gebruiker Toevoegen' : 'Add User'}
-              </Button>
-            </Link>
-            <Link to="/admin/tenants">
-              <Button variant="outline" className="w-full justify-start">
-                <Building className="mr-2 h-4 w-4" />
-                {isNL ? 'Organisatie Toevoegen' : 'Add Organization'}
-              </Button>
-            </Link>
-            <Link to="/admin/plans">
-              <Button variant="outline" className="w-full justify-start">
-                <CreditCard className="mr-2 h-4 w-4" />
-                {isNL ? 'Abonnementen Beheren' : 'Manage Subscriptions'}
-              </Button>
-            </Link>
-            <Link to="/admin/logs">
-              <Button variant="outline" className="w-full justify-start">
-                <FileText className="mr-2 h-4 w-4" />
-                {isNL ? 'Logs Bekijken' : 'View Logs'}
-              </Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* System Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>{isNL ? 'Systeem Status' : 'System Status'}</span>
-            <Badge className="bg-green-100 text-green-700">
-              {isNL ? 'Alle Systemen Operationeel' : 'All Systems Operational'}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
-            {[
-              { name: 'API Server', status: 'operational', uptime: '99.99%' },
-              { name: 'Database', status: 'operational', uptime: '99.95%' },
-              { name: 'File Storage', status: 'operational', uptime: '99.98%' },
-              { name: 'AI Services', status: 'operational', uptime: '99.9%' },
-            ].map((service) => (
-              <div key={service.name} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <div className="h-2 w-2 rounded-full bg-green-500" />
-                  <span className="text-sm font-medium">{service.name}</span>
-                </div>
-                <span className="text-xs text-muted-foreground">{service.uptime}</span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      )}
     </div>
   );
-}
+};
+
+export default AdminDashboard;

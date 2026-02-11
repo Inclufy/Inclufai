@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ProjectHeader } from '@/components/ProjectHeader';
 import { Users, AlertTriangle, CheckCircle2, User, Loader2, Plus } from 'lucide-react';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -28,6 +29,7 @@ const fetchProgramResources = async (programId: string) => {
 };
 
 const ProgramResources = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
 
   const { data: resourcesData = [], isLoading } = useQuery({
@@ -184,11 +186,11 @@ const ProgramResources = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b text-left">
-                    <th className="pb-3">Name</th>
-                    <th className="pb-3">Role</th>
-                    <th className="pb-3">Projects</th>
-                    <th className="pb-3">Allocation</th>
-                    <th className="pb-3">Status</th>
+                    <th className="pb-3">{pt("Name")}</th>
+                    <th className="pb-3">{pt("Role")}</th>
+                    <th className="pb-3">{pt("Projects")}</th>
+                    <th className="pb-3">{pt("Allocation")}</th>
+                    <th className="pb-3">{pt("Status")}</th>
                   </tr>
                 </thead>
                 <tbody>

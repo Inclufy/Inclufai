@@ -67,6 +67,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // Use relative path - proxy handles the backend URL
 const API_BASE_URL = '/api/v1';
@@ -245,6 +246,7 @@ const questionTypeConfig: Record<string, { icon: any; label: string; color: stri
 };
 
 export default function PostProject() {
+  const { pt } = usePageTranslations();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("projects");
@@ -882,7 +884,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
       <div className="min-h-full bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary mb-4" />
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{pt("Loading...")}</p>
         </div>
       </div>
     );
@@ -1020,7 +1022,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                             onClick={() => handleEditProject(project)}
                           >
                             <Edit className="h-3.5 w-3.5 mr-1.5" />
-                            Edit
+                            {pt("Edit")}
                           </Button>
                           <Button
                             size="sm"
@@ -1030,7 +1032,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                             disabled={deleteProjectMutation.isPending}
                           >
                             <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                            Delete
+                            {pt("Delete")}
                           </Button>
                         </div>
                       </CardContent>
@@ -1065,7 +1067,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                       </div>
                       <div>
                         <p className="text-2xl font-bold">{surveys.filter(s => s.status === 'active').length}</p>
-                        <p className="text-xs text-muted-foreground">Active</p>
+                        <p className="text-xs text-muted-foreground">{pt("Active")}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -1227,7 +1229,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                                   onClick={() => deleteSurveyMutation.mutate(survey.id)}
                                 >
                                   <Trash2 className="h-4 w-4 mr-2" />
-                                  Delete
+                                  {pt("Delete")}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -1274,7 +1276,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="lessonsLearned">Lessons Learned</Label>
+              <Label htmlFor="lessonsLearned">{pt("Lessons Learned")}</Label>
               <Textarea
                 id="lessonsLearned"
                 value={projectFormData.lessonsLearned}
@@ -1316,7 +1318,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsProjectDialogOpen(false)}>
-              Cancel
+              {pt("Cancel")}
             </Button>
             <Button
               onClick={handleProjectSubmit}
@@ -1360,7 +1362,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="surveyDescription">Description</Label>
+                <Label htmlFor="surveyDescription">{pt("Description")}</Label>
                 <Textarea
                   id="surveyDescription"
                   value={surveyFormData.description}
@@ -1511,7 +1513,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsSurveyDialogOpen(false)}>
-              Cancel
+              {pt("Cancel")}
             </Button>
             <Button
               onClick={handleSurveySubmit}
@@ -1568,7 +1570,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                       <SelectItem value="lessons_learned">
                         <div className="flex items-center gap-2">
                           <Brain className="h-4 w-4 text-purple-500" />
-                          <span>Lessons Learned</span>
+                          <span>{pt("Lessons Learned")}</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="team_retrospective">
@@ -1677,7 +1679,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
             {!aiGeneratedSurvey ? (
               <>
                 <Button variant="outline" onClick={() => setIsAIGenerateOpen(false)}>
-                  Cancel
+                  {pt("Cancel")}
                 </Button>
                 <Button
                   onClick={handleAIGenerateSurvey}
@@ -1760,7 +1762,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsViewResponsesOpen(false)}>
-              Close
+              {pt("Close")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1890,7 +1892,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
 
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setIsShareDialogOpen(false)}>
-              Cancel
+              {pt("Cancel")}
             </Button>
             <Button
               onClick={handleShareSurvey}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // Icons as components for cleaner code
 const SparkleIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
@@ -190,6 +191,7 @@ const CombinationCard: React.FC<CombinationCardProps> = ({
 
 // Main Page Component
 const ManagementMethodiekenPage: React.FC = () => {
+  const { pt } = usePageTranslations();
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-purple-50/50 via-50% to-pink-50/30">
       
@@ -713,7 +715,7 @@ const ManagementMethodiekenPage: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                   </svg>
                   <div className="text-left">
-                    <div className="text-xl font-bold text-white">Portfolio</div>
+                    <div className="text-xl font-bold text-white">{pt("Portfolio")}</div>
                     <div className="text-sm text-purple-100">Strategische alignment</div>
                   </div>
                 </div>

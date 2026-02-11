@@ -43,6 +43,7 @@ import {
   Settings 
 } from 'lucide-react';
 import api from '@/lib/api';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 interface Registration {
   id: number;
@@ -70,6 +71,7 @@ interface Registration {
 }
 
 export default function Registrations() {
+  const { pt } = usePageTranslations();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -280,8 +282,8 @@ export default function Registrations() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="pending">{pt("Pending")}</SelectItem>
+                <SelectItem value="approved">{pt("Approved")}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -291,7 +293,7 @@ export default function Registrations() {
               className="gap-2"
             >
               <RefreshCw className="h-4 w-4" />
-              Refresh
+              {pt("Refresh")}
             </Button>
           </div>
         </CardContent>
@@ -310,14 +312,14 @@ export default function Registrations() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Name</TableHead>
+                  <TableHead>{pt("Email")}</TableHead>
+                  <TableHead>{pt("Name")}</TableHead>
                   <TableHead>Company</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{pt("Status")}</TableHead>
                   <TableHead>Subscription</TableHead>
                   <TableHead>Days Left</TableHead>
                   <TableHead>Registered</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right">{pt("Actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -461,7 +463,7 @@ export default function Registrations() {
               variant="outline"
               onClick={() => setShowSubscriptionDialog(false)}
             >
-              Cancel
+              {pt("Cancel")}
             </Button>
             <Button
               onClick={handleSubscriptionUpdate}

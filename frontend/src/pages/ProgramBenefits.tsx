@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { ProjectHeader } from '@/components/ProjectHeader';
 import { Award, TrendingUp, DollarSign, Target, CheckCircle2, Loader2, Plus, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -21,6 +22,7 @@ const fetchProgramBenefits = async (programId: string) => {
 };
 
 const ProgramBenefits = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
 
@@ -99,7 +101,7 @@ const ProgramBenefits = () => {
           </Card>
           <Card className={summary.atRisk > 0 ? 'border-yellow-300 bg-yellow-50' : ''}>
             <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">At Risk</p>
+              <p className="text-sm text-muted-foreground">{pt("At Risk")}</p>
               <p className={`text-2xl font-bold ${summary.atRisk > 0 ? 'text-yellow-600' : 'text-green-600'}`}>{summary.atRisk}</p>
             </CardContent>
           </Card>
@@ -125,12 +127,12 @@ const ProgramBenefits = () => {
                 <thead>
                   <tr className="border-b text-left">
                     <th className="pb-3">Benefit</th>
-                    <th className="pb-3">Type</th>
-                    <th className="pb-3">Owner</th>
-                    <th className="pb-3">Target</th>
+                    <th className="pb-3">{pt("Type")}</th>
+                    <th className="pb-3">{pt("Owner")}</th>
+                    <th className="pb-3">{pt("Target")}</th>
                     <th className="pb-3">Realized</th>
-                    <th className="pb-3">Progress</th>
-                    <th className="pb-3">Status</th>
+                    <th className="pb-3">{pt("Progress")}</th>
+                    <th className="pb-3">{pt("Status")}</th>
                   </tr>
                 </thead>
                 <tbody>

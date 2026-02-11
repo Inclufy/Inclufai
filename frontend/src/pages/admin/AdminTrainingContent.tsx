@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CourseBuilder from './CourseBuilder';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // Safe imports with fallbacks
 let useLanguage: () => { language: string };
@@ -87,6 +88,7 @@ interface Analytics {
 }
 
 const AdminTrainingContent = () => {
+  const { pt } = usePageTranslations();
   const { language } = useLanguage();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('courses');
@@ -489,7 +491,7 @@ const AdminTrainingContent = () => {
                   <TableHead>{isNL ? 'Studenten' : 'Students'}</TableHead>
                   <TableHead>{isNL ? 'Omzet' : 'Revenue'}</TableHead>
                   <TableHead>Rating</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{pt("Status")}</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -567,7 +569,7 @@ const AdminTrainingContent = () => {
                   <TableHead>{isNL ? 'Cursus' : 'Course'}</TableHead>
                   <TableHead>{isNL ? 'Datum' : 'Date'}</TableHead>
                   <TableHead>{isNL ? 'Voortgang' : 'Progress'}</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{pt("Status")}</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -644,7 +646,7 @@ const AdminTrainingContent = () => {
                   <TableHead>{isNL ? 'Cursussen' : 'Courses'}</TableHead>
                   <TableHead>{isNL ? 'Teamgrootte' : 'Team Size'}</TableHead>
                   <TableHead>{isNL ? 'Datum' : 'Date'}</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{pt("Status")}</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>

@@ -1,309 +1,55 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { useProject } from '@/hooks/useApi';
-import { sixsigmaApi, VoiceOfCustomer } from '@/lib/sixsigmaApi';
-import { Users, Plus, Trash2, Save, Loader2, AlertCircle, MessageSquare } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Plus, MessageSquare, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-const priorityColors: Record<string, string> = {
-  critical: 'bg-red-500',
-  high: 'bg-orange-500',
-  medium: 'bg-yellow-500',
-  low: 'bg-green-500',
-};
+const BASE = (id: string) => `/api/v1/sixsigma/projects/${id}/sixsigma`;
 
 const SixSigmaVOC = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id);
-  const { toast } = useToast();
-
+  const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [vocItems, setVocItems] = useState<VoiceOfCustomer[]>([]);
-  const [showForm, setShowForm] = useState(false);
-  const [newVoc, setNewVoc] = useState({
-    customer_segment: '',
-    voice_statement: '',
-    customer_need: '',
-    ctq_requirement: '',
-    priority: 'medium',
-    measurement: '',
-    target_value: '',
-  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ customer_segment: "", need: "", requirement: "", priority: "medium", source: "", ctq: "" });
+  const token = localStorage.getItem("access_token"); const headers: Record<string, string> = { Authorization: `Bearer ${token}` }; const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  useEffect(() => {
-    if (id) loadVOC();
-  }, [id]);
+  const fetchData = async () => { try { const r = await fetch(`${BASE(id!)}/voc/`, { headers }); if (r.ok) { const d = await r.json(); setItems(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
+  useEffect(() => { fetchData(); }, [id]);
 
-  const loadVOC = async () => {
-    if (!id) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await sixsigmaApi.voc.getAll(id);
-      setVocItems(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load VOC data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const openCreate = () => { setEditing(null); setForm({ customer_segment: "", need: "", requirement: "", priority: "medium", source: "", ctq: "" }); setDialogOpen(true); };
+  const openEdit = (i: any) => { setEditing(i); setForm({ customer_segment: i.customer_segment || "", need: i.need || "", requirement: i.requirement || "", priority: i.priority || "medium", source: i.source || "", ctq: i.ctq || "" }); setDialogOpen(true); };
+  const handleSave = async () => { if (!form.need) { toast.error("Need verplicht"); return; } setSubmitting(true); try { const url = editing ? `${BASE(id!)}/voc/${editing.id}/` : `${BASE(id!)}/voc/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(form) }); if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } finally { setSubmitting(false); } };
+  const handleDelete = async (vId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`${BASE(id!)}/voc/${vId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
 
-  const handleCreate = async () => {
-    if (!id) return;
-    setSaving(true);
-    try {
-      const created = await sixsigmaApi.voc.create(id, newVoc);
-      setVocItems([...vocItems, created]);
-      setShowForm(false);
-      setNewVoc({
-        customer_segment: '',
-        voice_statement: '',
-        customer_need: '',
-        ctq_requirement: '',
-        priority: 'medium',
-        measurement: '',
-        target_value: '',
-      });
-      toast({ title: 'VOC Added', description: 'Voice of Customer item created successfully.' });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
-    } finally {
-      setSaving(false);
-    }
-  };
+  const prioColors: Record<string, string> = { critical: "bg-red-100 text-red-700", high: "bg-orange-100 text-orange-700", medium: "bg-yellow-100 text-yellow-700", low: "bg-green-100 text-green-700" };
 
-  const handleDelete = async (vocId: number) => {
-    if (!id) return;
-    try {
-      await sixsigmaApi.voc.delete(id, vocId);
-      setVocItems(vocItems.filter(v => v.id !== vocId));
-      toast({ title: 'Deleted', description: 'VOC item removed.' });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader />
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2">Loading Voice of Customer...</span>
-        </div>
-      </div>
-    );
-  }
-
-  // Group by priority
-  const grouped = vocItems.reduce((acc, item) => {
-    const p = item.priority || 'medium';
-    if (!acc[p]) acc[p] = [];
-    acc[p].push(item);
-    return acc;
-  }, {} as Record<string, VoiceOfCustomer[]>);
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
-    <div className="min-h-full bg-background">
-      <ProjectHeader />
+    <div className="min-h-full bg-background"><ProjectHeader />
       <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Users className="h-6 w-6 text-blue-600" />
-              Voice of Customer (VOC)
-            </h1>
-            <p className="text-muted-foreground">Capture customer needs and translate to CTQ requirements</p>
-          </div>
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add VOC
-          </Button>
-        </div>
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2 text-red-700">
-            <AlertCircle className="h-5 w-5" />
-            <span>{error}</span>
-          </div>
+        <div className="flex items-center justify-between"><div className="flex items-center gap-3"><MessageSquare className="h-6 w-6 text-blue-500" /><h1 className="text-2xl font-bold">Voice of Customer</h1><Badge variant="outline">{items.length}</Badge></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add")}</Button></div>
+        {items.length === 0 ? <Card className="p-8 text-center"><MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">No VOC entries yet</h3></Card> : (
+          <div className="space-y-2">{items.map(i => (
+            <Card key={i.id}><CardContent className="p-4 flex items-center justify-between"><div className="flex-1"><div className="flex items-center gap-2 mb-1">{i.customer_segment && <Badge variant="outline" className="text-xs">{i.customer_segment}</Badge>}<span className="font-medium">{i.need}</span><Badge className={`text-xs ${prioColors[i.priority] || ""}`}>{i.priority}</Badge></div>{i.requirement && <p className="text-sm text-muted-foreground">CTQ: {i.requirement}</p>}{i.ctq && <p className="text-xs text-muted-foreground">CTQ Metric: {i.ctq}</p>}</div><div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => openEdit(i)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(i.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></CardContent></Card>
+          ))}</div>
         )}
-
-        {/* New VOC Form */}
-        {showForm && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Add Voice of Customer</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Customer Segment</label>
-                  <Input
-                    value={newVoc.customer_segment}
-                    onChange={(e) => setNewVoc({ ...newVoc, customer_segment: e.target.value })}
-                    placeholder="e.g., End Users, Enterprise Clients"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Priority</label>
-                  <Select value={newVoc.priority} onValueChange={(v) => setNewVoc({ ...newVoc, priority: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="critical">Critical</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="low">Low</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium">Voice Statement (What the customer says)</label>
-                <Textarea
-                  value={newVoc.voice_statement}
-                  onChange={(e) => setNewVoc({ ...newVoc, voice_statement: e.target.value })}
-                  placeholder="e.g., 'The process takes too long'"
-                  rows={2}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Customer Need (What they really mean)</label>
-                <Textarea
-                  value={newVoc.customer_need}
-                  onChange={(e) => setNewVoc({ ...newVoc, customer_need: e.target.value })}
-                  placeholder="e.g., Faster turnaround time"
-                  rows={2}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">CTQ Requirement (Critical to Quality)</label>
-                <Input
-                  value={newVoc.ctq_requirement}
-                  onChange={(e) => setNewVoc({ ...newVoc, ctq_requirement: e.target.value })}
-                  placeholder="e.g., Processing time < 24 hours"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Measurement</label>
-                  <Input
-                    value={newVoc.measurement}
-                    onChange={(e) => setNewVoc({ ...newVoc, measurement: e.target.value })}
-                    placeholder="e.g., Hours from submission to completion"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Target Value</label>
-                  <Input
-                    value={newVoc.target_value}
-                    onChange={(e) => setNewVoc({ ...newVoc, target_value: e.target.value })}
-                    placeholder="e.g., < 24 hours"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button onClick={handleCreate} disabled={saving}>
-                  {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Save VOC
-                </Button>
-                <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* VOC Items by Priority */}
-        {vocItems.length > 0 ? (
-          <div className="space-y-6">
-            {['critical', 'high', 'medium', 'low'].map(priority => (
-              grouped[priority]?.length > 0 && (
-                <div key={priority}>
-                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                    <Badge className={`${priorityColors[priority]} text-white`}>
-                      {priority.charAt(0).toUpperCase() + priority.slice(1)}
-                    </Badge>
-                    <span className="text-muted-foreground">({grouped[priority].length})</span>
-                  </h3>
-                  <div className="grid gap-4">
-                    {grouped[priority].map(voc => (
-                      <Card key={voc.id}>
-                        <CardContent className="pt-4">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Badge variant="outline">{voc.customer_segment}</Badge>
-                              </div>
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                  <span className="text-muted-foreground">Voice: </span>
-                                  <span className="italic">"{voc.voice_statement}"</span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Need: </span>
-                                  {voc.customer_need}
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">CTQ: </span>
-                                  <span className="font-medium text-blue-600">{voc.ctq_requirement}</span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Target: </span>
-                                  {voc.target_value}
-                                </div>
-                              </div>
-                            </div>
-                            <Button variant="ghost" size="sm" className="text-red-500" onClick={() => handleDelete(voc.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No Voice of Customer Data</h3>
-              <p className="text-muted-foreground mb-4">
-                Capture what your customers are saying and translate it to measurable requirements.
-              </p>
-              <Button onClick={() => setShowForm(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add First VOC
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Tips */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="pt-4">
-            <h4 className="font-medium text-blue-800 mb-2">💡 VOC Tips</h4>
-            <ul className="text-sm text-blue-700 space-y-1">
-              <li>• <strong>Voice:</strong> Exact words the customer uses (often vague or emotional)</li>
-              <li>• <strong>Need:</strong> The underlying requirement (what they really mean)</li>
-              <li>• <strong>CTQ:</strong> Specific, measurable requirement critical to quality</li>
-              <li>• Use surveys, interviews, complaints, and feedback as sources</li>
-            </ul>
-          </CardContent>
-        </Card>
       </div>
-      <MethodologyHelpPanel methodology="lean_six_sigma" />
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} VOC Entry</DialogTitle></DialogHeader>
+        <div className="space-y-4"><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Customer Segment</Label><Input value={form.customer_segment} onChange={(e) => setForm({ ...form, customer_segment: e.target.value })} /></div><div className="space-y-2"><Label>{pt("Priority")}</Label><Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="low">Low</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="high">High</SelectItem><SelectItem value="critical">Critical</SelectItem></SelectContent></Select></div></div><div className="space-y-2"><Label>Customer Need *</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.need} onChange={(e) => setForm({ ...form, need: e.target.value })} /></div><div className="space-y-2"><Label>Requirement / CTQ</Label><Input value={form.requirement} onChange={(e) => setForm({ ...form, requirement: e.target.value })} /></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Source</Label><Input value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} /></div><div className="space-y-2"><Label>CTQ Metric</Label><Input value={form.ctq} onChange={(e) => setForm({ ...form, ctq: e.target.value })} /></div></div><div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleSave} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div></div>
+      </DialogContent></Dialog>
     </div>
   );
 };

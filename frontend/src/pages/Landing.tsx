@@ -60,6 +60,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import { useLanguage, languages } from "@/contexts/LanguageContext";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // ============================================
 // CSS ANIMATIONS (inject into head)

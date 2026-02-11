@@ -58,6 +58,7 @@ import {
   KeyRound,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // ============================================================
 // TYPES
@@ -511,7 +512,7 @@ export default function UserManagement() {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={"Status"} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{isNL ? 'Alle Status' : 'All Status'}</SelectItem>
@@ -521,14 +522,14 @@ export default function UserManagement() {
             </Select>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Role" />
+                <SelectValue placeholder={"Role"} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{isNL ? 'Alle Rollen' : 'All Roles'}</SelectItem>
                 <SelectItem value="superadmin">Super Admin</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="program_manager">Program Manager</SelectItem>
-                <SelectItem value="pm">Project Manager</SelectItem>
+                <SelectItem value="admin">{"Admin"}</SelectItem>
+                <SelectItem value="program_manager">{"Program Manager"}</SelectItem>
+                <SelectItem value="pm">{"Project Manager"}</SelectItem>
                 <SelectItem value="user">User</SelectItem>
               </SelectContent>
             </Select>
@@ -570,7 +571,7 @@ export default function UserManagement() {
                   <TableHead>{isNL ? 'Gebruiker' : 'User'}</TableHead>
                   <TableHead>{isNL ? 'Organisatie' : 'Organization'}</TableHead>
                   <TableHead>{isNL ? 'Rol' : 'Role'}</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{"Status"}</TableHead>
                   <TableHead>{isNL ? 'Laatst Actief' : 'Last Active'}</TableHead>
                   <TableHead className="text-right">{isNL ? 'Acties' : 'Actions'}</TableHead>
                 </TableRow>
@@ -697,7 +698,7 @@ export default function UserManagement() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Email</Label>
+              <Label>{"Email"}</Label>
               <Input
                 type="email"
                 value={formData.email}
@@ -765,12 +766,12 @@ export default function UserManagement() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="program_manager">Program Manager</SelectItem>
-                  <SelectItem value="pm">Project Manager</SelectItem>
+                  <SelectItem value="program_manager">{"Program Manager"}</SelectItem>
+                  <SelectItem value="pm">{"Project Manager"}</SelectItem>
                   <SelectItem value="contributor">Contributor</SelectItem>
-                  <SelectItem value="reviewer">Reviewer</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="guest">Guest</SelectItem>
+                  <SelectItem value="reviewer">{"Reviewer"}</SelectItem>
+                  <SelectItem value="admin">{"Admin"}</SelectItem>
+                  <SelectItem value="guest">{"Guest"}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -809,7 +810,7 @@ export default function UserManagement() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Email</Label>
+              <Label>{"Email"}</Label>
               <Input value={formData.email} disabled className="bg-muted" />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -835,12 +836,12 @@ export default function UserManagement() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="program_manager">Program Manager</SelectItem>
-                  <SelectItem value="pm">Project Manager</SelectItem>
+                  <SelectItem value="program_manager">{"Program Manager"}</SelectItem>
+                  <SelectItem value="pm">{"Project Manager"}</SelectItem>
                   <SelectItem value="contributor">Contributor</SelectItem>
-                  <SelectItem value="reviewer">Reviewer</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="guest">Guest</SelectItem>
+                  <SelectItem value="reviewer">{"Reviewer"}</SelectItem>
+                  <SelectItem value="admin">{"Admin"}</SelectItem>
+                  <SelectItem value="guest">{"Guest"}</SelectItem>
                 </SelectContent>  
               </Select>
             </div>

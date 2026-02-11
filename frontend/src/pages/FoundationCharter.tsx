@@ -1,8 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const FoundationCharter = () => {
+  const { pt } = usePageTranslations();
   return (
     <div className="min-h-full bg-background">
       <ProjectHeader />
@@ -32,9 +34,9 @@ const FoundationCharter = () => {
                 <thead>
                   <tr className="border-b border-primary-foreground/20">
                     <th className="text-left py-2">Capability</th>
-                    <th className="text-left py-2">Description</th>
+                    <th className="text-left py-2">{pt("Description")}</th>
                     <th className="text-left py-2">End Game</th>
-                    <th className="text-right py-2">Actions</th>
+                    <th className="text-right py-2">{pt("Actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -43,8 +45,8 @@ const FoundationCharter = () => {
                     <td className="py-2">Solutions, Consulting & Academy</td>
                     <td className="py-2">A full functional website with SaaS/Incr functionality to manage the content of the website</td>
                     <td className="py-2 text-right">
-                      <Button variant="ghost" size="sm">Edit</Button>
-                      <Button variant="ghost" size="sm">Delete</Button>
+                      <Button variant="ghost" size="sm">{pt("Edit")}</Button>
+                      <Button variant="ghost" size="sm">{pt("Delete")}</Button>
                     </td>
                   </tr>
                 </tbody>
@@ -62,8 +64,8 @@ const FoundationCharter = () => {
                 <thead>
                   <tr className="border-b border-primary-foreground/20">
                     <th className="text-left py-2">Item</th>
-                    <th className="text-left py-2">Description</th>
-                    <th className="text-right py-2">Actions</th>
+                    <th className="text-left py-2">{pt("Description")}</th>
+                    <th className="text-right py-2">{pt("Actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -71,8 +73,8 @@ const FoundationCharter = () => {
                     <td className="py-2">The Inclufy AI Procurement & Sales portal</td>
                     <td className="py-2">The Inclufy AI Procurement & Sales portal</td>
                     <td className="py-2 text-right">
-                      <Button variant="ghost" size="sm">Edit</Button>
-                      <Button variant="ghost" size="sm">Delete</Button>
+                      <Button variant="ghost" size="sm">{pt("Edit")}</Button>
+                      <Button variant="ghost" size="sm">{pt("Delete")}</Button>
                     </td>
                   </tr>
                 </tbody>
@@ -88,8 +90,8 @@ const FoundationCharter = () => {
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between py-1 border-b border-primary-foreground/20">
-                  <span>Risk</span>
-                  <span>Description</span>
+                  <span>{pt("Risk")}</span>
+                  <span>{pt("Description")}</span>
                 </div>
                 <div className="flex justify-between py-1">
                   <span>Delay in development</span>
@@ -107,9 +109,9 @@ const FoundationCharter = () => {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-primary-foreground/20">
-                      <th className="text-left py-2">Deliverable</th>
-                      <th className="text-left py-2">Description</th>
-                      <th className="text-left py-2">Date</th>
+                      <th className="text-left py-2">{pt("Deliverable")}</th>
+                      <th className="text-left py-2">{pt("Description")}</th>
+                      <th className="text-left py-2">{pt("Date")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -126,29 +128,29 @@ const FoundationCharter = () => {
 
           <div className="p-4 rounded-lg bg-primary text-primary-foreground">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold">Resources</h3>
+              <h3 className="font-semibold">{pt("Resources")}</h3>
               <Button variant="secondary" size="sm">+ Add</Button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-primary-foreground/20">
-                    <th className="text-left py-2">Name</th>
-                    <th className="text-left py-2">Role</th>
+                    <th className="text-left py-2">{pt("Name")}</th>
+                    <th className="text-left py-2">{pt("Role")}</th>
                     <th className="text-left py-2">Required</th>
                     <th className="text-left py-2">FTE</th>
-                    <th className="text-right py-2">Actions</th>
+                    <th className="text-right py-2">{pt("Actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td className="py-2">Ramail Naor</td>
-                    <td className="py-2">Project Manager</td>
+                    <td className="py-2">{pt("Project Manager")}</td>
                     <td className="py-2">Yes</td>
                     <td className="py-2">1.0</td>
                     <td className="py-2 text-right">
-                      <Button variant="ghost" size="sm">Edit</Button>
-                      <Button variant="ghost" size="sm">Delete</Button>
+                      <Button variant="ghost" size="sm">{pt("Edit")}</Button>
+                      <Button variant="ghost" size="sm">{pt("Delete")}</Button>
                     </td>
                   </tr>
                 </tbody>

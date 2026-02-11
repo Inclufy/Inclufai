@@ -1,371 +1,82 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { useProject } from '@/hooks/useApi';
-import { kanbanApi, KanbanColumn, KanbanSwimlane } from '@/lib/kanbanApi';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  Settings, Plus, GripVertical, Trash2, Edit2, 
-  Loader2, AlertCircle, Columns, Rows
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Plus, Columns, Pencil, Trash2, GripVertical } from "lucide-react";
+import { toast } from "sonner";
 
 const KanbanBoardConfiguration = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id);
-  
-  const [columns, setColumns] = useState<KanbanColumn[]>([]);
-  const [swimlanes, setSwimlanes] = useState<KanbanSwimlane[]>([]);
+  const [columns, setColumns] = useState<any[]>([]);
+  const [swimlanes, setSwimlanes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  // Dialog states
-  const [showColumnDialog, setShowColumnDialog] = useState(false);
-  const [showSwimlaneDialog, setShowSwimlaneDialog] = useState(false);
-  const [editingColumn, setEditingColumn] = useState<KanbanColumn | null>(null);
-  const [editingSwimlane, setEditingSwimlane] = useState<KanbanSwimlane | null>(null);
-  
-  const [columnForm, setColumnForm] = useState({
-    name: '',
-    wip_limit: '',
-    color: '#6366f1',
-    is_done_column: false,
-  });
-  
-  const [swimlaneForm, setSwimlaneForm] = useState({
-    name: '',
-    color: '#f3f4f6',
-  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [dialogType, setDialogType] = useState<"column" | "swimlane">("column");
+  const [form, setForm] = useState({ name: "", order: "", wip_limit: "", column_type: "in_progress" });
+  const [slForm, setSlForm] = useState({ name: "", order: "" });
+  const token = localStorage.getItem("access_token"); const headers: Record<string, string> = { Authorization: `Bearer ${token}` }; const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  useEffect(() => {
-    if (id) {
-      loadData();
-    }
-  }, [id]);
+  const fetchData = async () => { try { const [cRes, sRes] = await Promise.all([fetch(`/api/v1/projects/${id}/kanban/columns/`, { headers }), fetch(`/api/v1/projects/${id}/kanban/swimlanes/`, { headers })]); if (cRes.ok) { const d = await cRes.json(); setColumns((Array.isArray(d) ? d : d.results || []).sort((a: any, b: any) => (a.order || 0) - (b.order || 0))); } if (sRes.ok) { const d = await sRes.json(); setSwimlanes(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
+  useEffect(() => { fetchData(); }, [id]);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const [columnsRes, swimlanesRes] = await Promise.all([
-        kanbanApi.columns.getAll(id!),
-        kanbanApi.swimlanes.getAll(id!),
-      ]);
-      setColumns(columnsRes);
-      setSwimlanes(swimlanesRes);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load configuration');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const openCreateCol = () => { setDialogType("column"); setEditing(null); setForm({ name: "", order: String(columns.length + 1), wip_limit: "", column_type: "in_progress" }); setDialogOpen(true); };
+  const openEditCol = (c: any) => { setDialogType("column"); setEditing(c); setForm({ name: c.name || "", order: String(c.order || ""), wip_limit: String(c.wip_limit || ""), column_type: c.column_type || "in_progress" }); setDialogOpen(true); };
+  const openCreateSl = () => { setDialogType("swimlane"); setEditing(null); setSlForm({ name: "", order: String(swimlanes.length + 1) }); setDialogOpen(true); };
+  const openEditSl = (s: any) => { setDialogType("swimlane"); setEditing(s); setSlForm({ name: s.name || "", order: String(s.order || "") }); setDialogOpen(true); };
 
-  const handleSaveColumn = async () => {
-    try {
-      const data: Partial<KanbanColumn> = {
-        name: columnForm.name,
-        wip_limit: columnForm.wip_limit ? parseInt(columnForm.wip_limit) : undefined,
-        color: columnForm.color,
-        is_done_column: columnForm.is_done_column,
-      };
-      
-      if (editingColumn) {
-        await kanbanApi.columns.update(id!, editingColumn.id, data);
-      } else {
-        await kanbanApi.columns.create(id!, data);
-      }
-      
-      setShowColumnDialog(false);
-      setEditingColumn(null);
-      setColumnForm({ name: '', wip_limit: '', color: '#6366f1', is_done_column: false });
-      loadData();
-    } catch (err: any) {
-      alert(err.message || 'Failed to save column');
-    }
-  };
+  const handleSaveCol = async () => { if (!form.name) { toast.error("Naam verplicht"); return; } setSubmitting(true); try { const body: any = { name: form.name, column_type: form.column_type }; if (form.order) body.order = parseInt(form.order); if (form.wip_limit) body.wip_limit = parseInt(form.wip_limit); const url = editing ? `/api/v1/projects/${id}/kanban/columns/${editing.id}/` : `/api/v1/projects/${id}/kanban/columns/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) }); if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } finally { setSubmitting(false); } };
+  const handleSaveSl = async () => { if (!slForm.name) { toast.error("Naam verplicht"); return; } setSubmitting(true); try { const body: any = { name: slForm.name }; if (slForm.order) body.order = parseInt(slForm.order); const url = editing ? `/api/v1/projects/${id}/kanban/swimlanes/${editing.id}/` : `/api/v1/projects/${id}/kanban/swimlanes/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) }); if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } finally { setSubmitting(false); } };
+  const deleteCol = async (cId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`/api/v1/projects/${id}/kanban/columns/${cId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
+  const deleteSl = async (sId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`/api/v1/projects/${id}/kanban/swimlanes/${sId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
 
-  const handleDeleteColumn = async (columnId: number) => {
-    if (!confirm('Delete this column? Cards will be moved to another column.')) return;
-    try {
-      await kanbanApi.columns.delete(id!, columnId);
-      loadData();
-    } catch (err: any) {
-      alert(err.message || 'Failed to delete column');
-    }
-  };
+  const typeColors: Record<string, string> = { backlog: "bg-gray-100 text-gray-700", in_progress: "bg-blue-100 text-blue-700", done: "bg-green-100 text-green-700" };
 
-  const handleSaveSwimlane = async () => {
-    try {
-      const data: Partial<KanbanSwimlane> = {
-        name: swimlaneForm.name,
-        color: swimlaneForm.color,
-      };
-      
-      if (editingSwimlane) {
-        await kanbanApi.swimlanes.update(id!, editingSwimlane.id, data);
-      } else {
-        await kanbanApi.swimlanes.create(id!, data);
-      }
-      
-      setShowSwimlaneDialog(false);
-      setEditingSwimlane(null);
-      setSwimlaneForm({ name: '', color: '#f3f4f6' });
-      loadData();
-    } catch (err: any) {
-      alert(err.message || 'Failed to save swimlane');
-    }
-  };
-
-  const handleDeleteSwimlane = async (swimlaneId: number) => {
-    if (!confirm('Delete this swimlane?')) return;
-    try {
-      await kanbanApi.swimlanes.delete(id!, swimlaneId);
-      loadData();
-    } catch (err: any) {
-      alert(err.message || 'Failed to delete swimlane');
-    }
-  };
-
-  const openEditColumn = (column: KanbanColumn) => {
-    setEditingColumn(column);
-    setColumnForm({
-      name: column.name,
-      wip_limit: column.wip_limit?.toString() || '',
-      color: column.color,
-      is_done_column: column.is_done_column,
-    });
-    setShowColumnDialog(true);
-  };
-
-  const openEditSwimlane = (swimlane: KanbanSwimlane) => {
-    setEditingSwimlane(swimlane);
-    setSwimlaneForm({
-      name: swimlane.name,
-      color: swimlane.color,
-    });
-    setShowSwimlaneDialog(true);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader />
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
-    <div className="min-h-full bg-background">
-      <ProjectHeader />
+    <div className="min-h-full bg-background"><ProjectHeader />
       <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Settings className="h-6 w-6 text-blue-600" />
-              Board Configuration
-            </h1>
-            <p className="text-muted-foreground">Configure columns, swimlanes, and board settings</p>
-          </div>
-        </div>
+        <div className="flex items-center gap-3"><Columns className="h-6 w-6 text-violet-500" /><h1 className="text-2xl font-bold">Board Configuration</h1></div>
 
-        {/* Columns */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Columns className="h-5 w-5" />
-              Columns
-            </CardTitle>
-            <Button size="sm" onClick={() => { setEditingColumn(null); setColumnForm({ name: '', wip_limit: '', color: '#6366f1', is_done_column: false }); setShowColumnDialog(true); }}>
-              <Plus className="h-4 w-4 mr-2" />Add Column
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {columns.map((column, index) => (
-                <div 
-                  key={column.id}
-                  className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50"
-                >
-                  <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
-                  <div 
-                    className="w-4 h-4 rounded"
-                    style={{ backgroundColor: column.color }}
-                  />
-                  <span className="font-medium flex-1">{column.name}</span>
-                  <Badge variant="outline">{column.column_type}</Badge>
-                  {column.wip_limit && (
-                    <Badge variant="secondary">WIP: {column.wip_limit}</Badge>
-                  )}
-                  {column.is_done_column && (
-                    <Badge className="bg-green-500">Done Column</Badge>
-                  )}
-                  <Badge variant="outline">{column.cards_count || 0} cards</Badge>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => openEditColumn(column)}>
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="text-red-600" onClick={() => handleDeleteColumn(column.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              {columns.length === 0 && (
-                <p className="text-center text-muted-foreground py-4">No columns configured</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center justify-between"><h2 className="text-lg font-semibold">Columns ({columns.length})</h2><Button onClick={openCreateCol} className="gap-2"><Plus className="h-4 w-4" /> Add Column</Button></div>
+        <div className="space-y-2">{columns.map((c, i) => (
+          <Card key={c.id}><CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3"><GripVertical className="h-4 w-4 text-muted-foreground" /><span className="text-sm font-bold text-muted-foreground w-6">#{c.order || i + 1}</span><span className="font-medium">{c.name}</span><Badge className={`text-xs ${typeColors[c.column_type] || ""}`}>{c.column_type}</Badge>{c.wip_limit && <Badge variant="outline" className="text-xs">WIP: {c.wip_limit}</Badge>}</div>
+            <div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => openEditCol(c)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => deleteCol(c.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div>
+          </CardContent></Card>
+        ))}</div>
 
-        {/* Swimlanes */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Rows className="h-5 w-5" />
-              Swimlanes
-            </CardTitle>
-            <Button size="sm" onClick={() => { setEditingSwimlane(null); setSwimlaneForm({ name: '', color: '#f3f4f6' }); setShowSwimlaneDialog(true); }}>
-              <Plus className="h-4 w-4 mr-2" />Add Swimlane
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {swimlanes.map((swimlane) => (
-                <div 
-                  key={swimlane.id}
-                  className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50"
-                >
-                  <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
-                  <div 
-                    className="w-4 h-4 rounded"
-                    style={{ backgroundColor: swimlane.color }}
-                  />
-                  <span className="font-medium flex-1">{swimlane.name}</span>
-                  {swimlane.is_default && (
-                    <Badge variant="secondary">Default</Badge>
-                  )}
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => openEditSwimlane(swimlane)}>
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                    {!swimlane.is_default && (
-                      <Button variant="ghost" size="icon" className="text-red-600" onClick={() => handleDeleteSwimlane(swimlane.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {swimlanes.length === 0 && (
-                <p className="text-center text-muted-foreground py-4">No swimlanes configured</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center justify-between"><h2 className="text-lg font-semibold">Swimlanes ({swimlanes.length})</h2><Button onClick={openCreateSl} size="sm" className="gap-2"><Plus className="h-4 w-4" /> Add Swimlane</Button></div>
+        {swimlanes.length === 0 ? <p className="text-muted-foreground text-sm">No swimlanes configured</p> : (
+          <div className="space-y-2">{swimlanes.map(s => (
+            <Card key={s.id}><CardContent className="p-3 flex items-center justify-between"><span className="font-medium text-sm">{s.name}</span><div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => openEditSl(s)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => deleteSl(s.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></CardContent></Card>
+          ))}</div>
+        )}
       </div>
-
-      {/* Column Dialog */}
-      <Dialog open={showColumnDialog} onOpenChange={setShowColumnDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingColumn ? 'Edit Column' : 'Add Column'}</DialogTitle>
-          </DialogHeader>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} {dialogType === "column" ? "Column" : "Swimlane"}</DialogTitle></DialogHeader>
+        {dialogType === "column" ? (
           <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Name</label>
-              <Input 
-                value={columnForm.name}
-                onChange={(e) => setColumnForm({...columnForm, name: e.target.value})}
-                placeholder="e.g., In Progress"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">WIP Limit (optional)</label>
-              <Input 
-                type="number"
-                value={columnForm.wip_limit}
-                onChange={(e) => setColumnForm({...columnForm, wip_limit: e.target.value})}
-                placeholder="e.g., 5"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Color</label>
-              <div className="flex gap-2 items-center">
-                <Input 
-                  type="color"
-                  value={columnForm.color}
-                  onChange={(e) => setColumnForm({...columnForm, color: e.target.value})}
-                  className="w-16 h-10"
-                />
-                <Input 
-                  value={columnForm.color}
-                  onChange={(e) => setColumnForm({...columnForm, color: e.target.value})}
-                  placeholder="#6366f1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch 
-                checked={columnForm.is_done_column}
-                onCheckedChange={(checked) => setColumnForm({...columnForm, is_done_column: checked})}
-              />
-              <label className="text-sm">This is the "Done" column</label>
-            </div>
+            <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>{pt("Name")} *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div><div className="space-y-2"><Label>Order</Label><Input type="number" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} /></div></div>
+            <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Type</Label><Select value={form.column_type} onValueChange={(v) => setForm({ ...form, column_type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="backlog">Backlog</SelectItem><SelectItem value="in_progress">In Progress</SelectItem><SelectItem value="done">Done</SelectItem></SelectContent></Select></div><div className="space-y-2"><Label>WIP Limit</Label><Input type="number" value={form.wip_limit} onChange={(e) => setForm({ ...form, wip_limit: e.target.value })} placeholder="No limit" /></div></div>
+            <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleSaveCol} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowColumnDialog(false)}>Cancel</Button>
-            <Button onClick={handleSaveColumn} disabled={!columnForm.name}>Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Swimlane Dialog */}
-      <Dialog open={showSwimlaneDialog} onOpenChange={setShowSwimlaneDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingSwimlane ? 'Edit Swimlane' : 'Add Swimlane'}</DialogTitle>
-          </DialogHeader>
+        ) : (
           <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Name</label>
-              <Input 
-                value={swimlaneForm.name}
-                onChange={(e) => setSwimlaneForm({...swimlaneForm, name: e.target.value})}
-                placeholder="e.g., Frontend Team"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Color</label>
-              <div className="flex gap-2 items-center">
-                <Input 
-                  type="color"
-                  value={swimlaneForm.color}
-                  onChange={(e) => setSwimlaneForm({...swimlaneForm, color: e.target.value})}
-                  className="w-16 h-10"
-                />
-                <Input 
-                  value={swimlaneForm.color}
-                  onChange={(e) => setSwimlaneForm({...swimlaneForm, color: e.target.value})}
-                />
-              </div>
-            </div>
+            <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>{pt("Name")} *</Label><Input value={slForm.name} onChange={(e) => setSlForm({ ...slForm, name: e.target.value })} /></div><div className="space-y-2"><Label>Order</Label><Input type="number" value={slForm.order} onChange={(e) => setSlForm({ ...slForm, order: e.target.value })} /></div></div>
+            <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleSaveSl} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowSwimlaneDialog(false)}>Cancel</Button>
-            <Button onClick={handleSaveSwimlane} disabled={!swimlaneForm.name}>Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-          {/* Methodology Help Panel */}
-          <MethodologyHelpPanel methodology="kanban" />
+        )}
+      </DialogContent></Dialog>
     </div>
   );
 };

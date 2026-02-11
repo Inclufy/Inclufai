@@ -1,287 +1,81 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  Droplets, FileText, Palette, Code, TestTube, 
-  Rocket, Wrench, CheckCircle, Clock, AlertTriangle, ArrowRight, Loader2
-} from 'lucide-react';
-
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
-
-const PHASE_ICONS: Record<string, any> = {
-  requirements: FileText,
-  design: Palette,
-  development: Code,
-  testing: TestTube,
-  deployment: Rocket,
-  maintenance: Wrench,
-};
-
-const PHASE_COLORS: Record<string, string> = {
-  requirements: 'bg-blue-500',
-  design: 'bg-purple-500',
-  development: 'bg-orange-500',
-  testing: 'bg-green-500',
-  deployment: 'bg-red-500',
-  maintenance: 'bg-gray-500',
-};
-
-const fetchWaterfallData = async (projectId: string) => {
-  const token = localStorage.getItem("access_token");
-  
-  // Try waterfall-specific endpoint
-  const response = await fetch(`${API_BASE_URL}/waterfall/projects/${projectId}/overview/`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  
-  if (response.ok) {
-    return response.json();
-  }
-  
-  // Fallback to project data
-  const projectResponse = await fetch(`${API_BASE_URL}/projects/${projectId}/`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  
-  if (!projectResponse.ok) return null;
-  const project = await projectResponse.json();
-  
-  // Get milestones for phase progress
-  const milestonesResponse = await fetch(`${API_BASE_URL}/projects/${projectId}/milestones/`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const milestones = milestonesResponse.ok ? await milestonesResponse.json() : [];
-  
-  // Calculate stats
-  const startDate = project.start_date ? new Date(project.start_date) : new Date();
-  const endDate = project.end_date ? new Date(project.end_date) : new Date();
-  const today = new Date();
-  const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-  const daysElapsed = Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-  const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
-  
-  const completedMilestones = milestones.filter((m: any) => m.status === 'completed').length;
-  
-  return {
-    project,
-    phases: project.phases || [],
-    stats: {
-      overallProgress: project.progress || 0,
-      daysElapsed: Math.max(0, daysElapsed),
-      daysRemaining,
-      totalBudget: parseFloat(project.budget) || 0,
-      budgetSpent: parseFloat(project.spent_budget) || 0,
-      milestones: { total: milestones.length, completed: completedMilestones },
-      issues: project.open_issues || 0,
-    }
-  };
-};
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Loader2, RefreshCw, Waves, Plus, ListChecks, FileText, TestTube, Milestone, BarChart3, GitPullRequest, Rocket, Wrench, DollarSign, AlertTriangle, AlertCircle, Package, Baseline, Users } from "lucide-react";
+import { toast } from "sonner";
 
 const WaterfallOverview = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [dashboard, setDashboard] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['waterfall-overview', id],
-    queryFn: () => fetchWaterfallData(id!),
-    enabled: !!id,
-  });
+  const fetchDashboard = async () => { try { const r = await fetch(`/api/v1/projects/${id}/waterfall/dashboard/`, { headers }); if (r.ok) setDashboard(await r.json()); } catch (err) { console.error(err); } finally { setLoading(false); } };
+  const initialize = async () => { try { const r = await fetch(`/api/v1/projects/${id}/waterfall/initialize/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Waterfall geïnitialiseerd"); fetchDashboard(); } else toast.error("Initialiseren mislukt"); } catch { toast.error("Initialiseren mislukt"); } };
 
-  const stats = data?.stats || {
-    overallProgress: 0,
-    daysElapsed: 0,
-    daysRemaining: 0,
-    totalBudget: 0,
-    budgetSpent: 0,
-    milestones: { total: 0, completed: 0 },
-    issues: 0,
-  };
+  useEffect(() => { fetchDashboard(); }, [id]);
+  const nav = (path: string) => navigate(`/projects/${id}/waterfall/${path}`);
 
-  // Default phases if none from backend
-  const phases = data?.phases?.length > 0 ? data.phases : [
-    { id: 'requirements', name: 'Requirements', progress: 0, status: 'pending' },
-    { id: 'design', name: 'Design', progress: 0, status: 'pending' },
-    { id: 'development', name: 'Development', progress: 0, status: 'pending' },
-    { id: 'testing', name: 'Testing', progress: 0, status: 'pending' },
-    { id: 'deployment', name: 'Deployment', progress: 0, status: 'pending' },
-    { id: 'maintenance', name: 'Maintenance', progress: 0, status: 'pending' },
-  ];
-
-  const currentPhase = phases.find((p: any) => p.status === 'in_progress')?.name || 
-                       phases.find((p: any) => p.progress > 0 && p.progress < 100)?.name ||
-                       'Not Started';
-
-  const getStatusBadge = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'completed': return <Badge className="bg-green-500">Completed</Badge>;
-      case 'in_progress': return <Badge className="bg-blue-500">In Progress</Badge>;
-      default: return <Badge variant="outline">Pending</Badge>;
-    }
-  };
-
-  const quickLinks = [
-    { title: 'Requirements', url: `/projects/${id}/waterfall/requirements`, icon: FileText },
-    { title: 'Gantt Chart', url: `/projects/${id}/waterfall/gantt`, icon: Clock },
-    { title: 'Milestones', url: `/projects/${id}/milestones`, icon: CheckCircle },
-    { title: 'Testing', url: `/projects/${id}/waterfall/testing`, icon: TestTube },
-  ];
-
-  if (isLoading) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader />
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
+  const d = dashboard || {};
 
   return (
-    <div className="min-h-full bg-background">
-      <ProjectHeader />
+    <div className="min-h-full bg-background"><ProjectHeader />
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Droplets className="h-6 w-6 text-blue-600" />
-              Waterfall Overview
-            </h1>
-            <p className="text-muted-foreground">Sequential project phases and progress</p>
-          </div>
-          <Badge className="bg-blue-500 text-white text-sm px-3 py-1">
-            Phase: {currentPhase}
-          </Badge>
+          <div className="flex items-center gap-3"><div className="h-10 w-10 rounded-lg bg-cyan-600 flex items-center justify-center"><Waves className="h-5 w-5 text-white" /></div><div><h1 className="text-2xl font-bold">Waterfall Dashboard</h1><p className="text-sm text-muted-foreground">{d.project_name || ""}</p></div></div>
+          <div className="flex gap-2"><Button variant="outline" onClick={initialize} className="gap-2"><Plus className="h-4 w-4" /> Initialize</Button><Button variant="outline" onClick={fetchDashboard} className="gap-2"><RefreshCw className="h-4 w-4" /> {pt("Refresh")}</Button></div>
         </div>
 
-        {/* Overall Progress */}
-        <Card className="border-blue-200 bg-blue-50/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-semibold text-lg">Project Progress</h3>
-                <p className="text-sm text-muted-foreground">
-                  {stats.daysElapsed} days elapsed • {stats.daysRemaining} days remaining
-                </p>
-              </div>
-              <div className="text-right">
-                <span className="text-2xl font-bold text-blue-600">{stats.overallProgress}%</span>
-                <p className="text-sm text-muted-foreground">Complete</p>
-              </div>
-            </div>
-            <Progress value={stats.overallProgress} className="h-3" />
-          </CardContent>
-        </Card>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Milestones</p>
-              <p className="text-2xl font-bold">{stats.milestones.completed}/{stats.milestones.total}</p>
-              <Progress value={stats.milestones.total > 0 ? (stats.milestones.completed / stats.milestones.total) * 100 : 0} className="h-1 mt-2" />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Budget Used</p>
-              <p className="text-2xl font-bold">€{(stats.budgetSpent / 1000).toFixed(0)}k</p>
-              <p className="text-xs text-muted-foreground">of €{(stats.totalBudget / 1000).toFixed(0)}k</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Days Remaining</p>
-              <p className="text-2xl font-bold">{stats.daysRemaining}</p>
-            </CardContent>
-          </Card>
-          <Card className={stats.issues > 0 ? 'border-yellow-300 bg-yellow-50' : ''}>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Open Issues</p>
-              <p className={`text-2xl font-bold ${stats.issues > 0 ? 'text-yellow-600' : ''}`}>{stats.issues}</p>
-              <p className="text-xs text-muted-foreground">{stats.issues > 0 ? 'Needs attention' : 'All clear'}</p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Current Phase")}</p><p className="text-2xl font-bold">{d.current_phase?.name || "None"}</p>{d.current_phase && <Badge variant={d.current_phase.status === "in_progress" ? "default" : "secondary"}>{d.current_phase.status}</Badge>}</CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Overall Progress")}</p><p className="text-2xl font-bold">{d.overall_progress || 0}%</p><Progress value={d.overall_progress || 0} className="h-2 mt-2" /></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Phases")}</p><p className="text-2xl font-bold">{d.completed_phases || 0}/{d.total_phases || 0}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Open Issues")}</p><p className="text-2xl font-bold text-red-500">{d.open_issues || 0}</p></CardContent></Card>
         </div>
 
-        {/* Phase Progress */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Phase Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {phases.map((phase: any, idx: number) => {
-                const PhaseIcon = PHASE_ICONS[phase.id?.toLowerCase()] || PHASE_ICONS[phase.name?.toLowerCase()] || FileText;
-                const phaseColor = PHASE_COLORS[phase.id?.toLowerCase()] || PHASE_COLORS[phase.name?.toLowerCase()] || 'bg-gray-500';
-                
-                return (
-                  <div key={phase.id || idx} className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full ${phaseColor} flex items-center justify-center text-white`}>
-                      <PhaseIcon className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{phase.name}</span>
-                          {getStatusBadge(phase.status)}
-                        </div>
-                        <span className="text-sm text-muted-foreground">{phase.progress || 0}%</span>
-                      </div>
-                      <Progress value={phase.progress || 0} className="h-2" />
-                    </div>
-                    {idx < phases.length - 1 && (
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+        {d.phases?.length > 0 && (
+          <Card><CardHeader className="pb-3"><CardTitle>{pt("Phase Progress")}</CardTitle></CardHeader><CardContent className="space-y-3">
+            {d.phases.map((p: any) => (
+              <div key={p.id} className="flex items-center gap-4"><span className="w-40 text-sm font-medium truncate">{p.name}</span><div className="flex-1"><Progress value={p.progress || 0} className="h-3" /></div><Badge variant={p.status === "completed" ? "default" : p.status === "in_progress" ? "secondary" : "outline"} className="w-24 justify-center text-xs">{p.status}</Badge><span className="text-sm w-10 text-right">{p.progress || 0}%</span></div>
+            ))}
+          </CardContent></Card>
+        )}
 
-        {/* Quick Links */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Navigation</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-4 gap-3">
-              {quickLinks.map((link) => (
-                <Button
-                  key={link.title}
-                  variant="outline"
-                  className="h-20 flex flex-col items-center justify-center gap-2"
-                  onClick={() => navigate(link.url)}
-                >
-                  <link.icon className="h-6 w-6 text-blue-600" />
-                  <span className="text-sm">{link.title}</span>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Waterfall Principles */}
-        <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200">
-          <CardContent className="pt-4">
-            <h3 className="font-semibold text-blue-900 mb-2">Waterfall Methodology</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm text-blue-800">
-              <div>• Sequential phase completion before next phase</div>
-              <div>• Comprehensive documentation at each phase</div>
-              <div>• Clear milestones and deliverables</div>
-              <div>• Formal sign-off and change control</div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: pt("Phases"), path: "phase-gate", icon: ListChecks },
+            { label: pt("Requirements"), path: "requirements", icon: FileText },
+            { label: pt("Design"), path: "design", icon: FileText },
+            { label: pt("Development"), path: "development", icon: BarChart3 },
+            { label: pt("Testing"), path: "testing", icon: TestTube },
+            { label: pt("Milestones"), path: "milestones", icon: Milestone },
+            { label: pt("Gantt Chart"), path: "gantt", icon: BarChart3 },
+            { label: pt("Change Requests"), path: "change-requests", icon: GitPullRequest },
+            { label: pt("Deployment"), path: "deployment", icon: Rocket },
+            { label: pt("Maintenance"), path: "maintenance", icon: Wrench },
+            { label: pt("Budget"), path: "budget", icon: DollarSign },
+            { label: pt("Risks"), path: "risks", icon: AlertTriangle },
+            { label: pt("Issues"), path: "issues", icon: AlertCircle },
+            { label: pt("Deliverables"), path: "deliverables", icon: Package },
+            { label: pt("Baselines"), path: "baselines", icon: Baseline },
+            { label: pt("Team"), path: "team", icon: Users },
+          ].map(({ label, path, icon: Icon }) => (
+            <Card key={path} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => nav(path)}>
+              <CardContent className="p-4 flex items-center gap-3"><Icon className="h-5 w-5 text-muted-foreground" /><span className="font-medium text-sm">{label}</span></CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
-      <MethodologyHelpPanel methodology="waterfall" />
     </div>
   );
 };

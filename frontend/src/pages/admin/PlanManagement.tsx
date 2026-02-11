@@ -53,6 +53,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // ============================================================
 // TYPES
@@ -108,6 +109,7 @@ const parseInteger = (value: string | number | undefined | null): number | null 
 // ============================================================
 
 export default function PlanManagement() {
+  const { pt } = usePageTranslations();
   const { language } = useLanguage();
   const isNL = language === 'nl';
 
@@ -608,7 +610,7 @@ function PlanTable({ plans, isNL, onEdit, onDelete, onToggleActive, onSetPopular
               <TableHead>{isNL ? 'Limieten' : 'Limits'}</TableHead>
               <TableHead>{isNL ? 'Abonnees' : 'Subscribers'}</TableHead>
               <TableHead>MRR</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>{pt("Status")}</TableHead>
               <TableHead className="text-right">{isNL ? 'Acties' : 'Actions'}</TableHead>
             </TableRow>
           </TableHeader>

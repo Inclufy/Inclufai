@@ -86,6 +86,7 @@ import {
   Loader2,
   KeyRound,
 } from "lucide-react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // Use relative path - proxy handles the backend URL
 const API_BASE_URL = '/api/v1';
@@ -383,6 +384,7 @@ const getMethodologyBadgeColor = (methodology: string): string => {
 const departments = ["IT", "Operations", "Development", "Design", "Finance", "HR", "Marketing", "Sales"];
 
 export default function Team() {
+  const { pt } = usePageTranslations();
   const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -1115,12 +1117,12 @@ if (!sendInviteEmail) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Alle rollen</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                  <SelectItem value="PROGRAM_MANAGER">Program Manager</SelectItem>
-                  <SelectItem value="PM">Project Manager</SelectItem>
-                  <SelectItem value="MEMBER">Member</SelectItem>
-                  <SelectItem value="REVIEWER">Reviewer</SelectItem>
-                  <SelectItem value="GUEST">Guest</SelectItem>
+                  <SelectItem value="ADMIN">{pt("Admin")}</SelectItem>
+                  <SelectItem value="PROGRAM_MANAGER">{pt("Program Manager")}</SelectItem>
+                  <SelectItem value="PM">{pt("Project Manager")}</SelectItem>
+                  <SelectItem value="MEMBER">{pt("Member")}</SelectItem>
+                  <SelectItem value="REVIEWER">{pt("Reviewer")}</SelectItem>
+                  <SelectItem value="GUEST">{pt("Guest")}</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -1144,7 +1146,7 @@ if (!sendInviteEmail) {
                   }}
                 >
                   <X className="h-4 w-4 mr-1" />
-                  Reset
+                  {pt("Reset")}
                 </Button>
               )}
             </div>
@@ -1459,12 +1461,12 @@ if (!sendInviteEmail) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ADMIN">Admin</SelectItem>
-                    <SelectItem value="PROGRAM_MANAGER">Program Manager</SelectItem>
-                    <SelectItem value="PM">Project Manager</SelectItem>
-                    <SelectItem value="MEMBER">Member</SelectItem>
-                    <SelectItem value="REVIEWER">Reviewer</SelectItem>
-                    <SelectItem value="GUEST">Guest</SelectItem>
+                    <SelectItem value="ADMIN">{pt("Admin")}</SelectItem>
+                    <SelectItem value="PROGRAM_MANAGER">{pt("Program Manager")}</SelectItem>
+                    <SelectItem value="PM">{pt("Project Manager")}</SelectItem>
+                    <SelectItem value="MEMBER">{pt("Member")}</SelectItem>
+                    <SelectItem value="REVIEWER">{pt("Reviewer")}</SelectItem>
+                    <SelectItem value="GUEST">{pt("Guest")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1566,12 +1568,12 @@ if (!sendInviteEmail) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
-                      <SelectItem value="PROGRAM_MANAGER">Program Manager</SelectItem>
-                      <SelectItem value="PM">Project Manager</SelectItem>
-                      <SelectItem value="MEMBER">Member</SelectItem>
-                      <SelectItem value="REVIEWER">Reviewer</SelectItem>
-                      <SelectItem value="GUEST">Guest</SelectItem>
+                      <SelectItem value="ADMIN">{pt("Admin")}</SelectItem>
+                      <SelectItem value="PROGRAM_MANAGER">{pt("Program Manager")}</SelectItem>
+                      <SelectItem value="PM">{pt("Project Manager")}</SelectItem>
+                      <SelectItem value="MEMBER">{pt("Member")}</SelectItem>
+                      <SelectItem value="REVIEWER">{pt("Reviewer")}</SelectItem>
+                      <SelectItem value="GUEST">{pt("Guest")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1729,7 +1731,7 @@ if (!sendInviteEmail) {
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="project" className="gap-2">
                   <FolderKanban className="h-4 w-4" />
-                  Project
+                  {pt("Project")}
                 </TabsTrigger>
                 <TabsTrigger value="program" className="gap-2">
                   <Layers className="h-4 w-4" />

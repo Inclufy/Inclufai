@@ -1,294 +1,339 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { useProject } from '@/hooks/useApi';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { prince2Api, Prince2Dashboard as DashboardData } from '@/lib/prince2Api';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  Crown, Play, CheckCircle2, AlertCircle, Clock, FileText,
-  Users, Target, TrendingUp, BarChart3, Shield,
-  Briefcase, ClipboardList, Calendar, FolderOpen, AlertTriangle,
-  Layers, GitBranch, ChevronRight, Plus, RefreshCw
-} from 'lucide-react';
-
-// PRINCE2 7 Processes (static reference)
-const PRINCE2_PROCESSES = [
-  { id: 'starting-up', name: 'Starting Up a Project', shortName: 'SU', description: 'Ensure prerequisites for initiating project are in place', icon: Play, color: 'bg-purple-500', activities: ['Appoint Executive & PM', 'Capture Lessons', 'Design Project Approach', 'Prepare Project Brief'], deliverables: ['Project Brief', 'Initiation Stage Plan'] },
-  { id: 'initiating', name: 'Initiating a Project', shortName: 'IP', description: 'Establish solid foundations for the project', icon: Target, color: 'bg-blue-500', activities: ['Prepare Risk Management Approach', 'Create Project Plan', 'Assemble PID'], deliverables: ['PID', 'Stage Plan'] },
-  { id: 'directing', name: 'Directing a Project', shortName: 'DP', description: 'Enable Project Board to manage by exception', icon: Crown, color: 'bg-amber-500', activities: ['Authorize Initiation', 'Authorize Project', 'Give Ad Hoc Direction'], deliverables: ['Project Board Decisions'] },
-  { id: 'controlling', name: 'Controlling a Stage', shortName: 'CS', description: 'Assign work, monitor, report, and take corrective action', icon: Shield, color: 'bg-green-500', activities: ['Authorize Work Package', 'Report Highlights', 'Escalate Issues'], deliverables: ['Work Packages', 'Highlight Reports'] },
-  { id: 'managing-delivery', name: 'Managing Product Delivery', shortName: 'MP', description: 'Control link between PM and Team Manager(s)', icon: Briefcase, color: 'bg-cyan-500', activities: ['Accept Work Package', 'Execute Work Package', 'Deliver Work Package'], deliverables: ['Checkpoint Reports'] },
-  { id: 'managing-boundaries', name: 'Managing Stage Boundaries', shortName: 'SB', description: 'Enable Project Board to review stage success', icon: GitBranch, color: 'bg-orange-500', activities: ['Plan Next Stage', 'Update Business Case', 'Report Stage End'], deliverables: ['End Stage Report'] },
-  { id: 'closing', name: 'Closing a Project', shortName: 'CP', description: 'Confirm delivery of products and controlled close', icon: CheckCircle2, color: 'bg-slate-500', activities: ['Hand Over Products', 'Evaluate Project', 'Recommend Closure'], deliverables: ['End Project Report', 'Lessons Report'] }
-];
-
-const MANAGEMENT_PRODUCTS = [
-  { name: 'Business Case', icon: FileText, path: 'business-case' },
-  { name: 'Project Brief', icon: ClipboardList, path: 'project-brief' },
-  { name: 'Project Board', icon: Users, path: 'project-board' },
-  { name: 'Stage Plan', icon: Calendar, path: 'stage-plan' },
-  { name: 'Stage Gate', icon: GitBranch, path: 'stage-gate' },
-  { name: 'Work Packages', icon: FolderOpen, path: 'work-packages' },
-  { name: 'Highlight Reports', icon: BarChart3, path: 'highlight-report' },
-  { name: 'Tolerances', icon: Target, path: 'tolerances' },
-];
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import {
+  Loader2, RefreshCw, FileText, Briefcase, Shield,
+  ChevronRight, AlertTriangle, CheckCircle2, Clock, Layers,
+  Plus, TrendingUp
+} from "lucide-react";
+import { toast } from "sonner";
 
 const Prince2Dashboard = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: project, isLoading: projectLoading } = useProject(id);
-  const { t } = useLanguage();
-  
-  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  const [dashboard, setDashboard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [initializingStages, setInitializingStages] = useState(false);
+  const [initializing, setInitializing] = useState(false);
 
-  useEffect(() => {
-    if (id) loadDashboard();
-  }, [id]);
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  const loadDashboard = async () => {
-    if (!id) return;
+  const fetchDashboard = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const data = await prince2Api.dashboard.get(id);
-      setDashboard(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load dashboard');
+      const response = await fetch(`/api/v1/projects/${id}/prince2/dashboard/`, { headers });
+      if (response.ok) {
+        setDashboard(await response.json());
+      } else {
+        toast.error("Dashboard laden mislukt");
+      }
+    } catch (err) {
+      console.error("Failed to fetch dashboard", err);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => { fetchDashboard(); }, [id]);
+
   const initializeStages = async () => {
-    if (!id) return;
+    setInitializing(true);
     try {
-      setInitializingStages(true);
-      await prince2Api.stages.initialize(id);
-      await loadDashboard();
-    } catch (err: any) {
-      setError(err.message);
+      const response = await fetch(`/api/v1/projects/${id}/prince2/stages/initialize_stages/`, {
+        method: "POST",
+        headers: jsonHeaders,
+      });
+      if (response.ok) {
+        toast.success("Fasen geïnitialiseerd");
+        fetchDashboard();
+      } else {
+        const err = await response.json().catch(() => ({}));
+        toast.error(err.error || err.detail || "Initialiseren mislukt");
+      }
+    } catch {
+      toast.error("Initialiseren mislukt");
     } finally {
-      setInitializingStages(false);
+      setInitializing(false);
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      completed: 'bg-green-100 text-green-800',
-      active: 'bg-blue-100 text-blue-800',
-      planned: 'bg-slate-100 text-slate-600',
-      exception: 'bg-red-100 text-red-800'
+  const nav = (path: string) => navigate(`/projects/${id}/prince2/${path}`);
+
+  const getStatusBadge = (status: string | null) => {
+    if (!status) return <Badge variant="outline" className="text-xs">Not created</Badge>;
+    const colors: Record<string, string> = {
+      draft: "bg-gray-100 text-gray-700",
+      in_review: "bg-blue-100 text-blue-700",
+      approved: "bg-green-100 text-green-700",
+      baselined: "bg-purple-100 text-purple-700",
     };
-    return <Badge className={styles[status] || ''}>{status}</Badge>;
+    return <Badge className={`text-xs ${colors[status] || "bg-gray-100 text-gray-700"}`}>{status}</Badge>;
   };
 
-  const navigateToPage = (path: string) => navigate(`/projects/${id}/prince2/${path}`);
+  const getStageStatusColor = (status: string) => {
+    switch (status) {
+      case "completed": return "bg-green-500";
+      case "active": return "bg-blue-500";
+      case "planned": return "bg-gray-300";
+      default: return "bg-gray-200";
+    }
+  };
 
-  if (projectLoading || loading) {
-    return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background">
-        <ProjectHeader project={project} />
-        <div className="container mx-auto py-6 px-4">
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="pt-6 flex items-center gap-3">
-              <AlertCircle className="h-6 w-6 text-red-500" />
-              <div><p className="font-medium text-red-800">Error</p><p className="text-sm text-red-600">{error}</p></div>
-              <Button variant="outline" onClick={loadDashboard} className="ml-auto"><RefreshCw className="h-4 w-4 mr-2" />Retry</Button>
-            </CardContent>
-          </Card>
-        </div>
+  if (loading) return (
+    <div className="min-h-full bg-background">
+      <ProjectHeader />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
-    );
-  }
-
-  const currentStage = dashboard?.stages?.find(s => s.status === 'active');
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-background">
-      <ProjectHeader project={project} />
-      <div className="container mx-auto py-6 px-4">
+    <div className="min-h-full bg-background">
+      <ProjectHeader />
+      <div className="p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-lg bg-purple-100"><Crown className="h-8 w-8 text-purple-600" /></div>
-          <div>
-            <h1 className="text-2xl font-bold">PRINCE2 Dashboard</h1>
-            <p className="text-muted-foreground">Projects IN Controlled Environments</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-purple-600 flex items-center justify-center">
+              <Shield className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">PRINCE2 Dashboard</h1>
+              <p className="text-sm text-muted-foreground">{dashboard?.project_name || "Projects IN Controlled Environments"}</p>
+            </div>
           </div>
-          <div className="ml-auto flex gap-2">
-            {currentStage && <Badge variant="outline">Stage {currentStage.order}: {currentStage.name}</Badge>}
-            <Button variant="outline" size="sm" onClick={loadDashboard}><RefreshCw className="h-4 w-4 mr-2" />Refresh</Button>
-          </div>
+          <Button variant="outline" onClick={fetchDashboard} className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            {pt("Refresh")}
+          </Button>
         </div>
 
         {/* No stages warning */}
         {dashboard?.total_stages === 0 && (
-          <Card className="mb-6 border-amber-200 bg-amber-50">
-            <CardContent className="pt-6 flex items-center gap-3">
-              <AlertTriangle className="h-6 w-6 text-amber-500" />
-              <div className="flex-1">
-                <p className="font-medium text-amber-800">No stages defined</p>
-                <p className="text-sm text-amber-600">Initialize default PRINCE2 stages to get started.</p>
+          <Card className="border-amber-200 bg-amber-50/50">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+                <div>
+                  <p className="font-medium text-amber-800">{pt("No stages defined yet")}</p>
+                  <p className="text-sm text-amber-600">{pt("Initialize stages from the dashboard first")}</p>
+                </div>
               </div>
-              <Button onClick={initializeStages} disabled={initializingStages}>
-                {initializingStages ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
-                Initialize Stages
+              <Button onClick={initializeStages} disabled={initializing} className="gap-2">
+                {initializing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                {pt("Initialize Stages")}
               </Button>
             </CardContent>
           </Card>
         )}
 
-        {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div><p className="text-sm text-muted-foreground">Progress</p><p className="text-2xl font-bold">{dashboard?.overall_progress || 0}%</p></div>
-                <div className="p-3 rounded-full bg-blue-100"><TrendingUp className="h-6 w-6 text-blue-600" /></div>
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
               </div>
-              <Progress value={dashboard?.overall_progress || 0} className="mt-3" />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div><p className="text-sm text-muted-foreground">Stages</p><p className="text-2xl font-bold">{dashboard?.completed_stages || 0} / {dashboard?.total_stages || 0}</p></div>
-                <div className="p-3 rounded-full bg-green-100"><Layers className="h-6 w-6 text-green-600" /></div>
+              <div>
+                <p className="text-sm text-muted-foreground">{pt("Progress")}</p>
+                <p className="text-2xl font-bold">{dashboard?.overall_progress || 0}%</p>
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div><p className="text-sm text-muted-foreground">Issues</p><p className="text-2xl font-bold">{dashboard?.open_issues || 0}</p></div>
-                <div className="p-3 rounded-full bg-amber-100"><AlertCircle className="h-6 w-6 text-amber-600" /></div>
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                <Layers className="h-5 w-5 text-green-600" />
               </div>
-              <p className="text-sm text-muted-foreground mt-2">{dashboard?.high_priority_issues || 0} high priority</p>
+              <div>
+                <p className="text-sm text-muted-foreground">Stages</p>
+                <p className="text-2xl font-bold">{dashboard?.completed_stages || 0} / {dashboard?.total_stages || 0}</p>
+              </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div><p className="text-sm text-muted-foreground">Risks</p><p className="text-2xl font-bold">{dashboard?.total_risks || 0}</p></div>
-                <div className="p-3 rounded-full bg-red-100"><AlertTriangle className="h-6 w-6 text-red-600" /></div>
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
+                <AlertTriangle className="h-5 w-5 text-orange-600" />
               </div>
-              <p className="text-sm text-muted-foreground mt-2">{dashboard?.high_risks || 0} high/critical</p>
+              <div>
+                <p className="text-sm text-muted-foreground">{pt("Issues")}</p>
+                <p className="text-2xl font-bold">{dashboard?.tolerances_exceeded || 0}</p>
+                <p className="text-xs text-muted-foreground">{pt("tolerances exceeded")}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                <FileText className="h-5 w-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">{pt("Reports")}</p>
+                <p className="text-2xl font-bold">{dashboard?.recent_highlight_reports?.length || 0}</p>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Document Status */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="cursor-pointer hover:bg-muted/50" onClick={() => navigateToPage('project-brief')}>
-            <CardContent className="pt-6 flex items-center gap-3">
-              <ClipboardList className="h-5 w-5 text-purple-500" />
-              <div className="flex-1"><p className="font-medium">Project Brief</p><p className="text-sm text-muted-foreground">{dashboard?.has_brief ? dashboard?.brief_status : 'Not created'}</p></div>
-              {dashboard?.has_brief ? <CheckCircle2 className="h-5 w-5 text-green-500" /> : <Plus className="h-5 w-5 text-muted-foreground" />}
+        {/* Documents */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="cursor-pointer hover:bg-muted/50" onClick={() => nav("project-brief")}>
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-blue-500" />
+                <div>
+                  <p className="font-medium">{pt("Project Brief")}</p>
+                  {dashboard?.has_brief
+                    ? getStatusBadge(dashboard.brief_status)
+                    : <span className="text-sm text-muted-foreground">Not created</span>
+                  }
+                </div>
+              </div>
+              {!dashboard?.has_brief && <Plus className="h-5 w-5 text-muted-foreground" />}
             </CardContent>
           </Card>
-          <Card className="cursor-pointer hover:bg-muted/50" onClick={() => navigateToPage('business-case')}>
-            <CardContent className="pt-6 flex items-center gap-3">
-              <FileText className="h-5 w-5 text-blue-500" />
-              <div className="flex-1"><p className="font-medium">Business Case</p><p className="text-sm text-muted-foreground">{dashboard?.has_business_case ? dashboard?.business_case_status : 'Not created'}</p></div>
-              {dashboard?.has_business_case ? <CheckCircle2 className="h-5 w-5 text-green-500" /> : <Plus className="h-5 w-5 text-muted-foreground" />}
+
+          <Card className="cursor-pointer hover:bg-muted/50" onClick={() => nav("business-case")}>
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Briefcase className="h-5 w-5 text-green-500" />
+                <div>
+                  <p className="font-medium">Business Case</p>
+                  {dashboard?.has_business_case
+                    ? getStatusBadge(dashboard.business_case_status)
+                    : <span className="text-sm text-muted-foreground">Not created</span>
+                  }
+                </div>
+              </div>
+              {!dashboard?.has_business_case && <Plus className="h-5 w-5 text-muted-foreground" />}
             </CardContent>
           </Card>
-          <Card className="cursor-pointer hover:bg-muted/50" onClick={() => navigateToPage('governance')}>
-            <CardContent className="pt-6 flex items-center gap-3">
-              <Target className="h-5 w-5 text-green-500" />
-              <div className="flex-1"><p className="font-medium">PID</p><p className="text-sm text-muted-foreground">{dashboard?.has_pid ? dashboard?.pid_status : 'Not created'}</p></div>
-              {dashboard?.has_pid ? <CheckCircle2 className="h-5 w-5 text-green-500" /> : <Plus className="h-5 w-5 text-muted-foreground" />}
+
+          <Card className="cursor-pointer hover:bg-muted/50" onClick={() => nav("governance")}>
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Shield className="h-5 w-5 text-purple-500" />
+                <div>
+                  <p className="font-medium">PID</p>
+                  {dashboard?.has_pid
+                    ? getStatusBadge(dashboard.pid_status)
+                    : <span className="text-sm text-muted-foreground">Not created</span>
+                  }
+                </div>
+              </div>
+              {!dashboard?.has_pid && <Plus className="h-5 w-5 text-muted-foreground" />}
             </CardContent>
           </Card>
         </div>
 
-        <Tabs defaultValue="stages" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="stages">Stages</TabsTrigger>
-            <TabsTrigger value="processes">PRINCE2 Processes</TabsTrigger>
-            <TabsTrigger value="products">Management Products</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="stages" className="space-y-4">
-            {dashboard?.stages?.length ? (
-              dashboard.stages.map((stage) => (
-                <Card key={stage.id} className={`cursor-pointer hover:bg-muted/50 ${stage.status === 'active' ? 'border-blue-300 bg-blue-50/50' : ''}`} onClick={() => navigateToPage(`stages/${stage.id}`)}>
-                  <CardContent className="py-4 flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${stage.status === 'completed' ? 'bg-green-100 text-green-600' : stage.status === 'active' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
-                      {stage.status === 'completed' ? <CheckCircle2 className="h-5 w-5" /> : <span className="font-bold">{stage.order}</span>}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2"><h3 className="font-medium">{stage.name}</h3>{getStatusBadge(stage.status)}</div>
-                      <p className="text-sm text-muted-foreground">{stage.planned_start_date || 'No dates'} - {stage.planned_end_date || ''}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold">{stage.progress_percentage}%</p>
-                      <p className="text-sm text-muted-foreground">{stage.work_packages_count} WPs</p>
-                    </div>
-                    <Progress value={stage.progress_percentage} className="w-32" />
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                  </CardContent>
-                </Card>
-              ))
+        {/* Stages */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle>Stages</CardTitle>
+              <Button variant="outline" size="sm" onClick={() => nav("stage-plan")} className="gap-1">
+                <FileText className="h-3.5 w-3.5" /> {pt("Stage Plans")}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {dashboard?.stages?.length === 0 ? (
+              <p className="text-center text-muted-foreground py-4">{pt("No stages defined yet")}</p>
             ) : (
-              <Card><CardContent className="py-8 text-center"><Layers className="h-12 w-12 text-muted-foreground mx-auto mb-3" /><p className="text-muted-foreground">No stages defined</p><Button className="mt-4" onClick={initializeStages}>Initialize Stages</Button></CardContent></Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="processes" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {PRINCE2_PROCESSES.map((process) => {
-                const Icon = process.icon;
-                return (
-                  <Card key={process.id}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${process.color} text-white`}><Icon className="h-5 w-5" /></div>
-                        <div><CardTitle className="text-base">{process.name} <Badge variant="outline" className="text-xs ml-2">{process.shortName}</Badge></CardTitle><CardDescription>{process.description}</CardDescription></div>
+              dashboard?.stages?.map((stage: any) => (
+                <div
+                  key={stage.id}
+                  className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors ${
+                    stage.status === "active" ? "border-blue-300 bg-blue-50/50" : ""
+                  }`}
+                  onClick={() => nav("stage-plan")}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`h-8 w-8 rounded-full ${getStageStatusColor(stage.status)} flex items-center justify-center text-white text-sm font-bold`}>
+                      {stage.order}
+                    </div>
+                    <div>
+                      <p className="font-medium">{stage.name}</p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Badge variant="outline" className="text-xs">{stage.status}</Badge>
+                        {stage.start_date && <span>{stage.start_date} - {stage.end_date || "..."}</span>}
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-1">{process.deliverables.map((d, i) => <Badge key={i} variant="secondary" className="text-xs">{d}</Badge>)}</div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </TabsContent>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-sm font-medium">{stage.progress_percentage || 0}%</p>
+                      <p className="text-xs text-muted-foreground">
+                        {stage.work_packages_count || 0} WPs
+                      </p>
+                    </div>
+                    <div className="w-24">
+                      <Progress value={stage.progress_percentage || 0} className="h-2" />
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
 
-          <TabsContent value="products" className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {MANAGEMENT_PRODUCTS.map((product, idx) => {
-                const Icon = product.icon;
-                return (
-                  <Card key={idx} className="cursor-pointer hover:bg-muted/50" onClick={() => navigateToPage(product.path)}>
-                    <CardContent className="p-6 flex items-center gap-4">
-                      <div className="p-3 rounded-lg bg-primary/10"><Icon className="h-6 w-6 text-primary" /></div>
-                      <div className="flex-1"><h3 className="font-medium">{product.name}</h3></div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </TabsContent>
-        </Tabs>
+        {/* Quick Navigation */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: pt("Work Packages"), path: "work-packages", icon: Layers },
+            { label: pt("Stage Gates"), path: "stage-gate", icon: CheckCircle2 },
+            { label: pt("Tolerances"), path: "tolerances", icon: AlertTriangle },
+            { label: pt("Project Board"), path: "project-board", icon: Shield },
+          ].map(({ label, path, icon: Icon }) => (
+            <Card
+              key={path}
+              className="cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={() => nav(path)}
+            >
+              <CardContent className="p-4 flex items-center gap-3">
+                <Icon className="h-5 w-5 text-muted-foreground" />
+                <span className="font-medium text-sm">{label}</span>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Recent Reports */}
+        {dashboard?.recent_highlight_reports?.length > 0 && (
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle>{pt("Highlight Reports")}</CardTitle>
+                <Button variant="outline" size="sm" onClick={() => nav("highlight-report")}>
+                  {pt("View All")}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {dashboard.recent_highlight_reports.map((report: any) => (
+                <div key={report.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">{report.title || `Report #${report.id}`}</p>
+                    <p className="text-sm text-muted-foreground">{report.report_date}</p>
+                  </div>
+                  <Badge variant={report.overall_status === "green" ? "default" : "destructive"}>
+                    {report.overall_status}
+                  </Badge>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
       </div>
-
-          {/* Methodology Help Panel */}
-          <MethodologyHelpPanel methodology="prince2" />
     </div>
   );
 };

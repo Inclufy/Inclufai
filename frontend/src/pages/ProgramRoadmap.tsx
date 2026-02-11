@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ProjectHeader } from '@/components/ProjectHeader';
 import { Map, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -21,6 +22,7 @@ const fetchProgramProjects = async (programId: string) => {
 const COLORS = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500', 'bg-red-500', 'bg-cyan-500', 'bg-pink-500'];
 
 const ProgramRoadmap = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
@@ -127,7 +129,7 @@ const ProgramRoadmap = () => {
               <>
                 {/* Month Headers */}
                 <div className="flex border-b pb-2 mb-4">
-                  <div className="w-48 shrink-0 font-medium">Project</div>
+                  <div className="w-48 shrink-0 font-medium">{pt("Project")}</div>
                   {months.map((month, i) => (
                     <div 
                       key={month} 

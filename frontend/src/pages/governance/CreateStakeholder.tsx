@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Users, ArrowLeft, Sparkles } from "lucide-react";
 import AISmartHelper from "@/components/governance/AISmartHelper";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const CreateStakeholder: React.FC = () => {
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ const CreateStakeholder: React.FC = () => {
   };
 
   const handleAISuggestion = (suggestion: any) => {
+  const { pt } = usePageTranslations();
     setFormData({
       ...formData,
       ...suggestion,
@@ -251,9 +253,9 @@ const CreateStakeholder: React.FC = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="low">{pt("Low")}</SelectItem>
+                      <SelectItem value="medium">{pt("Medium")}</SelectItem>
+                      <SelectItem value="high">{pt("High")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -270,9 +272,9 @@ const CreateStakeholder: React.FC = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="low">{pt("Low")}</SelectItem>
+                      <SelectItem value="medium">{pt("Medium")}</SelectItem>
+                      <SelectItem value="high">{pt("High")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -286,7 +288,7 @@ const CreateStakeholder: React.FC = () => {
                   className="flex-1 h-12"
                   disabled={loading}
                 >
-                  Cancel
+                  {pt("Cancel")}
                 </Button>
                 <Button
                   type="submit"

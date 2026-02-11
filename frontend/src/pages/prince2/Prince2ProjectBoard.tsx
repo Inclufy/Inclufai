@@ -1,378 +1,148 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { useProject } from '@/hooks/useApi';
-import { prince2Api, ProjectBoard, ProjectBoardMember } from '@/lib/prince2Api';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  Users, Crown, UserCheck, Building, Shield, Plus, 
-  Edit, Trash2, RefreshCw, AlertTriangle, Calendar, Mail
-} from 'lucide-react';
-
-const ROLE_ICONS: Record<string, any> = {
-  executive: Crown,
-  senior_user: UserCheck,
-  senior_supplier: Building,
-  project_manager: Users,
-  project_assurance: Shield,
-  change_authority: Edit,
-  project_support: Users
-};
-
-const ROLE_COLORS: Record<string, string> = {
-  executive: 'bg-purple-100 text-purple-700 border-purple-300',
-  senior_user: 'bg-blue-100 text-blue-700 border-blue-300',
-  senior_supplier: 'bg-green-100 text-green-700 border-green-300',
-  project_manager: 'bg-orange-100 text-orange-700 border-orange-300',
-  project_assurance: 'bg-cyan-100 text-cyan-700 border-cyan-300',
-  change_authority: 'bg-pink-100 text-pink-700 border-pink-300',
-  project_support: 'bg-slate-100 text-slate-700 border-slate-300'
-};
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Plus, Users, Trash2, Crown, UserPlus } from "lucide-react";
+import { toast } from "sonner";
 
 const Prince2ProjectBoard = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id);
-  
-  const [board, setBoard] = useState<ProjectBoard | null>(null);
+  const [board, setBoard] = useState<any>(null);
+  const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showAddMember, setShowAddMember] = useState(false);
-  const [newMember, setNewMember] = useState<Partial<ProjectBoardMember>>({});
+  const [memberDialog, setMemberDialog] = useState(false);
+  const [memberForm, setMemberForm] = useState({ name: "", role: "senior_user", email: "" });
+  const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
-    if (id) loadBoard();
-  }, [id]);
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  const loadBoard = async () => {
-    if (!id) return;
+  const fetchData = async () => {
     try {
-      setLoading(true);
-      const boards = await prince2Api.board.get(id);
-      if (boards.length > 0) {
-        setBoard(boards[0]);
+      const [bRes, mRes] = await Promise.all([
+        fetch(`/api/v1/projects/${id}/prince2/board/`, { headers }),
+        fetch(`/api/v1/projects/${id}/prince2/board-members/`, { headers }),
+      ]);
+      if (bRes.ok) {
+        const d = await bRes.json();
+        const list = Array.isArray(d) ? d : d.results || [];
+        setBoard(list[0] || null);
       }
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+      if (mRes.ok) {
+        const d = await mRes.json();
+        setMembers(Array.isArray(d) ? d : d.results || []);
+      }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
+  useEffect(() => { fetchData(); }, [id]);
+
   const createBoard = async () => {
-    if (!id) return;
+    setCreating(true);
     try {
-      const newBoard = await prince2Api.board.create(id, {
-        meeting_frequency: 'Monthly',
-        governance_notes: ''
+      const r = await fetch(`/api/v1/projects/${id}/prince2/board/`, {
+        method: "POST", headers: jsonHeaders, body: JSON.stringify({ name: "Project Board" }),
       });
-      setBoard(newBoard);
-    } catch (err: any) {
-      setError(err.message);
-    }
+      if (r.ok) { toast.success("Projectbestuur aangemaakt"); fetchData(); }
+      else toast.error("Aanmaken mislukt");
+    } catch { toast.error("Aanmaken mislukt"); }
+    finally { setCreating(false); }
   };
 
   const addMember = async () => {
-    if (!id || !board || !newMember.user || !newMember.role) return;
+    if (!board || !memberForm.name) return;
     try {
-      await prince2Api.board.addMember(id, board.id, newMember);
-      setShowAddMember(false);
-      setNewMember({});
-      await loadBoard();
-    } catch (err: any) {
-      setError(err.message);
-    }
+      const r = await fetch(`/api/v1/projects/${id}/prince2/board/${board.id}/add_member/`, {
+        method: "POST", headers: jsonHeaders, body: JSON.stringify(memberForm),
+      });
+      if (r.ok) { toast.success("Lid toegevoegd"); setMemberDialog(false); setMemberForm({ name: "", role: "senior_user", email: "" }); fetchData(); }
+      else toast.error("Toevoegen mislukt");
+    } catch { toast.error("Toevoegen mislukt"); }
   };
 
-  const removeMember = async (memberId: number) => {
-    if (!id || !confirm('Remove this board member?')) return;
+  const removeMember = async (mId: number) => {
     try {
-      await prince2Api.boardMembers.delete(id, memberId);
-      await loadBoard();
-    } catch (err: any) {
-      setError(err.message);
-    }
+      const r = await fetch(`/api/v1/projects/${id}/prince2/board-members/${mId}/`, { method: "DELETE", headers });
+      if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); }
+    } catch { toast.error("Verwijderen mislukt"); }
   };
 
-  const getMembersByRole = (role: string) => board?.members?.filter(m => m.role === role) || [];
+  const roleLabels: Record<string, string> = {
+    executive: "Executive", senior_user: "Senior User", senior_supplier: "Senior Supplier",
+    project_manager: "Project Manager", team_manager: "Team Manager", project_assurance: "Project Assurance",
+    change_authority: "Change Authority", project_support: "Project Support",
+  };
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
-  }
+  const roleColors: Record<string, string> = {
+    executive: "bg-purple-100 text-purple-700", senior_user: "bg-blue-100 text-blue-700",
+    senior_supplier: "bg-green-100 text-green-700", project_manager: "bg-amber-100 text-amber-700",
+  };
 
-  // No board yet
-  if (!board) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader project={project} />
-        <div className="p-6">
-          <Card className="max-w-lg mx-auto">
-            <CardContent className="pt-6 text-center">
-              <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-bold mb-2">No Project Board</h2>
-              <p className="text-muted-foreground mb-4">Create a project board to define governance structure.</p>
-              <Button onClick={createBoard}>
-                <Plus className="h-4 w-4 mr-2" />Create Project Board
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
     <div className="min-h-full bg-background">
-      <ProjectHeader project={project} />
+      <ProjectHeader />
       <div className="p-6 space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Users className="h-6 w-6 text-blue-600" />
-              Project Board
-            </h1>
-            <p className="text-muted-foreground">PRINCE2 Governance Structure</p>
-          </div>
+          <div className="flex items-center gap-3"><Crown className="h-6 w-6 text-amber-500" /><h1 className="text-2xl font-bold">{pt("Project Board")}</h1></div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={loadBoard}>
-              <RefreshCw className="h-4 w-4 mr-2" />Refresh
-            </Button>
-            <Dialog open={showAddMember} onOpenChange={setShowAddMember}>
-              <DialogTrigger asChild>
-                <Button><Plus className="h-4 w-4 mr-2" />Add Member</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Add Board Member</DialogTitle></DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label>User ID</Label>
-                    <Input 
-                      type="number"
-                      value={newMember.user || ''} 
-                      onChange={(e) => setNewMember({...newMember, user: parseInt(e.target.value)})}
-                      placeholder="Enter user ID"
-                    />
-                  </div>
-                  <div>
-                    <Label>Role</Label>
-                    <Select value={newMember.role || ''} onValueChange={(v) => setNewMember({...newMember, role: v as any})}>
-                      <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="executive">Executive</SelectItem>
-                        <SelectItem value="senior_user">Senior User</SelectItem>
-                        <SelectItem value="senior_supplier">Senior Supplier</SelectItem>
-                        <SelectItem value="project_manager">Project Manager</SelectItem>
-                        <SelectItem value="project_assurance">Project Assurance</SelectItem>
-                        <SelectItem value="change_authority">Change Authority</SelectItem>
-                        <SelectItem value="project_support">Project Support</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Responsibilities</Label>
-                    <Textarea 
-                      value={newMember.responsibilities || ''} 
-                      onChange={(e) => setNewMember({...newMember, responsibilities: e.target.value})}
-                      rows={3}
-                    />
-                  </div>
-                  <Button onClick={addMember} className="w-full">Add Member</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            {!board && <Button onClick={createBoard} disabled={creating} className="gap-2">{creating && <Loader2 className="h-4 w-4 animate-spin" />}<Plus className="h-4 w-4" /> {pt("Create")} Board</Button>}
+            {board && <Button onClick={() => setMemberDialog(true)} className="gap-2"><UserPlus className="h-4 w-4" /> {pt("Add Member")}</Button>}
           </div>
         </div>
 
-        {error && (
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="pt-4 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-              <span className="text-red-700">{error}</span>
-            </CardContent>
-          </Card>
+        {!board ? (
+          <Card className="p-8 text-center"><Crown className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold mb-2">{pt("No Project Board")}</h3><p className="text-muted-foreground mb-4">Create a project board to define governance roles</p><Button onClick={createBoard} disabled={creating}><Plus className="h-4 w-4 mr-2" /> {pt("Create")} Board</Button></Card>
+        ) : (
+          <>
+            {members.length === 0 ? (
+              <Card className="p-8 text-center"><Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold mb-2">No board members yet</h3><Button onClick={() => setMemberDialog(true)}><UserPlus className="h-4 w-4 mr-2" /> {pt("Add Member")}</Button></Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {members.map((m) => (
+                  <Card key={m.id} className="group relative">
+                    <CardContent className="p-4">
+                      <button onClick={() => removeMember(m.id)} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5 text-destructive" /></button>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center"><span className="font-semibold text-primary">{m.name?.charAt(0)?.toUpperCase() || "?"}</span></div>
+                        <div><p className="font-medium">{m.name}</p>{m.email && <p className="text-xs text-muted-foreground">{m.email}</p>}</div>
+                      </div>
+                      <Badge className={`text-xs ${roleColors[m.role] || "bg-gray-100 text-gray-700"}`}>{roleLabels[m.role] || m.role}</Badge>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </>
         )}
-
-        {/* Board Info */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Meeting Frequency</p>
-                  <p className="font-medium">{board.meeting_frequency}</p>
-                </div>
-              </div>
-              {board.next_meeting_date && (
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Next Meeting</p>
-                    <p className="font-medium">{board.next_meeting_date}</p>
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center gap-3">
-                <Users className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Members</p>
-                  <p className="font-medium">{board.members?.length || 0}</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Organization Chart */}
-        <div className="space-y-4">
-          {/* Executive Row */}
-          <div className="flex justify-center">
-            <RoleSection 
-              title="Executive" 
-              role="executive"
-              members={getMembersByRole('executive')}
-              onRemove={removeMember}
-            />
-          </div>
-
-          {/* Project Board Row */}
-          <div className="flex justify-center gap-8">
-            <RoleSection 
-              title="Senior User" 
-              role="senior_user"
-              members={getMembersByRole('senior_user')}
-              onRemove={removeMember}
-            />
-            <RoleSection 
-              title="Senior Supplier" 
-              role="senior_supplier"
-              members={getMembersByRole('senior_supplier')}
-              onRemove={removeMember}
-            />
-          </div>
-
-          {/* Project Manager Row */}
-          <div className="flex justify-center">
-            <RoleSection 
-              title="Project Manager" 
-              role="project_manager"
-              members={getMembersByRole('project_manager')}
-              onRemove={removeMember}
-            />
-          </div>
-
-          {/* Support Roles */}
-          <div className="flex justify-center gap-8">
-            <RoleSection 
-              title="Project Assurance" 
-              role="project_assurance"
-              members={getMembersByRole('project_assurance')}
-              onRemove={removeMember}
-            />
-            <RoleSection 
-              title="Change Authority" 
-              role="change_authority"
-              members={getMembersByRole('change_authority')}
-              onRemove={removeMember}
-            />
-            <RoleSection 
-              title="Project Support" 
-              role="project_support"
-              members={getMembersByRole('project_support')}
-              onRemove={removeMember}
-            />
-          </div>
-        </div>
-
-        {/* Role Descriptions */}
-        <Card>
-          <CardHeader><CardTitle className="text-lg">Role Descriptions</CardTitle></CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-4 text-sm">
-              <div className="space-y-1">
-                <h4 className="font-medium text-purple-700">Executive</h4>
-                <p className="text-muted-foreground">Ultimately accountable for the project. Owns the Business Case.</p>
-              </div>
-              <div className="space-y-1">
-                <h4 className="font-medium text-blue-700">Senior User</h4>
-                <p className="text-muted-foreground">Represents users who will use project products. Specifies needs and verifies products.</p>
-              </div>
-              <div className="space-y-1">
-                <h4 className="font-medium text-green-700">Senior Supplier</h4>
-                <p className="text-muted-foreground">Represents those designing, developing, and implementing products.</p>
-              </div>
-              <div className="space-y-1">
-                <h4 className="font-medium text-orange-700">Project Manager</h4>
-                <p className="text-muted-foreground">Day-to-day management of the project on behalf of the Project Board.</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
-          {/* Methodology Help Panel */}
-          <MethodologyHelpPanel methodology="prince2" />
-    </div>
-  );
-};
-
-// Role Section Component
-const RoleSection = ({ 
-  title, 
-  role, 
-  members, 
-  onRemove 
-}: { 
-  title: string; 
-  role: string; 
-  members: ProjectBoardMember[];
-  onRemove: (id: number) => void;
-}) => {
-  const Icon = ROLE_ICONS[role] || Users;
-  const colorClass = ROLE_COLORS[role] || '';
-  
-  return (
-    <Card className={`w-64 ${colorClass} border`}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <Icon className="h-5 w-5" />
-          <CardTitle className="text-sm">{title}</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {members.length > 0 ? (
-          <div className="space-y-2">
-            {members.map((member) => (
-              <div key={member.id} className="flex items-center gap-2 p-2 bg-white/50 rounded">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>{member.user_name?.charAt(0) || '?'}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{member.user_name || 'Unknown'}</p>
-                  {member.user_email && (
-                    <p className="text-xs text-muted-foreground truncate">{member.user_email}</p>
-                  )}
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => onRemove(member.id)}>
-                  <Trash2 className="h-3 w-3 text-red-500" />
-                </Button>
-              </div>
-            ))}
+      <Dialog open={memberDialog} onOpenChange={setMemberDialog}>
+        <DialogContent><DialogHeader><DialogTitle>{pt("Add Member")}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2"><Label>{pt("Name")} *</Label><Input value={memberForm.name} onChange={(e) => setMemberForm({ ...memberForm, name: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Email")}</Label><Input type="email" value={memberForm.email} onChange={(e) => setMemberForm({ ...memberForm, email: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Role")}</Label>
+              <Select value={memberForm.role} onValueChange={(v) => setMemberForm({ ...memberForm, role: v })}><SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{Object.entries(roleLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setMemberDialog(false)}>{pt("Cancel")}</Button><Button onClick={addMember}>{pt("Add")}</Button></div>
           </div>
-        ) : (
-          <p className="text-sm text-center text-muted-foreground py-2">No member assigned</p>
-        )}
-      </CardContent>
-    </Card>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 

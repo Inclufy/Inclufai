@@ -1,348 +1,215 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { useProject } from '@/hooks/useApi';
-import { prince2Api, WorkPackage, Stage } from '@/lib/prince2Api';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  Package, Plus, Edit, Trash2, Play, CheckCircle2, 
-  Clock, User, AlertTriangle, RefreshCw, ChevronRight, Filter
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Plus, Package, Play, CheckCircle2, Trash2, Pencil } from "lucide-react";
+import { toast } from "sonner";
 
 const Prince2WorkPackages = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id);
-  
-  const [workPackages, setWorkPackages] = useState<WorkPackage[]>([]);
-  const [stages, setStages] = useState<Stage[]>([]);
+  const [workPackages, setWorkPackages] = useState<any[]>([]);
+  const [stages, setStages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [selectedWP, setSelectedWP] = useState<WorkPackage | null>(null);
-  const [filterStage, setFilterStage] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  
-  const [newWP, setNewWP] = useState<Partial<WorkPackage>>({
-    priority: 'medium',
-    status: 'draft'
-  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ title: "", description: "", stage: "", priority: "medium" });
 
-  useEffect(() => {
-    if (id) {
-      loadData();
-    }
-  }, [id]);
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  const loadData = async () => {
-    if (!id) return;
+  const fetchData = async () => {
     try {
-      setLoading(true);
-      const [wpData, stageData] = await Promise.all([
-        prince2Api.workPackages.getAll(id),
-        prince2Api.stages.getAll(id)
+      const [wpRes, stRes] = await Promise.all([
+        fetch(`/api/v1/projects/${id}/prince2/work-packages/`, { headers }),
+        fetch(`/api/v1/projects/${id}/prince2/stages/`, { headers }),
       ]);
-      setWorkPackages(wpData);
-      setStages(stageData);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+      if (wpRes.ok) {
+        const data = await wpRes.json();
+        setWorkPackages(Array.isArray(data) ? data : data.results || []);
+      }
+      if (stRes.ok) {
+        const data = await stRes.json();
+        setStages(Array.isArray(data) ? data : data.results || []);
+      }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
-  const createWorkPackage = async () => {
-    if (!id || !newWP.stage || !newWP.reference || !newWP.title) return;
+  useEffect(() => { fetchData(); }, [id]);
+
+  const openCreate = () => {
+    setEditing(null);
+    setForm({ title: "", description: "", stage: stages[0]?.id?.toString() || "", priority: "medium" });
+    setDialogOpen(true);
+  };
+
+  const openEdit = (wp: any) => {
+    setEditing(wp);
+    setForm({ title: wp.title, description: wp.description || "", stage: wp.stage?.toString() || "", priority: wp.priority || "medium" });
+    setDialogOpen(true);
+  };
+
+  const handleSave = async () => {
+    if (!form.title) { toast.error("Titel is verplicht"); return; }
+    setSubmitting(true);
     try {
-      await prince2Api.workPackages.create(id, newWP);
-      setShowCreateDialog(false);
-      setNewWP({ priority: 'medium', status: 'draft' });
-      await loadData();
-    } catch (err: any) {
-      setError(err.message);
-    }
+      const body: any = { title: form.title, description: form.description, priority: form.priority };
+      if (form.stage) body.stage = parseInt(form.stage);
+      const url = editing ? `/api/v1/projects/${id}/prince2/work-packages/${editing.id}/` : `/api/v1/projects/${id}/prince2/work-packages/`;
+      const method = editing ? "PATCH" : "POST";
+      const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
+      if (response.ok) {
+        toast.success(editing ? "Werkpakket bijgewerkt" : "Werkpakket aangemaakt");
+        setDialogOpen(false);
+        fetchData();
+      } else {
+        const err = await response.json().catch(() => ({}));
+        toast.error(err.error || "Opslaan mislukt");
+      }
+    } catch { toast.error("Opslaan mislukt"); }
+    finally { setSubmitting(false); }
   };
 
-  const authorizeWP = async (wp: WorkPackage) => {
-    if (!id) return;
+  const handleAction = async (wpId: number, action: string) => {
     try {
-      await prince2Api.workPackages.authorize(id, wp.id);
-      await loadData();
-    } catch (err: any) {
-      setError(err.message);
-    }
+      const response = await fetch(`/api/v1/projects/${id}/prince2/work-packages/${wpId}/${action}/`, {
+        method: "POST", headers: jsonHeaders,
+      });
+      if (response.ok) { toast.success(`Werkpakket ${action}`); fetchData(); }
+      else toast.error("Actie mislukt");
+    } catch { toast.error("Actie mislukt"); }
   };
 
-  const startWP = async (wp: WorkPackage) => {
-    if (!id) return;
+  const handleDelete = async (wpId: number) => {
+    if (!confirm("Werkpakket verwijderen?")) return;
     try {
-      await prince2Api.workPackages.start(id, wp.id);
-      await loadData();
-    } catch (err: any) {
-      setError(err.message);
-    }
+      const response = await fetch(`/api/v1/projects/${id}/prince2/work-packages/${wpId}/`, { method: "DELETE", headers });
+      if (response.ok || response.status === 204) { toast.success("Verwijderd"); fetchData(); }
+      else toast.error("Verwijderen mislukt");
+    } catch { toast.error("Verwijderen mislukt"); }
   };
 
-  const completeWP = async (wp: WorkPackage) => {
-    if (!id) return;
-    try {
-      await prince2Api.workPackages.complete(id, wp.id);
-      await loadData();
-    } catch (err: any) {
-      setError(err.message);
-    }
+  const statusColors: Record<string, string> = {
+    pending: "bg-gray-100 text-gray-700", authorized: "bg-blue-100 text-blue-700",
+    in_progress: "bg-amber-100 text-amber-700", completed: "bg-green-100 text-green-700",
   };
 
-  const deleteWP = async (wp: WorkPackage) => {
-    if (!id || !confirm('Delete this work package?')) return;
-    try {
-      await prince2Api.workPackages.delete(id, wp.id);
-      await loadData();
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      draft: 'bg-slate-100 text-slate-700',
-      authorized: 'bg-blue-100 text-blue-700',
-      in_progress: 'bg-yellow-100 text-yellow-700',
-      completed: 'bg-green-100 text-green-700',
-      closed: 'bg-gray-100 text-gray-700'
-    };
-    return <Badge className={styles[status] || ''}>{status.replace('_', ' ')}</Badge>;
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    const styles: Record<string, string> = {
-      low: 'bg-gray-100 text-gray-600',
-      medium: 'bg-blue-100 text-blue-600',
-      high: 'bg-orange-100 text-orange-600',
-      critical: 'bg-red-100 text-red-600'
-    };
-    return <Badge className={styles[priority] || ''}>{priority}</Badge>;
-  };
-
-  const filteredWPs = workPackages.filter(wp => {
-    if (filterStage !== 'all' && wp.stage.toString() !== filterStage) return false;
-    if (filterStatus !== 'all' && wp.status !== filterStatus) return false;
-    return true;
-  });
-
-  if (loading) {
-    return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
-  }
+  if (loading) return (
+    <div className="min-h-full bg-background"><ProjectHeader />
+      <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div>
+    </div>
+  );
 
   return (
     <div className="min-h-full bg-background">
-      <ProjectHeader project={project} />
+      <ProjectHeader />
       <div className="p-6 space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Package className="h-6 w-6 text-cyan-600" />
-              Work Packages
-            </h1>
-            <p className="text-muted-foreground">Manage delegated work assignments</p>
-          </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={loadData}><RefreshCw className="h-4 w-4 mr-2" />Refresh</Button>
-            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-              <DialogTrigger asChild>
-                <Button><Plus className="h-4 w-4 mr-2" />New Work Package</Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-lg">
-                <DialogHeader><DialogTitle>Create Work Package</DialogTitle></DialogHeader>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Reference</Label>
-                      <Input value={newWP.reference || ''} onChange={(e) => setNewWP({...newWP, reference: e.target.value})} placeholder="WP-001" />
-                    </div>
-                    <div>
-                      <Label>Stage</Label>
-                      <Select value={newWP.stage?.toString() || ''} onValueChange={(v) => setNewWP({...newWP, stage: parseInt(v)})}>
-                        <SelectTrigger><SelectValue placeholder="Select stage" /></SelectTrigger>
-                        <SelectContent>
-                          {stages.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Title</Label>
-                    <Input value={newWP.title || ''} onChange={(e) => setNewWP({...newWP, title: e.target.value})} />
-                  </div>
-                  <div>
-                    <Label>Description</Label>
-                    <Textarea value={newWP.description || ''} onChange={(e) => setNewWP({...newWP, description: e.target.value})} rows={3} />
-                  </div>
-                  <div>
-                    <Label>Products to Deliver</Label>
-                    <Textarea value={newWP.product_descriptions || ''} onChange={(e) => setNewWP({...newWP, product_descriptions: e.target.value})} rows={2} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Priority</Label>
-                      <Select value={newWP.priority || 'medium'} onValueChange={(v) => setNewWP({...newWP, priority: v as any})}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="critical">Critical</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Planned End Date</Label>
-                      <Input type="date" value={newWP.planned_end_date || ''} onChange={(e) => setNewWP({...newWP, planned_end_date: e.target.value})} />
-                    </div>
-                  </div>
-                  <Button onClick={createWorkPackage} className="w-full">Create Work Package</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Package className="h-6 w-6 text-blue-500" />
+            <h1 className="text-2xl font-bold">{pt("Work Packages")}</h1>
+            <Badge variant="outline">{workPackages.length}</Badge>
           </div>
+          <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Create")}</Button>
         </div>
 
-        {error && (
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="pt-4 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-              <span className="text-red-700">{error}</span>
-            </CardContent>
+        {workPackages.length === 0 ? (
+          <Card className="p-8 text-center">
+            <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">{pt("No work packages yet")}</h3>
+            <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" /> {pt("Create")}</Button>
           </Card>
-        )}
-
-        {/* Filters */}
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-4">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={filterStage} onValueChange={setFilterStage}>
-                <SelectTrigger className="w-48"><SelectValue placeholder="Filter by stage" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Stages</SelectItem>
-                  {stages.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-48"><SelectValue placeholder="Filter by status" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="authorized">Authorized</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-              <span className="text-sm text-muted-foreground ml-auto">{filteredWPs.length} work packages</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Total</p>
-              <p className="text-2xl font-bold">{workPackages.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">In Progress</p>
-              <p className="text-2xl font-bold text-yellow-600">{workPackages.filter(w => w.status === 'in_progress').length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Completed</p>
-              <p className="text-2xl font-bold text-green-600">{workPackages.filter(w => w.status === 'completed' || w.status === 'closed').length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Awaiting Auth</p>
-              <p className="text-2xl font-bold text-blue-600">{workPackages.filter(w => w.status === 'draft').length}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Work Packages List */}
-        <div className="space-y-4">
-          {filteredWPs.length > 0 ? filteredWPs.map((wp) => (
-            <Card key={wp.id} className="hover:bg-muted/50 transition-colors">
-              <CardContent className="py-4">
-                <div className="flex items-center gap-4">
+        ) : (
+          <div className="space-y-3">
+            {workPackages.map((wp) => (
+              <Card key={wp.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-mono text-sm text-muted-foreground">{wp.reference}</span>
-                      <h3 className="font-medium">{wp.title}</h3>
-                      {getStatusBadge(wp.status)}
-                      {getPriorityBadge(wp.priority)}
+                      <span className="text-xs font-mono text-muted-foreground">{wp.reference}</span>
+                      <Badge className={`text-xs ${statusColors[wp.status] || ""}`}>{wp.status}</Badge>
+                      {wp.priority && <Badge variant="outline" className="text-xs">{wp.priority}</Badge>}
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-1">{wp.description}</p>
-                    <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1"><Package className="h-4 w-4" />{wp.stage_name}</span>
-                      {wp.team_manager_name && <span className="flex items-center gap-1"><User className="h-4 w-4" />{wp.team_manager_name}</span>}
-                      {wp.planned_end_date && <span className="flex items-center gap-1"><Clock className="h-4 w-4" />{wp.planned_end_date}</span>}
+                    <p className="font-medium">{wp.title}</p>
+                    {wp.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{wp.description}</p>}
+                    <div className="flex items-center gap-2 mt-2">
+                      <Progress value={wp.progress_percentage || 0} className="h-1.5 w-32" />
+                      <span className="text-xs text-muted-foreground">{wp.progress_percentage || 0}%</span>
                     </div>
                   </div>
-                  <div className="text-right mr-4">
-                    <p className="text-lg font-bold">{wp.progress_percentage}%</p>
-                    <Progress value={wp.progress_percentage} className="w-24 h-2 mt-1" />
+                  <div className="flex items-center gap-1 ml-4">
+                    {wp.status === "pending" && (
+                      <Button variant="ghost" size="sm" onClick={() => handleAction(wp.id, "authorize")} title="Authorize">
+                        <CheckCircle2 className="h-4 w-4 text-blue-500" />
+                      </Button>
+                    )}
+                    {wp.status === "authorized" && (
+                      <Button variant="ghost" size="sm" onClick={() => handleAction(wp.id, "start")} title="Start">
+                        <Play className="h-4 w-4 text-green-500" />
+                      </Button>
+                    )}
+                    {wp.status === "in_progress" && (
+                      <Button variant="ghost" size="sm" onClick={() => handleAction(wp.id, "complete")} title="Complete">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="sm" onClick={() => openEdit(wp)}><Pencil className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(wp.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {wp.status === 'draft' && (
-                      <Button size="sm" variant="outline" onClick={() => authorizeWP(wp)}>
-                        <CheckCircle2 className="h-4 w-4 mr-1" />Authorize
-                      </Button>
-                    )}
-                    {wp.status === 'authorized' && (
-                      <Button size="sm" variant="outline" onClick={() => startWP(wp)}>
-                        <Play className="h-4 w-4 mr-1" />Start
-                      </Button>
-                    )}
-                    {wp.status === 'in_progress' && (
-                      <Button size="sm" variant="outline" onClick={() => completeWP(wp)}>
-                        <CheckCircle2 className="h-4 w-4 mr-1" />Complete
-                      </Button>
-                    )}
-                    <Button size="sm" variant="ghost" onClick={() => deleteWP(wp)}>
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )) : (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Package className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">No work packages found</p>
-                <Button className="mt-4" onClick={() => setShowCreateDialog(true)}>
-                  <Plus className="h-4 w-4 mr-2" />Create Work Package
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
-          {/* Methodology Help Panel */}
-          <MethodologyHelpPanel methodology="prince2" />
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Create")} {pt("Work Package")}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2"><Label>{pt("Title")} *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Description")}</Label><textarea className="w-full min-h-[80px] px-3 py-2 border rounded-md bg-background" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+            {stages.length > 0 && (
+              <div className="space-y-2">
+                <Label>Stage</Label>
+                <Select value={form.stage} onValueChange={(v) => setForm({ ...form, stage: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select stage" /></SelectTrigger>
+                  <SelectContent>{stages.map((s: any) => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label>{pt("Priority")}</Label>
+              <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="critical">Critical</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>
+              <Button onClick={handleSave} disabled={submitting}>
+                {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

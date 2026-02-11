@@ -2,8 +2,10 @@ import { Card } from "@/components/ui/card";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { Button } from "@/components/ui/button";
 import { Archive, Edit, Trash2, Plus, FileText } from "lucide-react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const MonitoringLessonsSurveys = () => {
+  const { pt } = usePageTranslations();
   const archivedLessons = [
     {
       title: "Archived Lesson",
@@ -25,7 +27,7 @@ const MonitoringLessonsSurveys = () => {
           <div>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-lg font-semibold text-foreground">Lessons Learned</h2>
+                <h2 className="text-lg font-semibold text-foreground">{pt("Lessons Learned")}</h2>
                 <p className="text-sm text-muted-foreground">Archive and manage project insights and lessons learned</p>
               </div>
               <Button className="bg-success hover:bg-success/90">

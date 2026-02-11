@@ -3,8 +3,10 @@ import { ProjectHeader } from "@/components/ProjectHeader";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const ExecutionReporting = () => {
+  const { pt } = usePageTranslations();
   const reports = [
     {
       name: "test",
@@ -30,10 +32,10 @@ const ExecutionReporting = () => {
 
         <Card className="p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-foreground">Reports</h2>
+            <h2 className="text-lg font-semibold text-foreground">{pt("Reports")}</h2>
             <Button className="bg-primary hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" />
-              New Report
+              {pt("New Report")}
             </Button>
           </div>
 
@@ -67,7 +69,7 @@ const ExecutionReporting = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all-dates">All Dates</SelectItem>
-                <SelectItem value="last-month">Last Month</SelectItem>
+                <SelectItem value="last-month">{pt("Last Month")}</SelectItem>
                 <SelectItem value="last-quarter">Last Quarter</SelectItem>
               </SelectContent>
             </Select>
@@ -101,10 +103,10 @@ const ExecutionReporting = () => {
                     <td className="p-4">
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm">
-                          Edit
+                          {pt("Edit")}
                         </Button>
                         <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                          Delete
+                          {pt("Delete")}
                         </Button>
                       </div>
                     </td>

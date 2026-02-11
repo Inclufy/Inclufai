@@ -5,7 +5,7 @@ import { LayoutDashboard, MessageSquare, FolderKanban, Users,
   GraduationCap, Mail, Activity, CalendarDays, Table, Clock, Target, 
   Columns, Crown, Award, Repeat, Zap, ArrowDown, GitMerge, BarChart3, 
   TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
-  Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock, Package, Presentation , Briefcase } from "lucide-react";
+  Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock, Package, Presentation, Briefcase, AlertCircle, CheckCircle } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -745,7 +745,19 @@ export function AppSidebar() {
     surveys: 'Surveys',
     postProject: 'Post Project',
     adminPortal: 'Admin Portal',
+    governance: 'Governance',
+    portfolios: 'Portfolios',
+    boards: 'Boards',
+    stakeholders: 'Stakeholders',
+    reports: 'Reports',
+    profile: 'Profile',
+    settings: 'Settings',
   };
+
+  // Methodology term translator
+  const mt = (t as any).methodologyTerms || {};
+  const tm = (title: string) => mt[title] || title;
+
   
   // Helper to check if item is locked for trial users
   const isItemLocked = (featureName: string | null) => {
@@ -791,14 +803,14 @@ export function AppSidebar() {
     // Governance - only for program managers and admins
     if (['program_manager', 'admin', 'superadmin'].includes(userRole)) {
       baseItems.push({ 
-        title: "Governance", 
+        title: ts.governance, 
         url: "/governance/portfolios", 
         icon: Briefcase,
         feature: null,
         children: [
-          { title: "Portfolios", url: "/governance/portfolios", icon: Briefcase },
-          { title: "Boards", url: "/governance/boards", icon: Shield },
-          { title: "Stakeholders", url: "/governance/stakeholders", icon: Users },
+          { title: ts.portfolios, url: "/governance/portfolios", icon: Briefcase },
+          { title: ts.boards, url: "/governance/boards", icon: Shield },
+          { title: ts.stakeholders, url: "/governance/stakeholders", icon: Users },
         ],
       });
     }
@@ -816,7 +828,7 @@ export function AppSidebar() {
 
     // Reports - everyone can see
     baseItems.push({ 
-      title: "Reports", 
+      title: ts.reports, 
       url: "/reports", 
       icon: FileBarChart,
       feature: null,
@@ -880,21 +892,40 @@ export function AppSidebar() {
   const projectPhases = projectId ? getMethodologyPhases(projectId, methodology) : [];
   const programPhases = programId ? getProgramPhases(programId, programMethodology) : [];
 
+  // Color mapping for menu icons
+  const iconColors: Record<string, string> = {
+    "Dashboard": "text-violet-500",
+    "AI Chat": "text-fuchsia-500",
+    "Governance": "text-indigo-500",
+    "Programs": "text-orange-500",
+    "Reports": "text-emerald-500",
+    "Projects": "text-sky-500",
+    "Team": "text-pink-500",
+    "Time Tracking": "text-amber-500",
+    "Post Project": "text-teal-500",
+    "Profile": "text-blue-500",
+    "Settings": "text-gray-500",
+    "Admin Portal": "text-purple-600",
+  };
+
+  const getIconColor = (title: string) => iconColors[title] || "text-gray-500";
+
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border px-4 py-4">
+      <SidebarHeader className="border-b border-sidebar-border/50 px-4 py-5">
         <ProjeXtPalLogo collapsed={isCollapsed} />
       </SidebarHeader>
       
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-0.5 px-1">
               {menuItems.map((item) => {
                 const isLocked = isItemLocked(item.feature);
                 const isActive = location.pathname === item.url || 
                                  (item.isProgramLink && isProgramContext);
                 const isGovActive = item.children && location.pathname.startsWith('/governance');
+                const iconColor = getIconColor(item.title, item.url);
 
                 // Render collapsible for items with children
                 if (item.children && !isCollapsed) {
@@ -903,15 +934,20 @@ export function AppSidebar() {
                       <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
                           <SidebarMenuButton className={cn(
-                            isGovActive && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                            "rounded-lg transition-all duration-200",
+                            isGovActive 
+                              ? "bg-gradient-to-r from-purple-50 to-fuchsia-50 dark:from-purple-900/20 dark:to-fuchsia-900/20 text-purple-700 dark:text-purple-300 font-semibold shadow-sm"
+                              : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50"
                           )}>
-                            <item.icon className="h-4 w-4" />
-                            <span>{item.title}</span>
-                            <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/governance:rotate-90" />
+                            <div className={cn("flex items-center justify-center w-7 h-7 rounded-lg", isGovActive ? "bg-white dark:bg-gray-800 shadow-sm" : "bg-gray-100/80 dark:bg-gray-800")}>
+                              <item.icon className={cn("h-4 w-4", iconColor)} />
+                            </div>
+                            <span className="text-sm">{item.title}</span>
+                            <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/governance:rotate-90" />
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
-                          <SidebarMenuSub>
+                          <SidebarMenuSub className="ml-5 mt-1 space-y-0.5 border-l-2 border-purple-200 dark:border-purple-800/40 pl-3">
                             {item.children.map((child) => (
                               <SidebarMenuSubItem key={child.url}>
                                 <SidebarMenuSubButton asChild>
@@ -919,12 +955,14 @@ export function AppSidebar() {
                                     to={child.url}
                                     end
                                     className={({ isActive }) =>
-                                      isActive
-                                        ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                                        : "hover:bg-sidebar-accent/50 text-sidebar-foreground"
+                                      cn("rounded-md transition-all duration-150 text-sm",
+                                        isActive
+                                          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
+                                          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
+                                      )
                                     }
                                   >
-                                    <child.icon className="h-4 w-4" />
+                                    <child.icon className="h-3.5 w-3.5" />
                                     <span>{child.title}</span>
                                   </NavLink>
                                 </SidebarMenuSubButton>
@@ -943,6 +981,7 @@ export function AppSidebar() {
                       asChild
                       tooltip={isLocked ? "🔒 Upgrade Required" : item.title}
                       className={cn(
+                        "rounded-lg transition-all duration-200",
                         isLocked && "opacity-60 hover:opacity-80"
                       )}
                     >
@@ -971,25 +1010,34 @@ export function AppSidebar() {
                           cn(
                             "flex items-center gap-3",
                             (navIsActive || isActive)
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                              : "hover:bg-sidebar-accent/50 text-sidebar-foreground",
+                              ? "bg-gradient-to-r from-purple-50 to-fuchsia-50 dark:from-purple-900/20 dark:to-fuchsia-900/20 text-purple-700 dark:text-purple-300 font-semibold shadow-sm"
+                              : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300",
                             isLocked && "cursor-not-allowed"
                           )
                         }
                       >
-                        <item.icon className={cn(
-                          "h-4 w-4",
-                          isLocked && "text-muted-foreground"
-                        )} />
+                        <div className={cn(
+                          "flex items-center justify-center w-7 h-7 rounded-lg transition-colors",
+                          (isActive || location.pathname === item.url)
+                            ? "bg-white dark:bg-gray-800 shadow-sm"
+                            : "bg-gray-100 dark:bg-gray-800",
+                          isLocked && "bg-gray-50 dark:bg-gray-900"
+                        )}>
+                          <item.icon className={cn(
+                            "h-4 w-4",
+                            isLocked ? "text-muted-foreground" : iconColor
+                          )} />
+                        </div>
                         {!isCollapsed && (
                           <span className={cn(
+                            "text-sm",
                             isLocked && "text-muted-foreground"
                           )}>
                             {item.title}
                           </span>
                         )}
                         {isLocked && !isCollapsed && (
-                          <Lock className="ml-auto h-4 w-4 text-muted-foreground" />
+                          <Lock className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
                         )}
                       </NavLink>
                     </SidebarMenuButton>
@@ -1011,7 +1059,7 @@ export function AppSidebar() {
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton>
                         <phase.icon className="h-4 w-4" />
-                        {!isCollapsed && <span>{phase.title}</span>}
+                        {!isCollapsed && <span>{tm(phase.title)}</span>}
                         {!isCollapsed && (
                           <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
                         )}
@@ -1033,7 +1081,7 @@ export function AppSidebar() {
                                   }
                                 >
                                   <item.icon className="h-4 w-4" />
-                                  <span>{item.title}</span>
+                                  <span>{tm(item.title)}</span>
                                 </NavLink>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
@@ -1059,7 +1107,7 @@ export function AppSidebar() {
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton>
                         <phase.icon className="h-4 w-4" />
-                        {!isCollapsed && <span>{phase.title}</span>}
+                        {!isCollapsed && <span>{tm(phase.title)}</span>}
                         {!isCollapsed && (
                           <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
                         )}
@@ -1075,7 +1123,7 @@ export function AppSidebar() {
                                   <CollapsibleTrigger asChild>
                                     <SidebarMenuSubButton>
                                       <item.icon className="h-4 w-4" />
-                                      <span>{item.title}</span>
+                                      <span>{tm(item.title)}</span>
                                       <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/nested:rotate-90" />
                                     </SidebarMenuSubButton>
                                   </CollapsibleTrigger>
@@ -1094,7 +1142,7 @@ export function AppSidebar() {
                                               }
                                             >
                                               <subItem.icon className="h-4 w-4" />
-                                              <span>{subItem.title}</span>
+                                              <span>{tm(subItem.title)}</span>
                                             </NavLink>
                                           </SidebarMenuSubButton>
                                         </SidebarMenuSubItem>
@@ -1116,7 +1164,7 @@ export function AppSidebar() {
                                     }
                                   >
                                     <item.icon className="h-4 w-4" />
-                                    <span>{item.title}</span>
+                                    <span>{tm(item.title)}</span>
                                   </NavLink>
                                 </SidebarMenuSubButton>
                               </SidebarMenuSubItem>
@@ -1133,44 +1181,47 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border">
+      <SidebarFooter className="border-t border-sidebar-border/50">
         {userFeatures && !isCollapsed && (
-          <div className="px-3 py-2 mb-2">
-            <div className="bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-lg p-3">
-              <div className="flex items-center justify-between mb-1">
-                <div>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Current Plan</p>
-                  <Badge className={getTierColor(userFeatures.tier)}>
-                    {getTierName(userFeatures.tier)}
-                  </Badge>
-                </div>
+          <div className="px-3 pt-3 pb-1">
+            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-fuchsia-500/10 dark:from-violet-500/20 dark:via-purple-500/20 dark:to-fuchsia-500/20 p-3 border border-purple-200/50 dark:border-purple-800/30">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-purple-400/20 to-fuchsia-400/20 rounded-full -translate-y-1/2 translate-x-1/2" />
+              <div className="relative">
+                <p className="text-[10px] uppercase tracking-wider text-purple-600/70 dark:text-purple-400/70 font-semibold mb-1">Current Plan</p>
+                <Badge className={cn(getTierColor(userFeatures.tier), "text-xs font-semibold")}>
+                  {getTierName(userFeatures.tier)}
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full mt-2.5 text-xs h-8 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors"
+                  onClick={() => window.location.href = '/profile?tab=subscription'}
+                >
+                  <CreditCard className="w-3 h-3 mr-1.5" />
+                  Manage Plan
+                </Button>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full mt-2 text-xs"
-                onClick={() => window.location.href = '/profile?tab=subscription'}
-              >
-                <CreditCard className="w-3 h-3 mr-1" />
-                Manage Plan
-              </Button>
             </div>
           </div>
         )}
 
-        <SidebarMenu>
+        <SidebarMenu className="px-1 pb-2 space-y-0.5">
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <NavLink
                 to="/profile"
                 className={({ isActive }) =>
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    : "hover:bg-sidebar-accent/50 text-sidebar-foreground"
+                  cn("rounded-lg transition-all duration-200 flex items-center gap-3",
+                    isActive
+                      ? "bg-gradient-to-r from-purple-50 to-fuchsia-50 dark:from-purple-900/20 dark:to-fuchsia-900/20 text-purple-700 dark:text-purple-300 font-semibold shadow-sm"
+                      : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300"
+                  )
                 }
               >
-                <UserCircle className="h-4 w-4" />
-                {!isCollapsed && <span>Profile</span>}
+                <div className={cn("flex items-center justify-center w-7 h-7 rounded-lg", "bg-gray-100 dark:bg-gray-800")}>
+                  <UserCircle className="h-4 w-4 text-blue-500" />
+                </div>
+                {!isCollapsed && <span className="text-sm">{ts.profile}</span>}
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -1180,13 +1231,17 @@ export function AppSidebar() {
               <NavLink
                 to="/settings"
                 className={({ isActive }) =>
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    : "hover:bg-sidebar-accent/50 text-sidebar-foreground"
+                  cn("rounded-lg transition-all duration-200 flex items-center gap-3",
+                    isActive
+                      ? "bg-gradient-to-r from-purple-50 to-fuchsia-50 dark:from-purple-900/20 dark:to-fuchsia-900/20 text-purple-700 dark:text-purple-300 font-semibold shadow-sm"
+                      : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300"
+                  )
                 }
               >
-                <Settings className="h-4 w-4" />
-                {!isCollapsed && <span>Settings</span>}
+                <div className={cn("flex items-center justify-center w-7 h-7 rounded-lg", "bg-gray-100 dark:bg-gray-800")}>
+                  <Settings className="h-4 w-4 text-gray-500" />
+                </div>
+                {!isCollapsed && <span className="text-sm">{ts.settings}</span>}
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -1197,13 +1252,17 @@ export function AppSidebar() {
                 <NavLink
                   to="/admin"
                   className={({ isActive }) =>
-                    isActive
-                      ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-                      : "hover:bg-purple-50 dark:hover:bg-purple-900/20 text-purple-600 dark:text-purple-400"
+                    cn("rounded-lg transition-all duration-200 flex items-center gap-3",
+                      isActive
+                        ? "bg-gradient-to-r from-purple-100 to-fuchsia-100 dark:from-purple-900/30 dark:to-fuchsia-900/30 text-purple-700 dark:text-purple-300 font-semibold shadow-sm"
+                        : "hover:bg-purple-50/80 dark:hover:bg-purple-900/20 text-purple-600 dark:text-purple-400"
+                    )
                   }
                 >
-                  <Shield className="h-4 w-4" />
-                  {!isCollapsed && <span>Admin Portal</span>}
+                  <div className={cn("flex items-center justify-center w-7 h-7 rounded-lg", "bg-purple-100 dark:bg-purple-900/30")}>
+                    <Shield className="h-4 w-4 text-purple-600" />
+                  </div>
+                  {!isCollapsed && <span className="text-sm">{ts.adminPortal}</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>

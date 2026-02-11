@@ -24,6 +24,7 @@ import {
   Award,
   Activity,
 } from "lucide-react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 interface ReportTemplate {
   id: string;
@@ -165,6 +166,7 @@ const reportTemplates: ReportTemplate[] = [
 ];
 
 const ReportsPage: React.FC = () => {
+  const { pt } = usePageTranslations();
   const { user } = useAuth();
   const { language } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -249,7 +251,7 @@ const ReportsPage: React.FC = () => {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
             <Sparkles className="h-4 w-4" />
             <span>📊 AI-Powered Reports</span>
-            <Badge className="ml-1 bg-green-500 text-white text-xs">New</Badge>
+            <Badge className="ml-1 bg-green-500 text-white text-xs">{pt("New")}</Badge>
           </div>
 
           <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">

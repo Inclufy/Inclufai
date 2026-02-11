@@ -1,318 +1,88 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { useProject } from '@/hooks/useApi';
-import { scrumApi, DailyStandup, StandupUpdate } from '@/lib/scrumApi';
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-import { 
-  Users, Plus, Clock, Loader2, CheckCircle,
-  AlertTriangle, Calendar, MessageSquare
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, Plus, Users, MessageSquare, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 const ScrumDailyStandup = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id);
-  
-  const [standups, setStandups] = useState<DailyStandup[]>([]);
+  const [standups, setStandups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showDialog, setShowDialog] = useState(false);
-  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
-  const [selectedStandup, setSelectedStandup] = useState<DailyStandup | null>(null);
-  
-  const [updateForm, setUpdateForm] = useState({
-    yesterday: '',
-    today: '',
-    blockers: '',
-  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ date: new Date().toISOString().split("T")[0], notes: "" });
 
-  useEffect(() => {
-    if (id) {
-      loadStandups();
-    }
-  }, [id]);
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  // Replace lines 48-71 with:
-const loadStandups = async () => {
-  try {
-    setLoading(true);
-    const data = await scrumApi.standups.getAll(id!);
-    setStandups(data);
-  } catch (err: any) {
-    console.error('Failed to load standups:', err);
-    setStandups([]);
-  } finally {
-    setLoading(false);
-  }
-};
-
-  const handleCreateStandup = async () => {
+  const fetchData = async () => {
     try {
-      await scrumApi.standups.create(id!, {
-        date: new Date().toISOString().split('T')[0],
-        notes: `Daily Standup - ${new Date().toLocaleDateString()}`,
-      });
-      setShowDialog(false);
-      loadStandups();
-    } catch (err: any) {
-      alert(err.message || 'Failed to create standup');
-    }
+      const r = await fetch(`/api/v1/projects/${id}/scrum/standups/`, { headers });
+      if (r.ok) { const d = await r.json(); setStandups(Array.isArray(d) ? d : d.results || []); }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
-  const handleAddUpdate = async () => {
-    if (!selectedStandup) return;
+  useEffect(() => { fetchData(); }, [id]);
+
+  const handleCreate = async () => {
+    setSubmitting(true);
     try {
-      await scrumApi.standups.addUpdate(id!, selectedStandup.id, updateForm);
-      setShowUpdateDialog(false);
-      setUpdateForm({ yesterday: '', today: '', blockers: '' });
-      loadStandups();
-    } catch (err: any) {
-      alert(err.message || 'Failed to add update');
-    }
+      const r = await fetch(`/api/v1/projects/${id}/scrum/standups/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify(form) });
+      if (r.ok) { toast.success("Standup aangemaakt"); setDialogOpen(false); fetchData(); }
+      else toast.error("Aanmaken mislukt");
+    } catch { toast.error("Aanmaken mislukt"); }
+    finally { setSubmitting(false); }
   };
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  const handleDelete = async (sId: number) => {
+    if (!confirm("Verwijderen?")) return;
+    try { const r = await fetch(`/api/v1/projects/${id}/scrum/standups/${sId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); }
   };
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const today = new Date();
-    const yesterday = new Date(Date.now() - 86400000);
-    
-    if (date.toDateString() === today.toDateString()) return 'Today';
-    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
-    return date.toLocaleDateString('nl-NL', { weekday: 'long', month: 'short', day: 'numeric' });
-  };
-
-  const todayStandup = standups.find(s => s.date === new Date().toISOString().split('T')[0]);
-
-  if (loading) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader />
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
     <div className="min-h-full bg-background">
       <ProjectHeader />
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Users className="h-6 w-6 text-purple-600" />
-              Daily Standup
-            </h1>
-            <p className="text-muted-foreground">Track daily progress and blockers</p>
-          </div>
-          {!todayStandup && (
-            <Button onClick={() => setShowDialog(true)} className="bg-purple-600 hover:bg-purple-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Start Today's Standup
-            </Button>
-          )}
+          <div className="flex items-center gap-3"><Users className="h-6 w-6 text-green-500" /><h1 className="text-2xl font-bold">{pt("Daily Standup")}</h1><Badge variant="outline">{standups.length}</Badge></div>
+          <Button onClick={() => { setForm({ date: new Date().toISOString().split("T")[0], notes: "" }); setDialogOpen(true); }} className="gap-2"><Plus className="h-4 w-4" /> {pt("New Standup")}</Button>
         </div>
 
-        {/* Info Card */}
-        <Card className="bg-purple-50 border-purple-200">
-          <CardContent className="pt-4">
-            <div className="flex gap-4">
-              <Clock className="h-6 w-6 text-purple-600 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold text-purple-900">Daily Standup Format</h3>
-                <p className="text-sm text-purple-800 mt-1">
-                  Each team member answers three questions: 
-                  <strong> What did I do yesterday?</strong>, 
-                  <strong> What will I do today?</strong>, and 
-                  <strong> Are there any blockers?</strong>
-                  Keep it brief - standups should be 15 minutes or less.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Summary */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Total Standups</p>
-              <p className="text-2xl font-bold">{standups.length}</p>
-            </CardContent>
-          </Card>
-          <Card className={todayStandup ? 'border-green-200' : 'border-yellow-200'}>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Today's Status</p>
-              <p className="text-2xl font-bold">
-                {todayStandup ? (
-                  <span className="text-green-600 flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5" /> Complete
-                  </span>
-                ) : (
-                  <span className="text-yellow-600 flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5" /> Pending
-                  </span>
-                )}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Active Blockers</p>
-              <p className="text-2xl font-bold text-red-600">
-                {standups[0]?.updates?.filter(u => u.blockers).length || 0}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Standups List */}
-        {standups.map((standup) => (
-          <Card key={standup.id}>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                {formatDate(standup.date)}
-                {standup.notes && <Badge variant="outline">{standup.notes}</Badge>}
-              </CardTitle>
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => { setSelectedStandup(standup); setShowUpdateDialog(true); }}
-              >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Add Update
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {standup.updates?.map((update) => (
-                  <div key={update.id} className="border rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-purple-100 text-purple-700 text-sm">
-                          {getInitials(update.user_name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium">{update.user_name}</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground mb-1">Yesterday</p>
-                        <p>{update.yesterday || '-'}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground mb-1">Today</p>
-                        <p>{update.today || '-'}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground mb-1">Blockers</p>
-                        {update.blockers ? (
-                          <p className="text-red-600 flex items-center gap-1">
-                            <AlertTriangle className="h-3 w-3" />
-                            {update.blockers}
-                          </p>
-                        ) : (
-                          <p className="text-green-600">No blockers</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {(!standup.updates || standup.updates.length === 0) && (
-                  <p className="text-center text-muted-foreground py-4">No updates recorded yet</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-
-        {standups.length === 0 && (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No standups recorded yet</p>
-              <Button className="mt-4 bg-purple-600 hover:bg-purple-700" onClick={() => setShowDialog(true)}>
-                Start First Standup
-              </Button>
-            </CardContent>
-          </Card>
+        {standups.length === 0 ? (
+          <Card className="p-8 text-center"><MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No standups recorded yet")}</h3></Card>
+        ) : (
+          <div className="space-y-3">{standups.map(s => (
+            <Card key={s.id}>
+              <CardContent className="p-4 flex items-center justify-between">
+                <div><p className="font-medium">{s.date}</p>{s.notes && <p className="text-sm text-muted-foreground mt-1">{s.notes}</p>}{s.updates?.length > 0 && <div className="mt-2 space-y-1">{s.updates.map((u: any, i: number) => <div key={i} className="text-sm p-2 bg-muted rounded"><span className="font-medium">{u.member_name}:</span> {u.yesterday} | {u.today} | {u.blockers && <span className="text-red-500">⚠ {u.blockers}</span>}</div>)}</div>}</div>
+                <Button variant="ghost" size="sm" onClick={() => handleDelete(s.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+              </CardContent>
+            </Card>
+          ))}</div>
         )}
       </div>
 
-      {/* Create Standup Dialog */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Start Today's Standup</DialogTitle>
-          </DialogHeader>
-          <p className="text-muted-foreground">
-            This will create a new daily standup for {new Date().toLocaleDateString()}.
-            Team members can then add their updates.
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-            <Button onClick={handleCreateStandup} className="bg-purple-600 hover:bg-purple-700">Create Standup</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Update Dialog */}
-      <Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Your Update</DialogTitle>
-          </DialogHeader>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent><DialogHeader><DialogTitle>{pt("New Standup")}</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">What did you do yesterday?</label>
-              <Textarea 
-                value={updateForm.yesterday}
-                onChange={(e) => setUpdateForm({...updateForm, yesterday: e.target.value})}
-                placeholder="Describe what you accomplished..."
-                rows={2}
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">What will you do today?</label>
-              <Textarea 
-                value={updateForm.today}
-                onChange={(e) => setUpdateForm({...updateForm, today: e.target.value})}
-                placeholder="Describe your plans for today..."
-                rows={2}
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Any blockers?</label>
-              <Textarea 
-                value={updateForm.blockers}
-                onChange={(e) => setUpdateForm({...updateForm, blockers: e.target.value})}
-                placeholder="Leave empty if no blockers..."
-                rows={2}
-              />
-            </div>
+            <div className="space-y-2"><Label>{pt("Date")}</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Notes")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+            <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleCreate} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Create")}</Button></div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowUpdateDialog(false)}>Cancel</Button>
-            <Button onClick={handleAddUpdate} disabled={!updateForm.yesterday && !updateForm.today} className="bg-purple-600 hover:bg-purple-700">
-              Add Update
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
-
-          {/* Methodology Help Panel */}
-          <MethodologyHelpPanel methodology="scrum" />
     </div>
   );
 };

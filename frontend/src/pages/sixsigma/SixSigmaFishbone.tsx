@@ -1,447 +1,85 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { ProjectHeader } from '@/components/ProjectHeader';
-import { useProject } from '@/hooks/useApi';
-import { sixsigmaApi, FishboneDiagram, FishboneCause } from '@/lib/sixsigmaApi';
-import { 
-  Fish, Plus, Trash2, Save, Loader2, AlertCircle, 
-  ThumbsUp, CheckCircle, Target 
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Plus, GitBranch, Pencil, Trash2, ThumbsUp, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 
-import { MethodologyHelpPanel } from '@/components/MethodologyHelpPanel';
-type CauseCategory = 'man' | 'machine' | 'method' | 'material' | 'measurement' | 'environment';
-
-const categoryConfig: Record<CauseCategory, { label: string; color: string; icon: string }> = {
-  man: { label: 'Man (People)', color: 'bg-blue-500', icon: '👤' },
-  machine: { label: 'Machine (Equipment)', color: 'bg-purple-500', icon: '⚙️' },
-  method: { label: 'Method (Process)', color: 'bg-green-500', icon: '📋' },
-  material: { label: 'Material', color: 'bg-orange-500', icon: '📦' },
-  measurement: { label: 'Measurement', color: 'bg-red-500', icon: '📏' },
-  environment: { label: 'Environment', color: 'bg-teal-500', icon: '🌍' },
-};
+const BASE = (id: string) => `/api/v1/sixsigma/projects/${id}/sixsigma`;
+const CATEGORIES = ["man", "machine", "method", "material", "measurement", "environment"];
 
 const SixSigmaFishbone = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id);
-  const { toast } = useToast();
-
-  // State
+  const [diagrams, setDiagrams] = useState<any[]>([]);
+  const [causes, setCauses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [diagram, setDiagram] = useState<FishboneDiagram | null>(null);
-  const [problemStatement, setProblemStatement] = useState('');
-  const [causes, setCauses] = useState<Record<CauseCategory, FishboneCause[]>>({
-    man: [],
-    machine: [],
-    method: [],
-    material: [],
-    measurement: [],
-    environment: [],
-  });
-  const [newCause, setNewCause] = useState<Record<CauseCategory, string>>({
-    man: '',
-    machine: '',
-    method: '',
-    material: '',
-    measurement: '',
-    environment: '',
-  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState<"diagram" | "cause">("diagram");
+  const [editing, setEditing] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [dForm, setDForm] = useState({ title: "", problem_statement: "" });
+  const [cForm, setCForm] = useState({ diagram: "", category: "man", description: "", sub_cause: "" });
+  const token = localStorage.getItem("access_token"); const headers: Record<string, string> = { Authorization: `Bearer ${token}` }; const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  // Load data
-  useEffect(() => {
-    if (id) {
-      loadFishbone();
-    }
-  }, [id]);
+  const fetchData = async () => { try { const [dRes, cRes] = await Promise.all([fetch(`${BASE(id!)}/fishbone/`, { headers }), fetch(`${BASE(id!)}/causes/`, { headers })]); if (dRes.ok) { const d = await dRes.json(); setDiagrams(Array.isArray(d) ? d : d.results || []); } if (cRes.ok) { const d = await cRes.json(); setCauses(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
+  useEffect(() => { fetchData(); }, [id]);
 
-  const loadFishbone = async () => {
-    if (!id) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const diagrams = await sixsigmaApi.fishbone.getAll(id);
-      
-      if (diagrams.length > 0) {
-        const diag = diagrams[0];
-        setDiagram(diag);
-        setProblemStatement(diag.problem_statement || '');
-        
-        // Group causes by category
-        const groupedCauses: Record<CauseCategory, FishboneCause[]> = {
-          man: [],
-          machine: [],
-          method: [],
-          material: [],
-          measurement: [],
-          environment: [],
-        };
-        
-        if (diag.causes) {
-          diag.causes.forEach(cause => {
-            if (groupedCauses[cause.category]) {
-              groupedCauses[cause.category].push(cause);
-            }
-          });
-        }
-        
-        setCauses(groupedCauses);
-      }
-    } catch (err: any) {
-      console.error('Error loading Fishbone:', err);
-      setError(err.message || 'Failed to load Fishbone diagram');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const openCreateDiagram = () => { setDialogType("diagram"); setEditing(null); setDForm({ title: "", problem_statement: "" }); setDialogOpen(true); };
+  const openCreateCause = (diagId?: number) => { setDialogType("cause"); setEditing(null); setCForm({ diagram: String(diagId || diagrams[0]?.id || ""), category: "man", description: "", sub_cause: "" }); setDialogOpen(true); };
+  const openEditCause = (c: any) => { setDialogType("cause"); setEditing(c); setCForm({ diagram: String(c.diagram || ""), category: c.category || "man", description: c.description || "", sub_cause: c.sub_cause || "" }); setDialogOpen(true); };
 
-  const handleSaveDiagram = async () => {
-    if (!id) return;
-    
-    setSaving(true);
-    
-    try {
-      if (diagram) {
-        await sixsigmaApi.fishbone.update(id, diagram.id, {
-          problem_statement: problemStatement,
-        });
-      } else {
-        const newDiagram = await sixsigmaApi.fishbone.create(id, {
-          problem_statement: problemStatement,
-        });
-        setDiagram(newDiagram);
-      }
+  const saveDiagram = async () => { if (!dForm.title) { toast.error("Titel verplicht"); return; } setSubmitting(true); try { const url = editing ? `${BASE(id!)}/fishbone/${editing.id}/` : `${BASE(id!)}/fishbone/`; const r = await fetch(url, { method: editing ? "PATCH" : "POST", headers: jsonHeaders, body: JSON.stringify(dForm) }); if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } finally { setSubmitting(false); } };
+  const saveCause = async () => { if (!cForm.description) { toast.error("Beschrijving verplicht"); return; } setSubmitting(true); try { const body: any = { ...cForm }; if (cForm.diagram) body.diagram = parseInt(cForm.diagram); const url = editing ? `${BASE(id!)}/causes/${editing.id}/` : `${BASE(id!)}/causes/`; const r = await fetch(url, { method: editing ? "PATCH" : "POST", headers: jsonHeaders, body: JSON.stringify(body) }); if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } finally { setSubmitting(false); } };
+  const deleteDiagram = async (dId: number) => { if (!confirm("Verwijderen?")) return; try { await fetch(`${BASE(id!)}/fishbone/${dId}/`, { method: "DELETE", headers }); fetchData(); } catch {} };
+  const deleteCause = async (cId: number) => { if (!confirm("Verwijderen?")) return; try { await fetch(`${BASE(id!)}/causes/${cId}/`, { method: "DELETE", headers }); fetchData(); } catch {} };
+  const voteCause = async (cId: number) => { try { await fetch(`${BASE(id!)}/causes/${cId}/vote/`, { method: "POST", headers: jsonHeaders }); fetchData(); } catch {} };
+  const toggleRoot = async (cId: number) => { try { await fetch(`${BASE(id!)}/causes/${cId}/toggle_root_cause/`, { method: "POST", headers: jsonHeaders }); fetchData(); } catch {} };
 
-      toast({
-        title: 'Saved',
-        description: 'Fishbone diagram updated successfully.',
-      });
-    } catch (err: any) {
-      console.error('Error saving Fishbone:', err);
-      toast({
-        title: 'Error',
-        description: err.message || 'Failed to save diagram',
-        variant: 'destructive',
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
+  const catColors: Record<string, string> = { man: "bg-blue-100 text-blue-700", machine: "bg-purple-100 text-purple-700", method: "bg-green-100 text-green-700", material: "bg-orange-100 text-orange-700", measurement: "bg-cyan-100 text-cyan-700", environment: "bg-yellow-100 text-yellow-700" };
 
-  const handleAddCause = async (category: CauseCategory) => {
-    if (!id || !diagram || !newCause[category].trim()) return;
-    
-    try {
-      const cause = await sixsigmaApi.causes.create(id, {
-        fishbone: diagram.id,
-        category,
-        cause: newCause[category].trim(),
-        votes: 0,
-        is_root_cause: false,
-        is_verified: false,
-      });
-      
-      setCauses(prev => ({
-        ...prev,
-        [category]: [...prev[category], cause],
-      }));
-      
-      setNewCause(prev => ({ ...prev, [category]: '' }));
-      
-      toast({
-        title: 'Cause Added',
-        description: `Added cause to ${categoryConfig[category].label}`,
-      });
-    } catch (err: any) {
-      toast({
-        title: 'Error',
-        description: err.message || 'Failed to add cause',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleDeleteCause = async (category: CauseCategory, causeId: number) => {
-    if (!id) return;
-    
-    try {
-      await sixsigmaApi.causes.delete(id, causeId);
-      
-      setCauses(prev => ({
-        ...prev,
-        [category]: prev[category].filter(c => c.id !== causeId),
-      }));
-      
-      toast({
-        title: 'Deleted',
-        description: 'Cause removed successfully.',
-      });
-    } catch (err: any) {
-      toast({
-        title: 'Error',
-        description: err.message || 'Failed to delete cause',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleVote = async (category: CauseCategory, causeId: number) => {
-    if (!id) return;
-    
-    try {
-      const updated = await sixsigmaApi.causes.vote(id, causeId);
-      
-      setCauses(prev => ({
-        ...prev,
-        [category]: prev[category].map(c => 
-          c.id === causeId ? { ...c, votes: (c.votes || 0) + 1 } : c
-        ),
-      }));
-    } catch (err: any) {
-      toast({
-        title: 'Error',
-        description: err.message || 'Failed to vote',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleToggleRootCause = async (category: CauseCategory, causeId: number) => {
-    if (!id) return;
-    
-    try {
-      await sixsigmaApi.causes.toggleRootCause(id, causeId);
-      
-      setCauses(prev => ({
-        ...prev,
-        [category]: prev[category].map(c => 
-          c.id === causeId ? { ...c, is_root_cause: !c.is_root_cause } : c
-        ),
-      }));
-    } catch (err: any) {
-      toast({
-        title: 'Error',
-        description: err.message || 'Failed to toggle root cause',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-full bg-background">
-        <ProjectHeader />
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2">Loading Fishbone diagram...</span>
-        </div>
-      </div>
-    );
-  }
-
-  const totalCauses = Object.values(causes).flat().length;
-  const rootCauses = Object.values(causes).flat().filter(c => c.is_root_cause).length;
-  const verifiedCauses = Object.values(causes).flat().filter(c => c.is_verified).length;
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
-    <div className="min-h-full bg-background">
-      <ProjectHeader />
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Fish className="h-6 w-6 text-blue-600" />
-              Fishbone Diagram (Ishikawa)
-            </h1>
-            <p className="text-muted-foreground">Root Cause Analysis using 6M Categories</p>
-          </div>
-          <Button onClick={handleSaveDiagram} disabled={saving}>
-            {saving ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4 mr-2" />
-            )}
-            Save
-          </Button>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold">{totalCauses}</div>
-              <div className="text-sm text-muted-foreground">Total Causes</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-orange-600">{rootCauses}</div>
-              <div className="text-sm text-muted-foreground">Root Causes Identified</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-green-600">{verifiedCauses}</div>
-              <div className="text-sm text-muted-foreground">Verified</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Problem Statement */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-red-500" />
-              Problem Statement (Effect)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={problemStatement}
-              onChange={(e) => setProblemStatement(e.target.value)}
-              placeholder="What is the problem you're trying to solve? Be specific and measurable."
-              rows={3}
-              className="text-lg"
-            />
-          </CardContent>
-        </Card>
-
-        {/* Error Alert */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2 text-red-700">
-            <AlertCircle className="h-5 w-5" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {/* 6M Categories */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          {(Object.keys(categoryConfig) as CauseCategory[]).map(category => (
-            <Card key={category}>
-              <CardHeader className={`${categoryConfig[category].color} text-white rounded-t-lg py-3`}>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <span>{categoryConfig[category].icon}</span>
-                  {categoryConfig[category].label}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4 space-y-3">
-                {/* Existing causes */}
-                {causes[category].map(cause => (
-                  <div 
-                    key={cause.id} 
-                    className={`p-3 rounded-lg border ${
-                      cause.is_root_cause ? 'border-orange-300 bg-orange-50' : 'border-gray-200'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="text-sm flex-1">{cause.cause}</span>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleVote(category, cause.id)}
-                          className="h-7 px-2"
-                        >
-                          <ThumbsUp className="h-3 w-3 mr-1" />
-                          {cause.votes || 0}
-                        </Button>
-                        <Button
-                          variant={cause.is_root_cause ? "default" : "ghost"}
-                          size="sm"
-                          onClick={() => handleToggleRootCause(category, cause.id)}
-                          className="h-7 px-2"
-                          title="Mark as root cause"
-                        >
-                          <Target className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteCause(category, cause.id)}
-                          className="h-7 px-2 text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+    <div className="min-h-full bg-background"><ProjectHeader /><div className="p-6 space-y-6">
+      <div className="flex items-center justify-between"><div className="flex items-center gap-3"><GitBranch className="h-6 w-6 text-yellow-500" /><h1 className="text-2xl font-bold">Fishbone Diagram</h1></div><div className="flex gap-2"><Button variant="outline" onClick={() => openCreateCause()}><Plus className="h-4 w-4 mr-1" /> Cause</Button><Button onClick={openCreateDiagram}><Plus className="h-4 w-4 mr-1" /> Diagram</Button></div></div>
+      {diagrams.length === 0 ? <Card className="p-8 text-center"><GitBranch className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">No fishbone diagrams yet</h3></Card> : (
+        diagrams.map(diag => {
+          const diagCauses = causes.filter(c => c.diagram === diag.id);
+          return (
+            <Card key={diag.id}><CardHeader className="pb-2"><div className="flex items-center justify-between"><div><CardTitle>{diag.title}</CardTitle>{diag.problem_statement && <p className="text-sm text-muted-foreground mt-1">Problem: {diag.problem_statement}</p>}</div><div className="flex gap-1"><Button variant="outline" size="sm" onClick={() => openCreateCause(diag.id)}><Plus className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => deleteDiagram(diag.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></div></CardHeader>
+              <CardContent><div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {CATEGORIES.map(cat => { const catCauses = diagCauses.filter(c => c.category === cat); return (
+                  <div key={cat}><div className={`text-xs font-bold px-2 py-1 rounded-t ${catColors[cat]}`}>{cat.charAt(0).toUpperCase() + cat.slice(1)} ({catCauses.length})</div>
+                    <div className="border rounded-b p-2 min-h-[60px] space-y-1">{catCauses.map(c => (
+                      <div key={c.id} className={`text-xs p-1.5 rounded flex items-center justify-between group ${c.is_root_cause ? "bg-red-50 border border-red-200" : "bg-muted/50"}`}>
+                        <div className="flex-1"><span className={c.is_root_cause ? "font-bold text-red-700" : ""}>{c.description}</span>{c.votes > 0 && <span className="ml-1 text-muted-foreground">({c.votes})</span>}</div>
+                        <div className="opacity-0 group-hover:opacity-100 flex gap-0.5"><button onClick={() => voteCause(c.id)}><ThumbsUp className="h-3 w-3" /></button><button onClick={() => toggleRoot(c.id)}><CheckCircle2 className="h-3 w-3" /></button><button onClick={() => openEditCause(c)}><Pencil className="h-3 w-3" /></button><button onClick={() => deleteCause(c.id)}><Trash2 className="h-3 w-3 text-red-500" /></button></div>
                       </div>
-                    </div>
-                    {cause.is_root_cause && (
-                      <Badge variant="outline" className="mt-2 text-orange-600 border-orange-300">
-                        Root Cause
-                      </Badge>
-                    )}
-                    {cause.is_verified && (
-                      <Badge variant="outline" className="mt-2 ml-2 text-green-600 border-green-300">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Verified
-                      </Badge>
-                    )}
+                    ))}</div>
                   </div>
-                ))}
-                
-                {/* Add new cause */}
-                <div className="flex gap-2">
-                  <Input
-                    value={newCause[category]}
-                    onChange={(e) => setNewCause(prev => ({ ...prev, [category]: e.target.value }))}
-                    placeholder="Add potential cause..."
-                    className="text-sm"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleAddCause(category);
-                      }
-                    }}
-                  />
-                  <Button 
-                    size="sm" 
-                    onClick={() => handleAddCause(category)}
-                    disabled={!diagram || !newCause[category].trim()}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
+                ); })}
+              </div></CardContent>
             </Card>
-          ))}
-        </div>
-
-        {/* Instructions */}
-        {!diagram && (
-          <Card className="bg-yellow-50 border-yellow-200">
-            <CardContent className="pt-4">
-              <h4 className="font-medium text-yellow-800 mb-2">⚠️ Getting Started</h4>
-              <p className="text-sm text-yellow-700">
-                Enter a problem statement above and click "Save" to create your Fishbone diagram.
-                Then you can add causes to each category.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Tips */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="pt-4">
-            <h4 className="font-medium text-blue-800 mb-2">💡 Fishbone Analysis Tips</h4>
-            <ul className="text-sm text-blue-700 space-y-1">
-              <li>• Ask "Why?" 5 times to drill down to root causes</li>
-              <li>• Use voting to prioritize which causes to investigate first</li>
-              <li>• Mark verified causes after data analysis confirms them</li>
-              <li>• Focus on causes you can actually control or influence</li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-      <MethodologyHelpPanel methodology="lean_six_sigma" />
+          );
+        })
+      )}
+    </div>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} {dialogType === "diagram" ? "Fishbone Diagram" : "Cause"}</DialogTitle></DialogHeader>
+      {dialogType === "diagram" ? (
+        <div className="space-y-4"><div className="space-y-2"><Label>{pt("Title")} *</Label><Input value={dForm.title} onChange={(e) => setDForm({ ...dForm, title: e.target.value })} /></div><div className="space-y-2"><Label>Problem Statement</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={dForm.problem_statement} onChange={(e) => setDForm({ ...dForm, problem_statement: e.target.value })} /></div><div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={saveDiagram} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div></div>
+      ) : (
+        <div className="space-y-4"><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Diagram</Label><Select value={cForm.diagram} onValueChange={(v) => setCForm({ ...cForm, diagram: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{diagrams.map(d => <SelectItem key={d.id} value={d.id.toString()}>{d.title}</SelectItem>)}</SelectContent></Select></div><div className="space-y-2"><Label>{pt("Category")}</Label><Select value={cForm.category} onValueChange={(v) => setCForm({ ...cForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</SelectItem>)}</SelectContent></Select></div></div><div className="space-y-2"><Label>{pt("Description")} *</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={cForm.description} onChange={(e) => setCForm({ ...cForm, description: e.target.value })} /></div><div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={saveCause} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div></div>
+      )}
+    </DialogContent></Dialog>
     </div>
   );
 };
-
 export default SixSigmaFishbone;

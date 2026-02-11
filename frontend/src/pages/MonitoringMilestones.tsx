@@ -3,8 +3,10 @@ import { ProjectHeader } from "@/components/ProjectHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Link as LinkIcon, ChevronDown, Calendar } from "lucide-react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const MonitoringMilestones = () => {
+  const { pt } = usePageTranslations();
   const milestones = [
     {
       title: "A functional Website & Bakcoffice",
@@ -31,7 +33,7 @@ const MonitoringMilestones = () => {
       <ProjectHeader />
       <div className="p-6">
         <Card className="p-6">
-          <h2 className="text-lg font-semibold text-foreground mb-6">Milestones</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-6">{pt("Milestones")}</h2>
           <div className="space-y-4">
             {milestones.map((milestone, index) => (
               <Card key={index} className="p-6">

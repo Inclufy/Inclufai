@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Circle, Clock, Loader2, Plus } from "lucide-react";
 import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -18,6 +19,7 @@ const fetchProjectMilestones = async (projectId: string) => {
 };
 
 const ProjectMilestones = () => {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
 
   const { data: milestones = [], isLoading } = useQuery({
@@ -50,14 +52,14 @@ const ProjectMilestones = () => {
   const getStatusBadge = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'completed':
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
+        return <Badge className="bg-green-100 text-green-800">{pt("Completed")}</Badge>;
       case 'in_progress':
       case 'in-progress':
-        return <Badge className="bg-blue-100 text-blue-800">In Progress</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800">{pt("In Progress")}</Badge>;
       case 'at_risk':
-        return <Badge className="bg-yellow-100 text-yellow-800">At Risk</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800">{pt("At Risk")}</Badge>;
       default:
-        return <Badge variant="outline">Pending</Badge>;
+        return <Badge variant="outline">{pt("Pending")}</Badge>;
     }
   };
 

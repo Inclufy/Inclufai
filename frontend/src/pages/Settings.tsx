@@ -12,8 +12,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, languages } from '@/contexts/LanguageContext';
 import api from '@/lib/api';
 import { User, Shield, Settings as SettingsIcon, Loader2, Upload } from 'lucide-react';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 export default function Settings() {
+  const { pt } = usePageTranslations();
   const { toast } = useToast();
   const { user, setUser } = useAuth();
   const { language, setLanguage } = useLanguage();
@@ -173,7 +175,7 @@ export default function Settings() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="firstName">{pt("First Name")}</Label>
                   <Input
                     id="firstName"
                     value={profile.firstName}
@@ -181,7 +183,7 @@ export default function Settings() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="lastName">{pt("Last Name")}</Label>
                   <Input
                     id="lastName"
                     value={profile.lastName}
@@ -191,7 +193,7 @@ export default function Settings() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{pt("Email")}</Label>
                 <Input 
                   id="email" 
                   type="email" 
@@ -204,7 +206,7 @@ export default function Settings() {
               </div>
 
               <div className="space-y-2">
-                <Label>Role</Label>
+                <Label>{pt("Role")}</Label>
                 <Input 
                   value={user?.role || 'User'} 
                   disabled 

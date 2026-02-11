@@ -31,6 +31,7 @@ import {
   Building2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -76,6 +77,7 @@ const STATUS_ICONS = {
 };
 
 const DemoRequests = () => {
+  const { pt } = usePageTranslations();
   const [requests, setRequests] = useState<DemoRequest[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -209,7 +211,7 @@ const DemoRequests = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Pending</p>
+                    <p className="text-sm text-gray-600">{pt("Pending")}</p>
                     <p className="text-3xl font-bold text-yellow-600">{stats.demos.pending}</p>
                   </div>
                   <Clock className="w-10 h-10 text-yellow-600" />
@@ -233,7 +235,7 @@ const DemoRequests = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Completed</p>
+                    <p className="text-sm text-gray-600">{pt("Completed")}</p>
                     <p className="text-3xl font-bold text-green-600">{stats.demos.completed}</p>
                   </div>
                   <CheckCircle className="w-10 h-10 text-green-600" />
@@ -265,17 +267,17 @@ const DemoRequests = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="pending">{pt("Pending")}</SelectItem>
                   <SelectItem value="contacted">Contacted</SelectItem>
                   <SelectItem value="scheduled">Scheduled</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="completed">{pt("Completed")}</SelectItem>
+                  <SelectItem value="cancelled">{pt("Cancelled")}</SelectItem>
                 </SelectContent>
               </Select>
 
               <Button onClick={() => { fetchRequests(); fetchStats(); }} variant="outline">
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
+                {pt("Refresh")}
               </Button>
             </div>
           </CardContent>
@@ -306,9 +308,9 @@ const DemoRequests = () => {
                     <TableHead>Contact</TableHead>
                     <TableHead>Date & Time</TableHead>
                     <TableHead>Participants</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead>{pt("Status")}</TableHead>
+                    <TableHead>{pt("Created")}</TableHead>
+                    <TableHead>{pt("Actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -371,11 +373,11 @@ const DemoRequests = () => {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="pending">{pt("Pending")}</SelectItem>
                               <SelectItem value="contacted">Contacted</SelectItem>
                               <SelectItem value="scheduled">Scheduled</SelectItem>
-                              <SelectItem value="completed">Completed</SelectItem>
-                              <SelectItem value="cancelled">Cancelled</SelectItem>
+                              <SelectItem value="completed">{pt("Completed")}</SelectItem>
+                              <SelectItem value="cancelled">{pt("Cancelled")}</SelectItem>
                             </SelectContent>
                           </Select>
                         </TableCell>
