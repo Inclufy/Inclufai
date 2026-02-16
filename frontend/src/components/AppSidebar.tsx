@@ -1179,7 +1179,22 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-      </SidebarContent>
+      
+          {/* Academy */}
+          <SidebarGroup>
+            <SidebarGroupLabel>Academy</SidebarGroupLabel>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <a href="/academy">
+                    <GraduationCap className="h-4 w-4" />
+                    <span>{language === 'nl' ? 'Cursussen' : 'Courses'}</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border/50">
         {userFeatures && !isCollapsed && (

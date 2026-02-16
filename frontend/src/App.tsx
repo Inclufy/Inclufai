@@ -80,6 +80,11 @@ import MonitoringAllDocuments from "./pages/MonitoringAllDocuments";
 import MonitoringStages from "./pages/MonitoringStages";
 import MonitoringMilestones from "./pages/MonitoringMilestones";
 import MonitoringTraining from "./pages/MonitoringTraining";
+import TrainingMarketplace from "./pages/TrainingMarketplace";
+import CourseDetail from "./pages/CourseDetail";
+import CourseCheckout from "./pages/CourseCheckout";
+import CourseLearningPlayer from "./pages/CourseLearningPlayer";
+import RequestQuote from "./pages/RequestQuote";
 import MonitoringLessonsSurveys from "./pages/MonitoringLessonsSurveys";
 import TimeTracking from "./pages/TimeTracking";
 import CreateProject from "./pages/CreateProject";
@@ -769,6 +774,16 @@ const App = () => (
               <Route path="/projects/:id/waterfall/milestones" element={<ProtectedPage><WaterfallMilestones /></ProtectedPage>} />
               <Route path="/projects/:id/waterfall/change-requests" element={<ProtectedPage><WaterfallChangeRequests /></ProtectedPage>} />
               
+                            {/* Academy Routes */}
+              <Route path="/academy" element={<ProtectedPage><TrainingMarketplace /></ProtectedPage>} />
+              <Route path="/academy/marketplace" element={<ProtectedPage><TrainingMarketplace /></ProtectedPage>} />
+              <Route path="/academy/course/:id" element={<ProtectedPage><CourseDetail /></ProtectedPage>} />
+              <Route path="/academy/checkout/:id" element={<ProtectedPage><CourseCheckout /></ProtectedPage>} />
+              <Route path="/academy/checkout/success" element={<ProtectedPage><CheckoutSuccess /></ProtectedPage>} />
+              <Route path="/academy/learn/:id" element={<ProtectedPage><CourseLearningPlayer /></ProtectedPage>} />
+              <Route path="/academy/quote/:id" element={<ProtectedPage><RequestQuote /></ProtectedPage>} />
+              <Route path="/academy/quote" element={<ProtectedPage><RequestQuote /></ProtectedPage>} />
+
               <Route path="/profile" element={<ProtectedPage><Profile /></ProtectedPage>} />
               <Route path="/settings" element={<ProtectedPage><Settings /></ProtectedPage>} />
               <Route path="/settings/2fa" element={<ProtectedRoute><TwoFactorAuth /></ProtectedRoute>} />
