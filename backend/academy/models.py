@@ -430,3 +430,80 @@ class Certificate(models.Model):
     
     def __str__(self):
         return f"{self.certificate_number} - {self.enrollment.course.title}"
+
+
+class QuizQuestion(models.Model):
+    """Quiz questions for lessons"""
+    QUESTION_TYPE_CHOICES = [
+        ('multiple_choice', 'Multiple Choice'),
+        ('true_false', 'True/False'),
+        ('multiple_select', 'Multiple Select'),
+    ]
+    
+    lesson = models.ForeignKey(CourseLesson, on_delete=models.CASCADE, related_name='questions')
+    question_text = models.TextField()
+    question_text_nl = models.TextField(blank=True)
+    question_type = models.CharField(max_length=20, choices=QUESTION_TYPE_CHOICES, default='multiple_choice')
+    explanation = models.TextField(blank=True)
+    explanation_nl = models.TextField(blank=True)
+    order = models.PositiveIntegerField(default=0)
+    points = models.PositiveIntegerField(default=1)
+    
+    class Meta:
+        ordering = ['order']
+    
+    def __str__(self):
+        return f"Q{self.order}: {self.question_text[:50]}"
+
+
+class QuizAnswer(models.Model):
+    """Answer options for quiz questions"""
+    question = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE, related_name='answers')
+    answer_text = models.CharField(max_length=500)
+    answer_text_nl = models.CharField(max_length=500, blank=True)
+    is_correct = models.BooleanField(default=False)
+    order = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['order']
+    
+    def __str__(self):
+        return f"{'[V]' if self.is_correct else '[ ]'} {self.answer_text[:50]}"
+
+
+class QuizAttempt(models.Model):
+    """Track quiz attempts by students"""
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE, related_name='quiz_attempts')
+    lesson = models.ForeignKey(CourseLesson, on_delete=models.CASCADE, related_name='quiz_attempts')
+    score = models.PositiveIntegerField(default=0)
+    max_score = models.PositiveIntegerField(default=0)
+    passed = models.BooleanField(default=False)
+    answers = models.JSONField(default=dict)  # {question_id: [selected_answer_ids]}
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-started_at']
+    
+    @property
+    def percentage(self):
+        if self.max_score == 0:
+            return 0
+        return int((self.score / self.max_score) * 100)
+
+
+class LessonResource(models.Model):
+    """Downloadable resources attached to lessons"""
+    lesson = models.ForeignKey(CourseLesson, on_delete=models.CASCADE, related_name='resources')
+    name = models.CharField(max_length=200)
+    name_nl = models.CharField(max_length=200, blank=True)
+    file = models.FileField(upload_to='academy/resources/')
+    file_type = models.CharField(max_length=50, blank=True)  # PDF, XLSX, etc
+    file_size = models.PositiveIntegerField(default=0)  # bytes
+    order = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['order']
+    
+    def __str__(self):
+        return self.name

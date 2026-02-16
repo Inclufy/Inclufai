@@ -4,6 +4,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Superuser emails - volledige toegang tot alle cursussen
 const SUPERUSER_EMAILS = [
@@ -39,9 +40,23 @@ export const useAcademyUser = () => {
   const [user, setUser] = useState<AcademyUser | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Sync with main auth context
+  let mainUser: any = null;
+  try { mainUser = useAuth(); } catch {}
+
   useEffect(() => {
     loadUser();
   }, []);
+
+  // Auto-login academy user from main auth
+  useEffect(() => {
+    if (mainUser?.user && (!user || !user.isLoggedIn)) {
+      const email = mainUser.user.email || mainUser.user.username || '';
+      if (email) {
+        login(email, mainUser.user.first_name || mainUser.user.username || '');
+      }
+    }
+  }, [mainUser?.user, user?.isLoggedIn]);
 
   const loadUser = () => {
     try {

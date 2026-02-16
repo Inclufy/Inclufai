@@ -18,6 +18,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
+from django.http import FileResponse, JsonResponse
+
 # Initialize Stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -1209,3 +1211,222 @@ def get_lesson_content(request, lesson_id):
         return Response(contents_list)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ============================================
+# QUIZ ENDPOINTS
+# ============================================
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_quiz(request, lesson_id):
+    """Get quiz questions for a lesson"""
+    try:
+        lesson = CourseLesson.objects.get(id=lesson_id, lesson_type='quiz')
+    except CourseLesson.DoesNotExist:
+        return Response({'error': 'Quiz not found'}, status=404)
+    
+    questions = lesson.questions.prefetch_related('answers').all()
+    data = []
+    for q in questions:
+        answers = [
+            {
+                'id': a.id,
+                'text': a.answer_text_nl if request.GET.get('lang') == 'nl' and a.answer_text_nl else a.answer_text,
+                'order': a.order,
+            }
+            for a in q.answers.all()
+        ]
+        data.append({
+            'id': q.id,
+            'question': q.question_text_nl if request.GET.get('lang') == 'nl' and q.question_text_nl else q.question_text,
+            'type': q.question_type,
+            'points': q.points,
+            'answers': answers,
+        })
+    
+    return Response({'questions': data, 'total_points': sum(q.points for q in questions)})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def submit_quiz(request, lesson_id):
+    """Submit quiz answers and get results"""
+    try:
+        lesson = CourseLesson.objects.get(id=lesson_id, lesson_type='quiz')
+    except CourseLesson.DoesNotExist:
+        return Response({'error': 'Quiz not found'}, status=404)
+    
+    user_answers = request.data.get('answers', {})
+    questions = lesson.questions.prefetch_related('answers').all()
+    
+    score = 0
+    max_score = 0
+    results = []
+    
+    for q in questions:
+        max_score += q.points
+        correct_ids = set(q.answers.filter(is_correct=True).values_list('id', flat=True))
+        selected_ids = set(int(a) for a in user_answers.get(str(q.id), []))
+        is_correct = correct_ids == selected_ids
+        
+        if is_correct:
+            score += q.points
+        
+        results.append({
+            'question_id': q.id,
+            'correct': is_correct,
+            'correct_answers': list(correct_ids),
+            'selected_answers': list(selected_ids),
+            'explanation': q.explanation_nl if request.data.get('lang') == 'nl' and q.explanation_nl else q.explanation,
+        })
+    
+    passed = (score / max_score * 100) >= 70 if max_score > 0 else False
+    
+    # Save attempt
+    enrollment = Enrollment.objects.filter(
+        user=request.user,
+        course=lesson.module.course
+    ).first()
+    
+    if enrollment:
+        from .models import QuizAttempt
+        QuizAttempt.objects.create(
+            enrollment=enrollment,
+            lesson=lesson,
+            score=score,
+            max_score=max_score,
+            passed=passed,
+            answers=user_answers,
+            completed_at=timezone.now(),
+        )
+        
+        # Mark lesson as completed if passed
+        if passed:
+            enrollment.completed_lessons.add(lesson)
+    
+    return Response({
+        'score': score,
+        'max_score': max_score,
+        'percentage': int(score / max_score * 100) if max_score > 0 else 0,
+        'passed': passed,
+        'results': results,
+    })
+
+
+# ============================================
+# DOWNLOAD / RESOURCE ENDPOINTS
+# ============================================
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_lesson_resources(request, lesson_id):
+    """Get downloadable resources for a lesson"""
+    try:
+        lesson = CourseLesson.objects.get(id=lesson_id)
+    except CourseLesson.DoesNotExist:
+        return Response({'error': 'Lesson not found'}, status=404)
+    
+    from .models import LessonResource
+    resources = LessonResource.objects.filter(lesson=lesson)
+    data = [
+        {
+            'id': r.id,
+            'name': r.name_nl if request.GET.get('lang') == 'nl' and r.name_nl else r.name,
+            'file_type': r.file_type,
+            'file_size': r.file_size,
+            'download_url': f'/api/academy/resources/{r.id}/download/',
+        }
+        for r in resources
+    ]
+    return Response({'resources': data})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def download_resource(request, resource_id):
+    """Download a lesson resource file"""
+    from .models import LessonResource
+    try:
+        resource = LessonResource.objects.get(id=resource_id)
+    except LessonResource.DoesNotExist:
+        return Response({'error': 'Resource not found'}, status=404)
+    
+    if resource.file:
+        response = FileResponse(resource.file.open('rb'), content_type='application/octet-stream')
+        response['Content-Disposition'] = f'attachment; filename="{resource.name}"'
+        return response
+    
+    return Response({'error': 'File not available'}, status=404)
+
+
+# ============================================
+# CERTIFICATE ENDPOINT
+# ============================================
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def generate_certificate(request, course_id):
+    """Generate a completion certificate"""
+    try:
+        course = Course.objects.get(id=course_id)
+    except Course.DoesNotExist:
+        return Response({'error': 'Course not found'}, status=404)
+    
+    enrollment = Enrollment.objects.filter(
+        user=request.user,
+        course=course
+    ).first()
+    
+    if not enrollment:
+        return Response({'error': 'Not enrolled'}, status=403)
+    
+    # Check completion
+    progress = enrollment.calculate_progress()
+    if progress < 100:
+        return Response({
+            'error': 'Course not completed',
+            'progress': progress,
+        }, status=400)
+    
+    # Generate or get existing certificate
+    from .models import Certificate
+    import uuid
+    
+    cert, created = Certificate.objects.get_or_create(
+        enrollment=enrollment,
+        defaults={
+            'certificate_number': f"PXP-{course.slug[:6].upper()}-{str(uuid.uuid4())[:8].upper()}",
+        }
+    )
+    
+    return Response({
+        'certificate_number': cert.certificate_number,
+        'course_title': course.title,
+        'student_name': f"{enrollment.first_name} {enrollment.last_name}",
+        'issued_at': cert.issued_at.isoformat(),
+        'course_duration': course.duration_hours,
+        'has_pdf': bool(cert.pdf_file),
+        'pdf_url': cert.pdf_file.url if cert.pdf_file else None,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def verify_certificate(request, certificate_number):
+    """Verify a certificate by its number"""
+    from .models import Certificate
+    try:
+        cert = Certificate.objects.select_related(
+            'enrollment', 'enrollment__course'
+        ).get(certificate_number=certificate_number)
+    except Certificate.DoesNotExist:
+        return Response({'valid': False, 'error': 'Certificate not found'}, status=404)
+    
+    return Response({
+        'valid': True,
+        'certificate_number': cert.certificate_number,
+        'course_title': cert.enrollment.course.title,
+        'student_name': f"{cert.enrollment.first_name} {cert.enrollment.last_name}",
+        'issued_at': cert.issued_at.isoformat(),
+    })

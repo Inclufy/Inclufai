@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import QuizEngine from "@/components/academy/QuizEngine";
+import CertificateViewer from "@/components/academy/CertificateViewer";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { 
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
@@ -975,23 +977,21 @@ const CourseLearningPlayer = () => {
                 onClick={togglePlay}
               />
             ) : (
-              // Placeholder for quiz/assignment/certificate
-              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
-                <div className="text-center text-white">
-                  <div 
-                    className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4"
-                    style={{ background: course.gradient }}
-                  >
-                    {currentLesson.type === 'quiz' && <HelpCircle className="w-12 h-12" />}
-                    {currentLesson.type === 'assignment' && <FileText className="w-12 h-12" />}
-                    {currentLesson.type === 'certificate' && <Award className="w-12 h-12" />}
-                    {!currentLesson.type && <Play className="w-12 h-12 ml-1" />}
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">{currentLesson.title}</h3>
+              // Quiz/Assignment/Certificate - full width layout
+              <div className="absolute inset-0 overflow-y-auto bg-white dark:bg-gray-950">
+                <div className="min-h-full">
                   {currentLesson.type === 'quiz' && (
-                    <Button className="mt-4 text-white" style={{ background: course.gradient }}>
-                      {isNL ? 'Start Quiz' : 'Start Quiz'}
-                    </Button>
+                    <QuizEngine
+                      lessonId={currentLesson.id}
+                      courseSlug={id || ''}
+                      apiBase=""
+                      language={isNL ? 'nl' : 'en'}
+                      onComplete={(passed, score) => {
+                        if (passed) {
+                          completeLesson(currentLesson.id);
+                        }
+                      }}
+                    />
                   )}
                   {currentLesson.type === 'assignment' && (
                     <Button className="mt-4 text-white" style={{ background: course.gradient }}>
@@ -1162,14 +1162,30 @@ const CourseLearningPlayer = () => {
                       {content.labels.viewTranscript}
                     </Button>
                   )}
-                  <Button variant="outline" size="sm">
-                    <Bookmark className="w-4 h-4 mr-2" />
-                    {isNL ? 'Opslaan' : 'Save'}
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Share2 className="w-4 h-4 mr-2" />
-                    {isNL ? 'Delen' : 'Share'}
-                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => {
+                      const noteEl = document.querySelector('textarea');
+                      if (noteEl) {
+                        const noteText = (noteEl as HTMLTextAreaElement).value;
+                        saveUserNotes(currentLesson.id, noteText);
+                        toast({ title: isNL ? 'Opgeslagen!' : 'Saved!', description: isNL ? 'Je notities zijn opgeslagen.' : 'Your notes have been saved.' });
+                      } else {
+                        toast({ title: isNL ? 'Opgeslagen!' : 'Saved!', description: isNL ? 'Les opgeslagen als bladwijzer.' : 'Lesson bookmarked.' });
+                      }
+                    }}>
+                      <Bookmark className="w-4 h-4 mr-2" />
+                      {isNL ? 'Opslaan' : 'Save'}
+                    </Button>
+                  <Button variant="outline" size="sm" onClick={() => {
+                      const url = window.location.href;
+                      navigator.clipboard.writeText(url).then(() => {
+                        toast({ title: isNL ? 'Link gekopieerd!' : 'Link copied!', description: url });
+                      }).catch(() => {
+                        toast({ title: isNL ? 'Deel deze link:' : 'Share this link:', description: url });
+                      });
+                    }}>
+                      <Share2 className="w-4 h-4 mr-2" />
+                      {isNL ? 'Delen' : 'Share'}
+                    </Button>
                 </div>
               </div>
 
@@ -1251,9 +1267,19 @@ const CourseLearningPlayer = () => {
                             <p className="text-sm text-muted-foreground">{resource.type} • {resource.size}</p>
                           </div>
                         </div>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => {
+                          if (resource.url) {
+                            window.open(resource.url, '_blank');
+                          } else {
+                            toast({ 
+                              title: isNL ? 'Download niet beschikbaar' : 'Download not available',
+                              description: isNL ? 'Dit materiaal wordt binnenkort toegevoegd.' : 'This material will be added soon.',
+                              variant: 'destructive'
+                            });
+                          }
+                        }}>
                           <Download className="w-4 h-4 mr-2" />
-                          {pt("Download")}
+                          {isNL ? 'Downloaden' : 'Download'}
                         </Button>
                       </CardContent>
                     </Card>

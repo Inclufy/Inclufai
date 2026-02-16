@@ -77,4 +77,16 @@ urlpatterns = [
     # AI endpoints
     path('ai/curate-course/', ai_views.ai_curate_course, name='ai-curate-course'),
     path('ai/generate-module/', ai_views.ai_generate_module, name='ai-generate-module'),
+
+    # Quiz endpoints
+    path('quiz/<int:lesson_id>/', views.get_quiz, name='get_quiz'),
+    path('quiz/<int:lesson_id>/submit/', views.submit_quiz, name='submit_quiz'),
+    
+    # Resource/Download endpoints
+    path('lessons/<int:lesson_id>/resources/', views.get_lesson_resources, name='get_lesson_resources'),
+    path('resources/<int:resource_id>/download/', views.download_resource, name='download_resource'),
+    
+    # Certificate endpoints
+    path('certificate/<str:course_id>/generate/', views.generate_certificate, name='generate_certificate'),
+    path('certificate/verify/<str:certificate_number>/', views.verify_certificate, name='verify_certificate'),
 ]

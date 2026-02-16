@@ -780,6 +780,8 @@ const App = () => (
               <Route path="/academy/course/:id" element={<ProtectedPage><CourseDetail /></ProtectedPage>} />
               <Route path="/academy/checkout/:id" element={<ProtectedPage><CourseCheckout /></ProtectedPage>} />
               <Route path="/academy/checkout/success" element={<ProtectedPage><CheckoutSuccess /></ProtectedPage>} />
+              <Route path="/academy/course/:slug/learn/:id" element={<ProtectedPage><CourseLearningPlayer /></ProtectedPage>} />
+              <Route path="/academy/course/:slug/learn" element={<ProtectedPage><CourseLearningPlayer /></ProtectedPage>} />
               <Route path="/academy/learn/:id" element={<ProtectedPage><CourseLearningPlayer /></ProtectedPage>} />
               <Route path="/academy/quote/:id" element={<ProtectedPage><RequestQuote /></ProtectedPage>} />
               <Route path="/academy/quote" element={<ProtectedPage><RequestQuote /></ProtectedPage>} />
