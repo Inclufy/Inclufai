@@ -49,3 +49,7 @@ POST
 *.container
 .DS_Store
 complete-database-migration-v2.sql
+*.zip
+Archief/
+backups/
+.DS_Store
