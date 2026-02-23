@@ -37,3 +37,15 @@ Thumbs.db
 *.fixed
 Archief/
 Archief.zip
+*.zip
+Archief/
+backups/
+POST
+*.backup*
+*.old
+*.old2
+*.before_*
+*.withdups
+*.container
+.DS_Store
+complete-database-migration-v2.sql
