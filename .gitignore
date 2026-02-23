@@ -53,3 +53,5 @@ complete-database-migration-v2.sql
 Archief/
 backups/
 .DS_Store
+.env
+.DS_Store
