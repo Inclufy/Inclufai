@@ -7,7 +7,7 @@ services:
     environment:
       - POSTGRES_DB=projextpal
       - POSTGRES_USER=projextpal
-      - POSTGRES_PASSWORD=projextpal_password_2024
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -47,7 +47,7 @@ services:
       - ALLOWED_HOSTS=localhost,127.0.0.1,backend,projectpal-backend,projextpal.com,www.projextpal.com
       - FRONTEND_URL=https://projextpal.com
       - BASE_URL=https://projextpal.com
-      - OPENAI_API_KEY=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
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       postgres:
         condition: service_healthy

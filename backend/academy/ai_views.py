@@ -25,7 +25,7 @@ def ai_curate_course(request):
             return Response({'error': 'Topic and modules required'}, status=400)
         
         print("Getting API key...")
-        api_key = "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"
+        api_key = os.getenv("OPENAI_API_KEY")
         
         if not api_key:
             print("ERROR: No API key!")
