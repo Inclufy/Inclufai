@@ -1,92 +1,67 @@
-# academy/urls.py
-"""
-Academy URL Configuration
-"""
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from . import api_views, views, test_view, quiz_exam_api, ai_content_api, certificate_api, admin_api
+from .views import SkillViewSet, SkillCategoryViewSet, UserSkillViewSet, SkillGoalViewSet, SkillActivityViewSet
 
-from django.urls import path
-from . import views, ai_views
+router = DefaultRouter()
+router.register(r'courses', api_views.CourseViewSet, basename='course')
+router.register(r'modules', api_views.CourseModuleViewSet, basename='module')
+router.register(r'lessons', api_views.CourseLessonViewSet, basename='lesson')
 
-app_name = 'academy'
+skills_router = DefaultRouter()
+skills_router.register(r'skills', SkillViewSet, basename='skill')
+skills_router.register(r'categories', SkillCategoryViewSet, basename='skill-category')
+skills_router.register(r'user-skills', UserSkillViewSet, basename='user-skill')
+skills_router.register(r'goals', SkillGoalViewSet, basename='skill-goal')
+skills_router.register(r'activities', SkillActivityViewSet, basename='skill-activity')
 
 urlpatterns = [
-    # ============================================
-    # PUBLIC ENDPOINTS - Stripe & Checkout
-    # ============================================
-    path('checkout/create-session/', views.create_checkout_session, name='create_checkout_session'),
-    path('checkout/verify/', views.verify_payment, name='verify_payment'),
-    path('webhook/stripe/', views.stripe_webhook, name='stripe_webhook'),
-    path('coupon/validate/', views.validate_coupon, name='validate_coupon'),
-    path('quote/request/', views.request_quote, name='request_quote'),
+    path('', include(router.urls)),
+    path('skills/', include(skills_router.urls)),
+    path('visuals/', include('academy.urls_visual')),
     
-    # ============================================
-    # ADMIN ENDPOINTS - Courses
-    # ============================================
-    path('courses/', views.admin_get_courses, name='admin_courses'),
-    path('courses/<str:course_id>/', views.admin_get_course, name='admin_course_detail'),
-    path('courses/<str:course_id>/update/', views.admin_update_course, name='admin_course_update'),
+    # Visual Selection AI endpoint
+    path('analyze-lesson/', api_views.analyze_lesson_for_visual, name='analyze-lesson-visual'),
     
-    # ============================================
-    # ADMIN ENDPOINTS - Enrollments
-    # ============================================
-    path('enrollments/', views.admin_get_enrollments, name='admin_enrollments'),
-    path('enrollments/<str:enrollment_id>/', views.admin_get_enrollment, name='admin_enrollment_detail'),
-    path('enrollments/<str:enrollment_id>/update/', views.admin_update_enrollment, name='admin_enrollment_update'),
+    # Quiz/Exam endpoints
+    path('quiz/<str:lesson_id>/', quiz_exam_api.get_quiz, name='get-quiz'),
+    path('quiz/<str:lesson_id>/submit/', quiz_exam_api.submit_quiz, name='submit-quiz'),
     
-    # ============================================
-    # ADMIN ENDPOINTS - Quotes
-    # ============================================
-    path('quotes/', views.admin_get_quotes, name='admin_quotes'),
-    path('quotes/<str:quote_id>/', views.admin_get_quote, name='admin_quote_detail'),
-    path('quotes/<str:quote_id>/update/', views.admin_update_quote, name='admin_quote_update'),
-    path('quotes/<str:quote_id>/mark-contacted/', views.admin_quote_mark_contacted, name='admin_quote_mark_contacted'),
-    path('quotes/<str:quote_id>/send/', views.admin_quote_send, name='admin_quote_send'),
+    # AI Content Generation endpoints
+    path('ai/analyze-lesson/<int:lesson_id>/', ai_content_api.analyze_lesson_content, name='ai-analyze-lesson'),
+    path('ai/assign-skills/<int:lesson_id>/', ai_content_api.auto_assign_skills, name='ai-assign-skills'),
+    path('ai/generate-visual/<int:lesson_id>/<str:visual_type>/', ai_content_api.generate_visual, name='ai-generate-visual'),
+    path('ai/batch-analyze/<uuid:course_id>/', ai_content_api.batch_analyze_course, name='ai-batch-analyze'),
     
-    # ============================================
-    # ADMIN ENDPOINTS - Analytics & Dashboard
-    # ============================================
-    path('analytics/', views.admin_get_analytics, name='admin_analytics'),
-    path('dashboard/', views.admin_dashboard_summary, name='admin_dashboard'),
+    # EnhancedCourseBuilder AI endpoints
+    path('ai/generate-content/', ai_content_api.generate_content, name='ai-generate-content'),
+    path('ai/generate-quiz/', ai_content_api.generate_quiz, name='ai-generate-quiz'),
+    path('ai/generate-simulation/', ai_content_api.generate_simulation, name='ai-generate-simulation'),
+    path('ai/generate-assignment/', ai_content_api.generate_assignment, name='ai-generate-assignment'),
+    path('ai/generate-exam/', ai_content_api.generate_exam, name='ai-generate-exam'),
+    path('ai/extract-skills/', ai_content_api.extract_skills, name='ai-extract-skills'),
+    
+    # Certificate Generation
+    path('certificate/generate/<uuid:enrollment_id>/', certificate_api.generate_certificate),
+    path('certificate/<uuid:certificate_id>/download/', certificate_api.download_certificate),
+    path('certificate/verify/<str:verification_code>/', certificate_api.verify_certificate),
+    
+    # ===== ADMIN VISUAL CONFIG =====
+    path('admin/lessons/<int:lesson_id>/visual/', views.admin_update_lesson_visual, name='admin-lesson-visual'),
 
-    # Modules
-    path('courses/<str:course_id>/modules/', views.admin_get_modules, name='admin_get_modules'),
-    path('courses/<str:course_id>/modules/create/', views.admin_create_module, name='admin_create_module'),
-    path('modules/<int:module_id>/update/', views.admin_update_module, name='admin_update_module'),
-    path('modules/<int:module_id>/delete/', views.admin_delete_module, name='admin_delete_module'),
+    # ===== NEW ADMIN API =====
+    path('admin/ai/generate-course/', admin_api.generate_complete_course, name='admin-ai-generate-course'),
+    path('admin/skills/', admin_api.list_skills, name='admin-list-skills'),
+    path('admin/skills/create/', admin_api.create_skill, name='admin-create-skill'),
+    path('admin/skills/<int:skill_id>/', admin_api.manage_skill, name='admin-manage-skill'),
+    path('admin/skills/generate/', admin_api.generate_skills_ai, name='admin-generate-skills'),
+    path('admin/practice/', admin_api.list_practice_assignments, name='admin-list-practice'),
+    path('admin/practice/create/', admin_api.create_practice_assignment, name='admin-create-practice'),
+    path('admin/exams/', admin_api.list_exams, name='admin-list-exams'),
+    path('admin/exams/create/', admin_api.create_exam, name='admin-create-exam'),
+    path('admin/certificates/', admin_api.list_certificates, name='admin-list-certificates'),
+    path('admin/certificates/stats/', admin_api.certificate_stats, name='admin-certificate-stats'),
     
-    # Lessons
-    path('modules/<int:module_id>/lessons/', views.admin_get_lessons, name='admin_get_lessons'),
-    path('modules/<int:module_id>/lessons/create/', views.admin_create_lesson, name='admin_create_lesson'),
-    path('lessons/<int:lesson_id>/', views.admin_get_lesson, name='admin_get_lesson'),
-    path('lessons/<int:lesson_id>/update/', views.admin_update_lesson, name='admin_update_lesson'),
-    path('lessons/<int:lesson_id>/delete/', views.admin_delete_lesson, name='admin_delete_lesson'),
-    
-    # Content API for IQ Helix
-    path('content/courses/', views.api_content_courses, name='api_content_courses'),
-    path('content/courses/<str:course_id>/', views.api_content_course_structure, name='api_content_course_structure'),
-
-    # Content Upload
-    path('lessons/<int:lesson_id>/content/', views.get_lesson_content, name='get_lesson_content'),
-    path('lessons/<int:lesson_id>/content/upload/', views.upload_lesson_content, name='upload_lesson_content'),
-    path('content/<int:content_id>/delete/', views.delete_lesson_content, name='delete_lesson_content'),
-
-    # Admin endpoints
-    path('admin/courses/', views.admin_get_courses, name='admin-get-courses'),
-    path('admin/courses/create/', views.admin_create_course, name='admin-create-course'),
-    path('admin/courses/<uuid:course_id>/', views.admin_delete_course, name='admin-delete-course'),
-
-    # AI endpoints
-    path('ai/curate-course/', ai_views.ai_curate_course, name='ai-curate-course'),
-    path('ai/generate-module/', ai_views.ai_generate_module, name='ai-generate-module'),
-
-    # Quiz endpoints
-    path('quiz/<int:lesson_id>/', views.get_quiz, name='get_quiz'),
-    path('quiz/<int:lesson_id>/submit/', views.submit_quiz, name='submit_quiz'),
-    
-    # Resource/Download endpoints
-    path('lessons/<int:lesson_id>/resources/', views.get_lesson_resources, name='get_lesson_resources'),
-    path('resources/<int:resource_id>/download/', views.download_resource, name='download_resource'),
-    
-    # Certificate endpoints
-    path('certificate/<str:course_id>/generate/', views.generate_certificate, name='generate_certificate'),
-    path('certificate/verify/<str:certificate_number>/', views.verify_certificate, name='verify_certificate'),
+    # Test endpoints
+    path('test/<uuid:course_id>/', test_view.test_course_detail),
 ]

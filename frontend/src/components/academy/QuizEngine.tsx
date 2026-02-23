@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, XCircle, HelpCircle, Trophy, RotateCcw, ChevronRight } from "lucide-react";
+import { CheckCircle2, XCircle, HelpCircle, Trophy, RotateCcw, ChevronRight, Clock, AlertCircle } from "lucide-react";
 
 interface Answer {
   id: number;
@@ -17,6 +17,7 @@ interface Question {
   type: string;
   points: number;
   answers: Answer[];
+  hint?: string; // ADDED: Optional hint for each question
 }
 
 interface QuizResult {
@@ -32,10 +33,20 @@ interface QuizProps {
   courseSlug: string;
   apiBase: string;
   language: string;
+  staticQuiz?: any[];
+  timeLimit?: number; // ADDED: Time limit in minutes (optional)
   onComplete?: (passed: boolean, score: number) => void;
 }
 
-export default function QuizEngine({ lessonId, courseSlug, apiBase, language, onComplete }: QuizProps) {
+export default function QuizEngine({ 
+  lessonId, 
+  courseSlug, 
+  apiBase, 
+  language, 
+  staticQuiz, 
+  timeLimit, // ADDED
+  onComplete 
+}: QuizProps) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number[]>>({});
@@ -49,8 +60,42 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
     results: QuizResult[];
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [staticCorrectMap, setStaticCorrectMap] = useState<Record<number, number[]>>({});
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null); // ADDED: Timer state (in seconds)
+  const [showHint, setShowHint] = useState<Record<number, boolean>>({}); // ADDED: Hint visibility per question
 
   const isNL = language === "nl";
+
+  // ADDED: Initialize timer when quiz loads
+  useEffect(() => {
+    if (timeLimit && !results) {
+      setTimeRemaining(timeLimit * 60); // Convert minutes to seconds
+    }
+  }, [timeLimit, results]);
+
+  // ADDED: Timer countdown
+  useEffect(() => {
+    if (timeRemaining !== null && timeRemaining > 0 && !results) {
+      const timer = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev === null) return null;
+          if (prev <= 1) {
+            handleSubmit(); // Auto-submit when time's up
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [timeRemaining, results]);
+
+  // ADDED: Format time remaining as MM:SS
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   useEffect(() => {
     loadQuiz();
@@ -61,21 +106,39 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
       setLoading(true);
       setError(null);
       const token = localStorage.getItem("access_token") || "";
-      const res = await fetch(`${apiBase}/academy/quiz/${lessonId}/?lang=${language}`, {
+      const res = await fetch(`${apiBase}/academy/quiz/${lessonId}/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
       if (!res.ok) {
-        // Fallback: generate sample questions
         setQuestions(generateSampleQuestions());
         return;
       }
+      
       const data = await res.json();
-      if (data.questions && data.questions.length > 0) {
-        setQuestions(data.questions);
+      
+      // Transform API response to frontend format
+      if (data.questions && Array.isArray(data.questions)) {
+        const lang = language === 'nl' ? 'nl' : 'en';
+        const transformed = data.questions.map((q: any, idx: number) => ({
+          id: q.id || idx,
+          question: lang === 'nl' ? (q.textNL || q.text) : q.text,
+          type: q.type || 'single',
+          answers: (lang === 'nl' ? (q.optionsNL || q.options) : q.options || []).map((opt: string, i: number) => ({
+            id: i,
+            text: opt,
+            correct: i === q.correct
+          })),
+          explanation: lang === 'nl' ? (q.explanationNL || q.explanation || '') : (q.explanation || ''),
+          hint: lang === 'nl' ? (q.hintNL || q.hint) : q.hint, // ADDED: Hint support
+        }));
+        setQuestions(transformed);
       } else {
         setQuestions(generateSampleQuestions());
       }
-    } catch {
+    } catch (err) {
+      console.error('Quiz load error:', err);
+      setError(String(err));
       setQuestions(generateSampleQuestions());
     } finally {
       setLoading(false);
@@ -86,7 +149,11 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
     if (isNL) {
       return [
         {
-          id: 1, question: "Wat is de primaire rol van een projectmanager?", type: "multiple_choice", points: 1,
+          id: 1, 
+          question: "Wat is de primaire rol van een projectmanager?", 
+          type: "multiple_choice", 
+          points: 1,
+          hint: "Denk aan planning en coördinatie", // ADDED
           answers: [
             { id: 1, text: "Code schrijven", order: 0 },
             { id: 2, text: "Het project plannen, uitvoeren en afsluiten", order: 1 },
@@ -95,7 +162,11 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
           ],
         },
         {
-          id: 2, question: "Welke fase komt na de planningsfase in waterval?", type: "multiple_choice", points: 1,
+          id: 2, 
+          question: "Welke fase komt na de planningsfase in waterfall?", 
+          type: "multiple_choice", 
+          points: 1,
+          hint: "Wat doe je nadat je een plan hebt gemaakt?",
           answers: [
             { id: 5, text: "Initiatie", order: 0 },
             { id: 6, text: "Uitvoering", order: 1 },
@@ -104,23 +175,35 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
           ],
         },
         {
-          id: 3, question: "Een Work Breakdown Structure (WBS) helpt bij het opdelen van werk in beheersbare stukken.", type: "true_false", points: 1,
+          id: 3, 
+          question: "Een Work Breakdown Structure (WBS) helpt bij het opdelen van werk in beheersbare stukken.", 
+          type: "true_false", 
+          points: 1,
+          hint: "WBS staat voor Work Breakdown Structure",
           answers: [
             { id: 9, text: "Waar", order: 0 },
             { id: 10, text: "Niet waar", order: 1 },
           ],
         },
         {
-          id: 4, question: "Wat hoort bij risicomanagement?", type: "multiple_choice", points: 1,
+          id: 4, 
+          question: "Wat hoort bij risicomanagement?", 
+          type: "multiple_choice", 
+          points: 1,
+          hint: "Risicomanagement is proactief, niet reactief",
           answers: [
-            { id: 11, text: "Risico\'s negeren", order: 0 },
-            { id: 12, text: "Risico\'s identificeren en mitigeren", order: 1 },
-            { id: 13, text: "Alleen positieve risico\'s bijhouden", order: 2 },
+            { id: 11, text: "Risico's negeren", order: 0 },
+            { id: 12, text: "Risico's identificeren en mitigeren", order: 1 },
+            { id: 13, text: "Alleen positieve risico's bijhouden", order: 2 },
             { id: 14, text: "Wachten tot problemen zich voordoen", order: 3 },
           ],
         },
         {
-          id: 5, question: "Wat is het doel van een lessons learned sessie?", type: "multiple_choice", points: 1,
+          id: 5, 
+          question: "Wat is het doel van een lessons learned sessie?", 
+          type: "multiple_choice", 
+          points: 1,
+          hint: "Het gaat om continu verbeteren",
           answers: [
             { id: 15, text: "Schuldigen aanwijzen", order: 0 },
             { id: 16, text: "Toekomstige projecten verbeteren door te leren van ervaringen", order: 1 },
@@ -132,7 +215,11 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
     }
     return [
       {
-        id: 1, question: "What is the primary role of a project manager?", type: "multiple_choice", points: 1,
+        id: 1, 
+        question: "What is the primary role of a project manager?", 
+        type: "multiple_choice", 
+        points: 1,
+        hint: "Think about planning and coordination",
         answers: [
           { id: 1, text: "Writing code", order: 0 },
           { id: 2, text: "Planning, executing and closing the project", order: 1 },
@@ -141,7 +228,11 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
         ],
       },
       {
-        id: 2, question: "Which phase follows planning in waterfall?", type: "multiple_choice", points: 1,
+        id: 2, 
+        question: "Which phase follows planning in waterfall?", 
+        type: "multiple_choice", 
+        points: 1,
+        hint: "What do you do after making a plan?",
         answers: [
           { id: 5, text: "Initiation", order: 0 },
           { id: 6, text: "Execution", order: 1 },
@@ -150,14 +241,22 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
         ],
       },
       {
-        id: 3, question: "A Work Breakdown Structure (WBS) helps divide work into manageable pieces.", type: "true_false", points: 1,
+        id: 3, 
+        question: "A Work Breakdown Structure (WBS) helps divide work into manageable pieces.", 
+        type: "true_false", 
+        points: 1,
+        hint: "WBS stands for Work Breakdown Structure",
         answers: [
           { id: 9, text: "True", order: 0 },
           { id: 10, text: "False", order: 1 },
         ],
       },
       {
-        id: 4, question: "What belongs to risk management?", type: "multiple_choice", points: 1,
+        id: 4, 
+        question: "What belongs to risk management?", 
+        type: "multiple_choice", 
+        points: 1,
+        hint: "Risk management is proactive, not reactive",
         answers: [
           { id: 11, text: "Ignoring risks", order: 0 },
           { id: 12, text: "Identifying and mitigating risks", order: 1 },
@@ -166,7 +265,11 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
         ],
       },
       {
-        id: 5, question: "What is the purpose of a lessons learned session?", type: "multiple_choice", points: 1,
+        id: 5, 
+        question: "What is the purpose of a lessons learned session?", 
+        type: "multiple_choice", 
+        points: 1,
+        hint: "It's about continuous improvement",
         answers: [
           { id: 15, text: "Blaming team members", order: 0 },
           { id: 16, text: "Improving future projects by learning from experience", order: 1 },
@@ -239,7 +342,7 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
         correct: isCorrect,
         correct_answers: correct,
         selected_answers: selected,
-        explanation: "",
+        explanation: q.hint || "", // Use hint as fallback explanation
       });
     }
     
@@ -253,6 +356,10 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
     setResults(null);
     setSelectedAnswers({});
     setCurrentIdx(0);
+    setShowHint({});
+    if (timeLimit) {
+      setTimeRemaining(timeLimit * 60);
+    }
   };
 
   if (loading) {
@@ -267,7 +374,7 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
   if (results) {
     return (
       <div className="max-w-2xl mx-auto py-8 px-4">
-        <Card className={results.passed ? "border-green-300 bg-green-50" : "border-red-300 bg-red-50"}>
+        <Card className={results.passed ? "border-green-300 bg-green-50 dark:bg-green-950/20" : "border-red-300 bg-red-50 dark:bg-red-950/20"}>
           <CardContent className="pt-8 text-center">
             {results.passed ? (
               <Trophy className="w-16 h-16 text-green-500 mx-auto mb-4" />
@@ -296,7 +403,7 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
           {questions.map((q, idx) => {
             const r = results.results[idx];
             return (
-              <Card key={q.id} className={r?.correct ? "border-green-200" : "border-red-200"}>
+              <Card key={q.id} className={r?.correct ? "border-green-200 dark:border-green-800" : "border-red-200 dark:border-red-800"}>
                 <CardContent className="pt-4">
                   <div className="flex items-start gap-3">
                     {r?.correct ? (
@@ -312,8 +419,8 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
                           const isCorrectAnswer = r?.correct_answers.includes(a.id);
                           return (
                             <div key={a.id} className={`px-3 py-1.5 rounded text-sm ${
-                              isCorrectAnswer ? "bg-green-100 text-green-800 font-medium" :
-                              wasSelected ? "bg-red-100 text-red-800" :
+                              isCorrectAnswer ? "bg-green-100 dark:bg-green-950/30 text-green-800 dark:text-green-300 font-medium" :
+                              wasSelected ? "bg-red-100 dark:bg-red-950/30 text-red-800 dark:text-red-300" :
                               "text-muted-foreground"
                             }`}>
                               {a.text}
@@ -349,8 +456,38 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
   const answered = Object.keys(selectedAnswers).length;
   const allAnswered = questions.every((q) => (selectedAnswers[String(q.id)] || []).length > 0);
 
+  // ADDED: Timer warning (when less than 5 minutes remaining)
+  const showTimeWarning = timeRemaining !== null && timeRemaining < 300;
+
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
+      {/* ADDED: Timer Display */}
+      {timeRemaining !== null && (
+        <div className={`mb-4 p-4 rounded-lg border-2 ${
+          showTimeWarning 
+            ? 'bg-red-50 dark:bg-red-950/20 border-red-300 dark:border-red-800' 
+            : 'bg-blue-50 dark:bg-blue-950/20 border-blue-300 dark:border-blue-800'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock className={`h-5 w-5 ${showTimeWarning ? 'text-red-600' : 'text-blue-600'}`} />
+              <span className="font-medium text-sm">
+                {isNL ? 'Tijd over' : 'Time remaining'}
+              </span>
+            </div>
+            <span className={`text-2xl font-bold ${showTimeWarning ? 'text-red-600 animate-pulse' : 'text-blue-600'}`}>
+              {formatTime(timeRemaining)}
+            </span>
+          </div>
+          {showTimeWarning && (
+            <p className="text-xs text-red-600 mt-2 flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              {isNL ? 'Minder dan 5 minuten over!' : 'Less than 5 minutes remaining!'}
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Progress */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-sm text-muted-foreground">
@@ -371,6 +508,29 @@ export default function QuizEngine({ lessonId, courseSlug, apiBase, language, on
               <Badge variant="secondary">{currentQ.points} {currentQ.points === 1 ? "punt" : "punten"}</Badge>
             </div>
             <CardTitle className="text-lg">{currentQ.question}</CardTitle>
+            
+            {/* ADDED: Hint Button */}
+            {currentQ.hint && (
+              <div className="mt-3">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setShowHint({ ...showHint, [currentQ.id]: !showHint[currentQ.id] })}
+                  className="gap-2"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  {showHint[currentQ.id] 
+                    ? (isNL ? "Verberg hint" : "Hide hint")
+                    : (isNL ? "Toon hint" : "Show hint")
+                  }
+                </Button>
+                {showHint[currentQ.id] && (
+                  <p className="mt-2 text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                    💡 {currentQ.hint}
+                  </p>
+                )}
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <div className="space-y-3">

@@ -12,25 +12,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { renderMarkdownBlock } from "@/utils/markdownRenderer";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 
 // ============================================
-// IMPORT ACTUAL COURSE DATA
+// IMPORT ACTUAL COURSE DATA - FIXED ✅
 // ============================================
 import { 
   Course, 
   Module, 
   Lesson,
   getCourseById,
-  academyCourses,
-} from "@/data/academyCourses";
+  courses as academyCourses,
+  getModulesByCourseId,
+} from "@/data/academy";
 
 // ============================================
 // BRAND COLORS
@@ -337,6 +340,10 @@ const PreviewModal = ({ isOpen, onClose, lesson, courseTitle }: PreviewModalProp
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0">
+      <DialogTitle className="sr-only">{lesson.title} - {courseTitle}
+      </DialogTitle>
+      <DialogDescription className="sr-only">Preview van de les {lesson.title}
+      </DialogDescription>
         {/* Header met gradient */}
         <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 p-6">
           <div className="flex items-center justify-between">
@@ -522,18 +529,10 @@ const PreviewModal = ({ isOpen, onClose, lesson, courseTitle }: PreviewModalProp
 
           {/* Transcript Tab */}
           {activeTab === 'transcript' && lesson.transcript && (
-            <div className="space-y-4">
-              <div className="prose prose-sm dark:prose-invert max-w-none">
-                {lesson.transcript.split('\n\n').map((paragraph, i) => (
-                  <div key={i} className="mb-4 last:mb-0">
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                      {paragraph}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+  <div className="space-y-1">
+    {renderMarkdownBlock(lesson.transcript)}
+  </div>
+)}
 
           {/* Key Takeaways Tab */}
           {activeTab === 'takeaways' && keyTakeaways.length > 0 && (
@@ -598,7 +597,7 @@ const CourseDetail = () => {
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
-  // Get course data by ID
+  // Get course data by ID - FIXED ✅
   const course = useMemo(() => {
     if (!id) return null;
     
@@ -612,17 +611,57 @@ const CourseDetail = () => {
       return academyCourses[numId - 1];
     }
     
-    // Default to first course
-    return academyCourses[0];
+    // Return null if not found - error handling exists below ✅
+    return null;
   }, [id]);
 
-  // Calculate totals
-  const totals = useMemo(() => {
-    if (!course) return { modules: 0, lessons: 0, duration: 0 };
+  // Create safe course with defaults for all properties ✅
+  const safeCourse = useMemo(() => {
+    if (!course) return null;
     
-    const modules = course.modules.length;
-    const lessons = course.modules.reduce((acc, m) => acc + m.lessons.length, 0);
-    const duration = course.modules.reduce((acc, m) => {
+    // Deep merge instructor with defaults
+    const defaultInstructor = {
+      name: 'ProjeXtPal Team',
+      title: 'Expert Instructors',
+      bio: 'Learn from industry experts with years of real-world experience in project management.',
+      avatar: 'PT',
+      rating: 4.8,
+      students: 10000,
+      courses: 11,
+    };
+    
+    const safeInstructor = course.instructor ? {
+      ...defaultInstructor,
+      ...course.instructor,
+      // Ensure numbers exist
+      rating: course.instructor.rating ?? defaultInstructor.rating,
+      students: course.instructor.students ?? defaultInstructor.students,
+      courses: course.instructor.courses ?? defaultInstructor.courses,
+    } : defaultInstructor;
+    
+    return {
+      ...course,
+      whatYouLearn: course.whatYouLearn || [],
+      requirements: course.requirements || [],
+      targetAudience: course.targetAudience || [],
+      rating: course.rating ?? 4.5,
+      reviewCount: course.reviewCount ?? 0,
+      students: course.students ?? 0,
+      difficulty: course.difficulty || 'Intermediate',
+      language: course.language || 'Nederlands',
+      instructor: safeInstructor,
+    };
+  }, [course]);
+
+  // Calculate totals - FIXED to use getModulesByCourseId ✅
+  const totals = useMemo(() => {
+    if (!safeCourse) return { modules: 0, lessons: 0, duration: 0 };
+    
+    // Get modules using the helper function
+    const courseModules = getModulesByCourseId(safeCourse.id);
+    const modules = courseModules.length;
+    const lessons = courseModules.reduce((acc, m) => acc + m.lessons.length, 0);
+    const duration = courseModules.reduce((acc, m) => {
       return acc + m.lessons.reduce((lacc, l) => {
         const parts = l.duration.split(':');
         return lacc + (parseInt(parts[0]) || 0);
@@ -630,9 +669,9 @@ const CourseDetail = () => {
     }, 0);
 
     return { modules, lessons, duration: Math.round(duration / 60) };
-  }, [course]);
+  }, [safeCourse]);
 
-  if (!course) {
+  if (!safeCourse) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -640,6 +679,9 @@ const CourseDetail = () => {
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
             {isNL ? 'Cursus niet gevonden' : 'Course not found'}
           </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            {isNL ? `De cursus "${id}" bestaat niet.` : `The course "${id}" does not exist.`}
+          </p>
           <Button onClick={() => navigate('/academy/marketplace')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             {isNL ? 'Terug naar Academy' : 'Back to Academy'}
@@ -649,7 +691,7 @@ const CourseDetail = () => {
     );
   }
 
-  const IconComponent = iconMap[course.icon] || Target;
+  const IconComponent = iconMap[safeCourse.icon] || Target;
 
   const toggleModule = (moduleId: string) => {
     setExpandedModules(prev => 
@@ -673,8 +715,10 @@ const CourseDetail = () => {
   };
 
   const handleStartCourse = () => {
-    if (course.modules.length > 0 && course.modules[0].lessons.length > 0) {
-      navigate(`/academy/course/${course.id}/learn/${course.modules[0].lessons[0].id}`);
+    if (!safeCourse) return;
+    const courseModules = getModulesByCourseId(safeCourse.id);
+    if (courseModules.length > 0 && courseModules[0].lessons.length > 0) {
+      navigate(`/academy/course/${safeCourse.id}/learn/${courseModules[0].lessons[0].id}`);
     }
   };
 
@@ -703,19 +747,19 @@ const CourseDetail = () => {
                 <div 
                   className="p-3 rounded-2xl"
                   style={{ 
-                    background: `linear-gradient(135deg, ${course.color}20, ${course.color}10)`,
+                    background: `linear-gradient(135deg, ${safeCourse.color}20, ${safeCourse.color}10)`,
                   }}
                 >
-                  <IconComponent className="h-6 w-6" style={{ color: course.color }} />
+                  <IconComponent className="h-6 w-6" style={{ color: safeCourse.color }} />
                 </div>
                 <div className="flex gap-2">
-                  {course.bestseller && (
+                  {safeCourse.bestseller && (
                     <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
                       <Trophy className="h-3 w-3 mr-1" />
                       Bestseller
                     </Badge>
                   )}
-                  {course.featured && (
+                  {safeCourse.featured && (
                     <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
                       <Star className="h-3 w-3 mr-1" />
                       Featured
@@ -725,28 +769,28 @@ const CourseDetail = () => {
               </div>
 
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-3">
-                {course.title}
+                {safeCourse.title}
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">
-                {course.subtitle}
+                {safeCourse.subtitle}
               </p>
 
               {/* Rating & Stats */}
               <div className="flex flex-wrap items-center gap-4 text-sm">
                 <div className="flex items-center gap-1">
                   <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-                  <span className="font-bold text-gray-900 dark:text-white">{course.rating}</span>
-                  <span className="text-gray-500">({course.reviewCount.toLocaleString()} reviews)</span>
+                  <span className="font-bold text-gray-900 dark:text-white">{safeCourse.rating}</span>
+                  <span className="text-gray-500">({safeCourse.reviewCount.toLocaleString()} reviews)</span>
                 </div>
                 <div className="flex items-center gap-1 text-gray-500">
                   <Users className="h-4 w-4" />
-                  <span>{course.students.toLocaleString()} {isNL ? 'studenten' : 'students'}</span>
+                  <span>{safeCourse.students.toLocaleString()} {isNL ? 'studenten' : 'students'}</span>
                 </div>
                 <Badge variant="outline" className="text-gray-600">
-                  {course.difficulty}
+                  {safeCourse.difficulty}
                 </Badge>
                 <Badge variant="outline" className="text-gray-600">
-                  {course.language}
+                  {safeCourse.language}
                 </Badge>
               </div>
             </div>
@@ -759,7 +803,7 @@ const CourseDetail = () => {
                   {isNL ? 'Wat je leert' : 'What you\'ll learn'}
                 </h2>
                 <div className="grid md:grid-cols-2 gap-3">
-                  {course.whatYouLearn.map((item, i) => (
+                  {(safeCourse.whatYouLearn || []).map((item, i) => (
                     <div key={i} className="flex items-start gap-3">
                       <div className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0 mt-0.5">
                         <Check className="h-3 w-3 text-green-600 dark:text-green-400" />
@@ -783,7 +827,7 @@ const CourseDetail = () => {
               </div>
 
               {/* Module Accordions */}
-              {course.modules.map((module, index) => (
+              {getModulesByCourseId(safeCourse.id).map((module, index) => (
                 <ModuleAccordion
                   key={module.id}
                   module={module}
@@ -803,7 +847,7 @@ const CourseDetail = () => {
                   {isNL ? 'Vereisten' : 'Requirements'}
                 </h2>
                 <ul className="space-y-2">
-                  {course.requirements.map((req, i) => (
+                  {(safeCourse.requirements || []).map((req, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
                       <span className="text-purple-500">•</span>
                       {req}
@@ -820,7 +864,7 @@ const CourseDetail = () => {
                   {isNL ? 'Voor wie is deze cursus?' : 'Who is this course for?'}
                 </h2>
                 <ul className="space-y-2">
-                  {course.targetAudience.map((item, i) => (
+                  {(safeCourse.targetAudience || []).map((item, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
                       <Users className="h-4 w-4 text-purple-500 shrink-0 mt-0.5" />
                       {item}
@@ -841,24 +885,24 @@ const CourseDetail = () => {
                     className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-xl font-bold shrink-0"
                     style={{ background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.pink})` }}
                   >
-                    {course.instructor.avatar}
+                    {safeCourse.instructor.avatar}
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-gray-900 dark:text-white">{course.instructor.name}</h3>
-                    <p className="text-sm text-purple-600 dark:text-purple-400 mb-2">{course.instructor.title}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{course.instructor.bio}</p>
+                    <h3 className="font-bold text-gray-900 dark:text-white">{safeCourse.instructor.name}</h3>
+                    <p className="text-sm text-purple-600 dark:text-purple-400 mb-2">{safeCourse.instructor.title}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{safeCourse.instructor.bio}</p>
                     <div className="flex items-center gap-4 text-sm text-gray-500">
                       <span className="flex items-center gap-1">
                         <Star className="h-4 w-4 text-yellow-400" />
-                        {course.instructor.rating}
+                        {safeCourse.instructor.rating}
                       </span>
                       <span className="flex items-center gap-1">
                         <Users className="h-4 w-4" />
-                        {course.instructor.students.toLocaleString()}
+                        {safeCourse.instructor.students.toLocaleString()}
                       </span>
                       <span className="flex items-center gap-1">
                         <BookOpen className="h-4 w-4" />
-                        {course.instructor.courses} {isNL ? 'cursussen' : 'courses'}
+                        {safeCourse.instructor.courses} {isNL ? 'cursussen' : 'courses'}
                       </span>
                     </div>
                   </div>
@@ -874,8 +918,13 @@ const CourseDetail = () => {
                 {/* Preview Image */}
                 <div 
                   className="aspect-video flex items-center justify-center cursor-pointer group"
-                  style={{ background: course.gradient }}
-                  onClick={() => course.modules[0]?.lessons[0] && handleLessonClick(course.modules[0].lessons[0])}
+                  style={{ background: safeCourse.gradient }}
+                  onClick={() => {
+                    const courseModules = getModulesByCourseId(safeCourse.id);
+                    if (courseModules[0]?.lessons[0]) {
+                      handleLessonClick(courseModules[0].lessons[0]);
+                    }
+                  }}
                 >
                   <div className="text-center text-white">
                     <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
@@ -890,13 +939,13 @@ const CourseDetail = () => {
                   <div>
                     <div className="flex items-baseline gap-2">
                       <span className="text-3xl font-bold" style={{ color: BRAND.green }}>
-                        {course.freeForCustomers ? (isNL ? 'Gratis' : 'Free') : `€${course.price}`}
+                        {course.freeForCustomers ? (isNL ? 'Gratis' : 'Free') : `€${safeCourse.price}`}
                       </span>
-                      {course.originalPrice && (
-                        <span className="text-lg text-gray-400 line-through">€{course.originalPrice}</span>
+                      {safeCourse.originalPrice && (
+                        <span className="text-lg text-gray-400 line-through">€{safeCourse.originalPrice}</span>
                       )}
                     </div>
-                    {course.freeForCustomers && (
+                    {safeCourse.freeForCustomers && (
                       <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1 mt-1">
                         <Gift className="h-4 w-4" />
                         {isNL ? 'Inbegrepen in je abonnement' : 'Included in your subscription'}
@@ -967,7 +1016,7 @@ const CourseDetail = () => {
                         <Brain className="h-4 w-4 text-purple-500" />
                         <span>{isNL ? 'AI-ondersteuning' : 'AI support'}</span>
                       </div>
-                      {course.certificate && (
+                      {safeCourse.certificate && (
                         <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
                           <Award className="h-4 w-4 text-yellow-500" />
                           <span>{isNL ? 'Certificaat' : 'Certificate'}</span>
@@ -1005,7 +1054,7 @@ const CourseDetail = () => {
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
         lesson={previewLesson}
-        courseTitle={course.title}
+        courseTitle={safeCourse.title}
       />
     </div>
   );

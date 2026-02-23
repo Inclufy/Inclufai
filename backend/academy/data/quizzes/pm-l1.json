@@ -1,0 +1,68 @@
+{
+  "id": "pm-l1",
+  "title": "Business Case Quiz",
+  "titleNL": "Business Case Quiz",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "q1",
+      "text": "What is a key concept in Business Case?",
+      "textNL": "Wat is een belangrijk concept in Business Case?",
+      "options": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "optionsNL": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "correct": 1,
+      "explanation": "Concept B is correct for Business Case.",
+      "explanationNL": "Concept B is correct voor Business Case."
+    },
+    {
+      "id": "q2",
+      "text": "What is a key concept in Business Case?",
+      "textNL": "Wat is een belangrijk concept in Business Case?",
+      "options": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "optionsNL": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "correct": 1,
+      "explanation": "Concept B is correct for Business Case.",
+      "explanationNL": "Concept B is correct voor Business Case."
+    },
+    {
+      "id": "q3",
+      "text": "What is a key concept in Business Case?",
+      "textNL": "Wat is een belangrijk concept in Business Case?",
+      "options": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "optionsNL": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "correct": 1,
+      "explanation": "Concept B is correct for Business Case.",
+      "explanationNL": "Concept B is correct voor Business Case."
+    }
+  ]
+}

@@ -107,8 +107,6 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
 }
 
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
 
 AUTH_USER_MODEL = "accounts.CustomUser"
 LOGIN_FIELD = "email"
@@ -216,3 +214,12 @@ if 'test' in sys.argv or 'pytest' in sys.modules:
 
 # Frontend URL for invitation links
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://projextpal.com')
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8083",
+    "http://localhost:5173",
+    "http://projextpal.com",
+    "https://projextpal.com",
+    "http://www.projextpal.com",
+    "https://www.projextpal.com",
+]
+CORS_ALLOW_CREDENTIALS = True

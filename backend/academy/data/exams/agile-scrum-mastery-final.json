@@ -1,0 +1,392 @@
+{
+  "id": "agile-scrum-mastery-final",
+  "title": "Agile & Scrum Mastery - Final Exam",
+  "titleNL": "Agile & Scrum Mastery - Eindexamen",
+  "description": "Comprehensive exam covering all Agile & Scrum Mastery topics",
+  "descriptionNL": "Uitgebreid examen over alle Agile & Scrum Mastery onderwerpen",
+  "passingScore": 80,
+  "timeLimit": 45,
+  "maxAttempts": 3,
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Question 1 about Agile & Scrum Mastery",
+      "textNL": "Vraag 1 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q2",
+      "text": "Question 2 about Agile & Scrum Mastery",
+      "textNL": "Vraag 2 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q3",
+      "text": "Question 3 about Agile & Scrum Mastery",
+      "textNL": "Vraag 3 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q4",
+      "text": "Question 4 about Agile & Scrum Mastery",
+      "textNL": "Vraag 4 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q5",
+      "text": "Question 5 about Agile & Scrum Mastery",
+      "textNL": "Vraag 5 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q6",
+      "text": "Question 6 about Agile & Scrum Mastery",
+      "textNL": "Vraag 6 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q7",
+      "text": "Question 7 about Agile & Scrum Mastery",
+      "textNL": "Vraag 7 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q8",
+      "text": "Question 8 about Agile & Scrum Mastery",
+      "textNL": "Vraag 8 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q9",
+      "text": "Question 9 about Agile & Scrum Mastery",
+      "textNL": "Vraag 9 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q10",
+      "text": "Question 10 about Agile & Scrum Mastery",
+      "textNL": "Vraag 10 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q11",
+      "text": "Question 11 about Agile & Scrum Mastery",
+      "textNL": "Vraag 11 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q12",
+      "text": "Question 12 about Agile & Scrum Mastery",
+      "textNL": "Vraag 12 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q13",
+      "text": "Question 13 about Agile & Scrum Mastery",
+      "textNL": "Vraag 13 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q14",
+      "text": "Question 14 about Agile & Scrum Mastery",
+      "textNL": "Vraag 14 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q15",
+      "text": "Question 15 about Agile & Scrum Mastery",
+      "textNL": "Vraag 15 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q16",
+      "text": "Question 16 about Agile & Scrum Mastery",
+      "textNL": "Vraag 16 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q17",
+      "text": "Question 17 about Agile & Scrum Mastery",
+      "textNL": "Vraag 17 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q18",
+      "text": "Question 18 about Agile & Scrum Mastery",
+      "textNL": "Vraag 18 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q19",
+      "text": "Question 19 about Agile & Scrum Mastery",
+      "textNL": "Vraag 19 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q20",
+      "text": "Question 20 about Agile & Scrum Mastery",
+      "textNL": "Vraag 20 over Agile & Scrum Mastery",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "id": "pm-l5",
+  "title": "Project Charter Quiz",
+  "titleNL": "Project Charter Quiz",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "q1",
+      "text": "What is a key concept in Project Charter?",
+      "textNL": "Wat is een belangrijk concept in Project Charter?",
+      "options": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "optionsNL": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "correct": 1,
+      "explanation": "Concept B is correct for Project Charter.",
+      "explanationNL": "Concept B is correct voor Project Charter."
+    },
+    {
+      "id": "q2",
+      "text": "What is a key concept in Project Charter?",
+      "textNL": "Wat is een belangrijk concept in Project Charter?",
+      "options": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "optionsNL": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "correct": 1,
+      "explanation": "Concept B is correct for Project Charter.",
+      "explanationNL": "Concept B is correct voor Project Charter."
+    },
+    {
+      "id": "q3",
+      "text": "What is a key concept in Project Charter?",
+      "textNL": "Wat is een belangrijk concept in Project Charter?",
+      "options": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "optionsNL": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "correct": 1,
+      "explanation": "Concept B is correct for Project Charter.",
+      "explanationNL": "Concept B is correct voor Project Charter."
+    }
+  ]
+}

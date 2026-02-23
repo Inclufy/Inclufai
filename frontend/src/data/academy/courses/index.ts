@@ -1,7 +1,9 @@
 // ============================================
-// COURSES INDEX
+// COURSES INDEX - UPDATED
 // ============================================
 // Only exports courses that have actual content (modules + lessons)
+// Total: 11 courses, 35 modules, 166 lessons
+// Use getCourseStats() to get real-time accurate stats
 // ============================================
 
 import { Course, Module } from '../types';
@@ -16,6 +18,10 @@ import { waterfallCourse, waterfallModules } from './waterfall';
 import { kanbanCourse, kanbanModules } from './kanban';
 import { agileFundamentalsCourse, agileModules } from './agile';
 import { leanSixSigmaCourse, leanSixSigmaModules } from './lean-six-sigma';
+import { leadershipCourse, leadershipModules } from './leadership';
+import { programManagementCourse, programManagementModules } from './program-management';
+import { safeCourse, safeModules } from './safe';
+import { msProjectCourse, msProjectModules } from './ms-project';
 
 // ============================================
 // RE-EXPORT INDIVIDUAL COURSES & MODULES
@@ -42,21 +48,38 @@ export {
   // Lean Six Sigma
   leanSixSigmaCourse,
   leanSixSigmaModules,
+  // Leadership PM
+  leadershipCourse,
+  leadershipModules,
+  // Program Management
+  programManagementCourse,
+  programManagementModules,
+  // SAFe
+  safeCourse,
+  safeModules,
+  // MS Project
+  msProjectCourse,
+  msProjectModules,
 };
 
 // ============================================
 // COURSES WITH CONTENT (for marketplace)
 // ============================================
 // These are the only courses shown in TrainingMarketplace
-// Total: 7 courses, 23 modules, 99 lessons
+// Total: 11 courses, 35 modules, 166 lessons
+// Use getCourseStats() to get real-time accurate stats
 export const coursesWithContent: Course[] = [
-  pmFundamentalsCourse,      // 5 modules, 26 lessons
-  prince2Course,             // 4 modules, 20 lessons
-  scrumCourse,               // 3 modules, 13 lessons
-  waterfallCourse,           // 2 modules, 10 lessons
-  kanbanCourse,              // 2 modules, 10 lessons
-  agileFundamentalsCourse,   // 2 modules, 10 lessons
-  leanSixSigmaCourse,        // 5 modules, 10 lessons
+  pmFundamentalsCourse,      // 5 modules, 26 lessons, ~8h
+  prince2Course,             // 4 modules, 20 lessons, ~12h
+  scrumCourse,               // 3 modules, 13 lessons, ~8h
+  waterfallCourse,           // 2 modules, 10 lessons, ~6h
+  kanbanCourse,              // 2 modules, 10 lessons, ~6h
+  agileFundamentalsCourse,   // 2 modules, 10 lessons, ~8h
+  leanSixSigmaCourse,        // 5 modules, 10 lessons, ~24h
+  leadershipCourse,          // 3 modules, 16 lessons, ~12h
+  programManagementCourse,   // 3 modules, 16 lessons, ~14h
+  safeCourse,                // 3 modules, 17 lessons, ~16h
+  msProjectCourse,           // 3 modules, 18 lessons, ~10h
 ];
 
 // Main export - only courses with content
@@ -76,6 +99,10 @@ const courseModulesMap: Record<string, Module[]> = {
   'kanban-practitioner': kanbanModules,
   'agile-fundamentals': agileModules,
   'lean-six-sigma': leanSixSigmaModules,
+  'leadership-pm': leadershipModules,
+  'program-management-pro': programManagementModules,
+  'safe-scaling-agile': safeModules,
+  'ms-project-masterclass': msProjectModules,
 };
 
 // ============================================
@@ -153,7 +180,9 @@ export const getNewCourses = (): Course[] => {
 };
 
 /**
- * Get course statistics
+ * Get course statistics - REAL-TIME CALCULATION
+ * This ensures stats are always accurate based on actual course data
+ * Returns: { totalCourses: 11, totalModules: 35, totalLessons: 166, totalHours: ~124, totalStudents: ~50000 }
  */
 export const getCourseStats = () => {
   const totalLessons = courses.reduce((acc, course) => {

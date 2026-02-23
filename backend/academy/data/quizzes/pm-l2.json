@@ -1,0 +1,68 @@
+{
+  "id": "pm-l2",
+  "title": "Stakeholder Management Quiz",
+  "titleNL": "Stakeholder Management Quiz",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "q1",
+      "text": "What is a key concept in Stakeholder Management?",
+      "textNL": "Wat is een belangrijk concept in Stakeholder Management?",
+      "options": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "optionsNL": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "correct": 1,
+      "explanation": "Concept B is correct for Stakeholder Management.",
+      "explanationNL": "Concept B is correct voor Stakeholder Management."
+    },
+    {
+      "id": "q2",
+      "text": "What is a key concept in Stakeholder Management?",
+      "textNL": "Wat is een belangrijk concept in Stakeholder Management?",
+      "options": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "optionsNL": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "correct": 1,
+      "explanation": "Concept B is correct for Stakeholder Management.",
+      "explanationNL": "Concept B is correct voor Stakeholder Management."
+    },
+    {
+      "id": "q3",
+      "text": "What is a key concept in Stakeholder Management?",
+      "textNL": "Wat is een belangrijk concept in Stakeholder Management?",
+      "options": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "optionsNL": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "correct": 1,
+      "explanation": "Concept B is correct for Stakeholder Management.",
+      "explanationNL": "Concept B is correct voor Stakeholder Management."
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
+from . import api_views
+from . import views
+from . import test_view
+
+# Skills ViewSets
+from .views import (
+    SkillViewSet, SkillCategoryViewSet, UserSkillViewSet,
+    SkillGoalViewSet, SkillActivityViewSet
+)
+
+# Main router
+router = DefaultRouter()
+router.register(r'courses', api_views.CourseViewSet, basename='course')
+router.register(r'modules', api_views.CourseModuleViewSet, basename='module')
+router.register(r'lessons', api_views.CourseLessonViewSet, basename='lesson')
+
+# Skills router
+skills_router = DefaultRouter()
+skills_router.register(r'skills', SkillViewSet, basename='skill')
+skills_router.register(r'categories', SkillCategoryViewSet, basename='skill-category')
+skills_router.register(r'user-skills', UserSkillViewSet, basename='user-skill')
+skills_router.register(r'goals', SkillGoalViewSet, basename='skill-goal')
+skills_router.register(r'activities', SkillActivityViewSet, basename='skill-activity')
+
+urlpatterns = [
+    path('', include(router.urls)),
+    
+    # Skills endpoints
+    path('skills/', include(skills_router.urls)),
+
+    # Quiz
+    path('lessons/<int:lesson_id>/quiz/', views.get_quiz, name='get_quiz'),
+    path('lessons/<int:lesson_id>/quiz/submit/', views.submit_quiz, name='submit_quiz'),
+    path('lessons/<int:lesson_id>/quiz/', views.get_quiz, name='academy-lesson-quiz'),
+
+    # Test
+    path('test/<uuid:course_id>/', test_view.test_course_detail),
+]

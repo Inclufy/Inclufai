@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   Search,
@@ -63,6 +63,7 @@ import {
   categories, 
   getFeaturedCourses,
   getModulesByCourseId,
+  getCourseStats, // ADDED: For dynamic stats calculation
   BRAND,
   Course,
 } from "@/data/academy";
@@ -258,13 +259,21 @@ const TrainingMarketplace = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedMethodology, setSelectedMethodology] = useState<string | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState("all"); // ADDED
+  const [selectedDuration, setSelectedDuration] = useState("all"); // ADDED
+  const [selectedSort, setSelectedSort] = useState("popular"); // ADDED
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isNL = language === 'nl';
 
   // ============================================
-  // TRANSLATIONS - Updated with real stats
+  // DYNAMIC STATS CALCULATION - UPDATED
+  // ============================================
+  const academyStats = getCourseStats(); // Real-time calculation
+
+  // ============================================
+  // TRANSLATIONS - Updated with dynamic stats
   // ============================================
   const content = {
     nav: {
@@ -286,12 +295,12 @@ const TrainingMarketplace = () => {
       searchPlaceholder: isNL ? 'Zoek cursussen, onderwerpen of skills...' : 'Search courses, topics or skills...',
       trustedBy: isNL ? 'Vertrouwd door 10.000+ professionals wereldwijd' : 'Trusted by 10,000+ professionals worldwide',
     },
-    // Real stats: 23 modules, 99 lessons, ~95 hours, 7 certificates
+    // UPDATED: Dynamic stats from getCourseStats()
     stats: [
-      { value: '23', label: isNL ? 'Modules' : 'Modules', icon: BookOpen },
-      { value: '99', label: isNL ? 'Lessen' : 'Lessons', icon: PlayCircle },
-      { value: '95+', label: isNL ? 'Uur Video' : 'Hours Video', icon: Clock },
-      { value: '7', label: isNL ? 'Certificaten' : 'Certificates', icon: Award },
+      { value: academyStats.totalModules.toString(), label: isNL ? 'Modules' : 'Modules', icon: BookOpen },
+      { value: academyStats.totalLessons.toString(), label: isNL ? 'Lessen' : 'Lessons', icon: PlayCircle },
+      { value: `${Math.round(academyStats.totalHours)}+`, label: isNL ? 'Uur Video' : 'Hours Video', icon: Clock },
+      { value: academyStats.totalCourses.toString(), label: isNL ? 'Certificaten' : 'Certificates', icon: Award },
     ],
     sections: {
       featured: isNL ? 'Uitgelichte Cursussen' : 'Featured Courses',
@@ -349,26 +358,64 @@ const TrainingMarketplace = () => {
     { id: 'lean_six_sigma', label: 'Lean Six Sigma', color: BRAND.emerald },
   ];
 
-  // Filter courses
-  const filteredCourses = courses.filter(course => {
-    const title = safeString(course.title);
-    const titleNL = safeString(course.titleNL);
-    const desc = safeString(course.description);
-    const descNL = safeString(course.descriptionNL);
-    const tags = safeStringArray(course.tags);
-    const tagsNL = safeStringArray(course.tagsNL);
+  // UPDATED: Enhanced filter with level, duration, and sorting
+  const filteredCourses = useMemo(() => {
+    let result = courses.filter(course => {
+      const title = safeString(course.title);
+      const titleNL = safeString(course.titleNL);
+      const desc = safeString(course.description);
+      const descNL = safeString(course.descriptionNL);
+      const tags = safeStringArray(course.tags);
+      const tagsNL = safeStringArray(course.tagsNL);
+      
+      const matchesSearch = 
+        title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        titleNL.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        descNL.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        tagsNL.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      const matchesCategory = selectedCategory === 'all' || course.category === selectedCategory;
+      const matchesMethodology = !selectedMethodology || course.methodology === selectedMethodology;
+      
+      // NEW: Level filter
+      let matchesLevel = true;
+      if (selectedLevel !== 'all') {
+        const level = course.levels || 2;
+        if (selectedLevel === 'beginner') matchesLevel = level <= 2;
+        else if (selectedLevel === 'intermediate') matchesLevel = level >= 2 && level <= 3;
+        else if (selectedLevel === 'advanced') matchesLevel = level >= 3;
+      }
+      
+      // NEW: Duration filter
+      let matchesDuration = true;
+      if (selectedDuration !== 'all') {
+        const duration = course.duration || 0;
+        if (selectedDuration === 'short') matchesDuration = duration < 10;
+        else if (selectedDuration === 'medium') matchesDuration = duration >= 10 && duration <= 20;
+        else if (selectedDuration === 'long') matchesDuration = duration > 20;
+      }
+      
+      return matchesSearch && matchesCategory && matchesMethodology && matchesLevel && matchesDuration;
+    });
     
-    const matchesSearch = 
-      title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      titleNL.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      descNL.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      tagsNL.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesCategory = selectedCategory === 'all' || course.category === selectedCategory;
-    const matchesMethodology = !selectedMethodology || course.methodology === selectedMethodology;
-    return matchesSearch && matchesCategory && matchesMethodology;
-  });
+    // NEW: Sorting
+    if (selectedSort === 'rating') {
+      result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    } else if (selectedSort === 'newest') {
+      result.sort((a, b) => (b.new ? 1 : 0) - (a.new ? 1 : 0));
+    } else if (selectedSort === 'duration-asc') {
+      result.sort((a, b) => (a.duration || 0) - (b.duration || 0));
+    } else if (selectedSort === 'duration-desc') {
+      result.sort((a, b) => (b.duration || 0) - (a.duration || 0));
+    } else {
+      // default: popular (by student count)
+      result.sort((a, b) => (b.students || 0) - (a.students || 0));
+    }
+    
+    return result;
+  }, [searchQuery, selectedCategory, selectedMethodology, selectedLevel, selectedDuration, selectedSort]);
 
   const featuredCourses = getFeaturedCourses();
 
@@ -760,7 +807,7 @@ const TrainingMarketplace = () => {
         
         <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
-            {/* Badge - Updated to show 7 courses */}
+            {/* Badge - Updated to show 11 courses dynamically */}
             <div 
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium mb-8"
               style={{ backgroundColor: `${BRAND.purple}15`, color: BRAND.purple }}
@@ -806,7 +853,7 @@ const TrainingMarketplace = () => {
             {/* Trust */}
             <p className="text-sm text-muted-foreground mb-6">{content.hero.trustedBy}</p>
 
-            {/* Stats - Real numbers */}
+            {/* Stats - UPDATED: Now using dynamic stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
               {content.stats.map((stat, i) => (
                 <div 
@@ -876,6 +923,53 @@ const TrainingMarketplace = () => {
                 </Card>
               );
             })}
+          </div>
+        </section>
+
+        {/* ADDED: Advanced Filters Section */}
+        <section className="mb-8">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Level Filter */}
+            <select
+              value={selectedLevel}
+              onChange={(e) => setSelectedLevel(e.target.value)}
+              className="px-4 py-2 rounded-lg border border-border bg-card text-sm font-medium"
+            >
+              <option value="all">{isNL ? 'Alle Niveaus' : 'All Levels'}</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+
+            {/* Duration Filter */}
+            <select
+              value={selectedDuration}
+              onChange={(e) => setSelectedDuration(e.target.value)}
+              className="px-4 py-2 rounded-lg border border-border bg-card text-sm font-medium"
+            >
+              <option value="all">{isNL ? 'Alle Duur' : 'All Duration'}</option>
+              <option value="short">&lt; 10 {isNL ? 'uur' : 'hours'}</option>
+              <option value="medium">10-20 {isNL ? 'uur' : 'hours'}</option>
+              <option value="long">&gt; 20 {isNL ? 'uur' : 'hours'}</option>
+            </select>
+
+            {/* Sort */}
+            <select
+              value={selectedSort}
+              onChange={(e) => setSelectedSort(e.target.value)}
+              className="px-4 py-2 rounded-lg border border-border bg-card text-sm font-medium"
+            >
+              <option value="popular">{isNL ? 'Populairste' : 'Most Popular'}</option>
+              <option value="rating">{isNL ? 'Hoogste Rating' : 'Highest Rated'}</option>
+              <option value="newest">{isNL ? 'Nieuwste' : 'Newest'}</option>
+              <option value="duration-asc">{isNL ? 'Kortste Eerst' : 'Shortest First'}</option>
+              <option value="duration-desc">{isNL ? 'Langste Eerst' : 'Longest First'}</option>
+            </select>
+
+            <div className="flex-1" />
+            <span className="text-sm text-muted-foreground">
+              {filteredCourses.length} {content.labels.courses}
+            </span>
           </div>
         </section>
 
@@ -969,7 +1063,6 @@ const TrainingMarketplace = () => {
                   ? `${content.methodologies[selectedMethodology] || selectedMethodology} ${isNL ? 'Cursussen' : 'Courses'}`
                   : content.sections.allCourses}
             </h2>
-            <span className="text-muted-foreground">{filteredCourses.length} {content.labels.courses}</span>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

@@ -151,7 +151,19 @@ class CourseLesson(models.Model):
         ('assignment', 'Assignment'),
         ('download', 'Downloadable Resource'),
     ]
-    
+
+    VISUAL_TYPE_CHOICES = [
+        ('auto', 'Auto-detect from content'),
+        ('project_def', 'Project Definition (3 DNA Cards)'),
+        ('triple_constraint', 'Triple Constraint (Triangle Diagram)'),
+        ('pm_role', 'PM Role (Role Cards)'),
+        ('comparison', 'Comparison (Table + Examples)'),
+        ('lifecycle', 'Lifecycle (Phase Diagram)'),
+        ('stakeholder', 'Stakeholder (Matrix)'),
+        ('risk', 'Risk Management (Heat Map)'),
+        ('generic', 'Generic (Rich Text + Icons)'),
+    ]
+
     module = models.ForeignKey(CourseModule, on_delete=models.CASCADE, related_name='lessons')
     title = models.CharField(max_length=300)
     title_nl = models.CharField(max_length=300, blank=True)
@@ -159,15 +171,33 @@ class CourseLesson(models.Model):
     duration_minutes = models.PositiveIntegerField(default=0)
     is_free_preview = models.BooleanField(default=False)
     order = models.PositiveIntegerField(default=0)
-    
+
     # Content
     video_url = models.URLField(blank=True)
     content = models.TextField(blank=True)
     content_nl = models.TextField(blank=True)
-    
+
+    # Visual Template System
+    visual_type = models.CharField(
+        max_length=30,
+        choices=VISUAL_TYPE_CHOICES,
+        default='auto',
+        help_text='Visual template to use for this lesson. "auto" will detect from content.'
+    )
+    visual_data = models.JSONField(
+        null=True,
+        blank=True,
+        help_text='JSON config for the visual template (cards, labels, examples, colors)'
+    )
+
+    # AI Coach & Skills fields
+    ai_profile = models.JSONField(null=True, blank=True)
+    simulation_id = models.CharField(max_length=255, null=True, blank=True)
+    practice_set_id = models.CharField(max_length=255, null=True, blank=True)
+
     class Meta:
         ordering = ['order']
-    
+
     def __str__(self):
         return self.title
 
@@ -418,18 +448,53 @@ class Payment(models.Model):
 
 
 class Certificate(models.Model):
-    """Course completion certificates"""
+    """Course completion certificates with skills breakdown"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     enrollment = models.OneToOneField(Enrollment, on_delete=models.CASCADE, related_name='certificate')
     
     certificate_number = models.CharField(max_length=50, unique=True)
     issued_at = models.DateTimeField(auto_now_add=True)
     
-    # PDF storage
+    # PDF storage (2 pages: front + skills breakdown)
     pdf_file = models.FileField(upload_to='certificates/', blank=True)
+    
+    # Skills snapshot at time of certification
+    skills_data = models.JSONField(default=dict, blank=True, help_text="Skills breakdown at certification time")
+    
+    # Course completion stats
+    total_score = models.IntegerField(default=0, help_text="Overall course score percentage")
+    lessons_completed = models.IntegerField(default=0)
+    quizzes_passed = models.IntegerField(default=0)
+    exams_passed = models.IntegerField(default=0)
+    simulations_completed = models.IntegerField(default=0)
+    practice_submitted = models.IntegerField(default=0)
+    
+    # Verification
+    verification_code = models.CharField(max_length=50, unique=True, blank=True)
+    qr_code = models.ImageField(upload_to='certificates/qr/', blank=True)
+    
+    class Meta:
+        ordering = ['-issued_at']
+        indexes = [
+            models.Index(fields=['certificate_number']),
+            models.Index(fields=['verification_code']),
+        ]
     
     def __str__(self):
         return f"{self.certificate_number} - {self.enrollment.course.title}"
+    
+    def generate_certificate_number(self):
+        """Generate unique certificate number like PM-2026-001234"""
+        from datetime import datetime
+        year = datetime.now().year
+        course_code = self.enrollment.course.slug[:2].upper()
+        count = Certificate.objects.filter(issued_at__year=year).count() + 1
+        return f"{course_code}-{year}-{count:06d}"
+    
+    def generate_verification_code(self):
+        """Generate unique 12-char verification code"""
+        import secrets
+        return secrets.token_urlsafe(9)[:12].upper()
 
 
 class QuizQuestion(models.Model):
@@ -507,3 +572,429 @@ class LessonResource(models.Model):
     
     def __str__(self):
         return self.name
+
+class SkillCategory(models.Model):
+    id = models.CharField(max_length=50, primary_key=True)
+    name = models.CharField(max_length=100)
+    name_nl = models.CharField(max_length=100)
+    icon = models.CharField(max_length=50)
+    color = models.CharField(max_length=50)
+    order = models.IntegerField(default=0)
+    
+    class Meta:
+        db_table = 'academy_skill_categories'
+        ordering = ['order', 'name']
+    
+    def __str__(self):
+        return self.name
+
+
+class Skill(models.Model):
+    id = models.CharField(max_length=50, primary_key=True)
+    category = models.ForeignKey(SkillCategory, on_delete=models.CASCADE, related_name='skills')
+    name = models.CharField(max_length=100)
+    name_nl = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    description_nl = models.TextField(blank=True)
+    level_1_points = models.IntegerField(default=0)
+    level_2_points = models.IntegerField(default=100)
+    level_3_points = models.IntegerField(default=300)
+    level_4_points = models.IntegerField(default=600)
+    level_5_points = models.IntegerField(default=1000)
+    
+    class Meta:
+        db_table = 'academy_skills'
+        ordering = ['category__order', 'name']
+    
+    def __str__(self):
+        return f"{self.category.name} - {self.name}"
+
+
+class UserSkill(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='academy_skills')
+    skill = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name='user_progress')
+    points = models.IntegerField(default=0)
+    level = models.IntegerField(default=1)
+    last_updated = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'academy_user_skills'
+        unique_together = ['user', 'skill']
+        ordering = ['-points']
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.skill.name}: Level {self.level}"
+    
+    def calculate_level(self):
+        if self.points >= self.skill.level_5_points:
+            return 5
+        elif self.points >= self.skill.level_4_points:
+            return 4
+        elif self.points >= self.skill.level_3_points:
+            return 3
+        elif self.points >= self.skill.level_2_points:
+            return 2
+        return 1
+    
+    def get_progress_to_next_level(self):
+        if self.level == 5:
+            return 100
+        current_threshold = getattr(self.skill, f'level_{self.level}_points')
+        next_threshold = getattr(self.skill, f'level_{self.level + 1}_points')
+        points_in_level = self.points - current_threshold
+        points_needed = next_threshold - current_threshold
+        return int((points_in_level / points_needed) * 100)
+    
+    def add_points(self, points):
+        old_level = self.level
+        self.points += points
+        self.level = self.calculate_level()
+        self.save()
+        return self.level > old_level
+
+
+class SkillGoal(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='skill_goals')
+    skill = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name='goals')
+    target_level = models.IntegerField()
+    deadline = models.DateField(null=True, blank=True)
+    reason = models.TextField(blank=True)
+    achieved = models.BooleanField(default=False)
+    achieved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'academy_skill_goals'
+        ordering = ['-created_at']
+
+
+class LessonSkillMapping(models.Model):
+    lesson_id = models.CharField(max_length=50, db_index=True)
+    skill = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name='lesson_mappings')
+    points_awarded = models.IntegerField()
+    quiz_bonus = models.IntegerField(default=0)
+    simulation_bonus = models.IntegerField(default=0)
+    practice_bonus = models.IntegerField(default=0)
+    
+    class Meta:
+        db_table = 'academy_lesson_skill_mappings'
+        unique_together = ['lesson_id', 'skill']
+
+
+class SkillActivity(models.Model):
+    ACTIVITY_TYPES = [
+        ('lesson_complete', 'Lesson Completed'),
+        ('quiz_pass', 'Quiz Passed'),
+        ('simulation_correct', 'Simulation Correct'),
+        ('practice_submit', 'Practice Submitted'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='skill_activities')
+    skill = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name='activities')
+    activity_type = models.CharField(max_length=30, choices=ACTIVITY_TYPES)
+    points = models.IntegerField()
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'academy_skill_activities'
+        ordering = ['-created_at']
+
+
+
+class Exam(models.Model):
+    """Course/Module exams"""
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='exams', null=True, blank=True)
+    module = models.ForeignKey(CourseModule, on_delete=models.CASCADE, related_name='exams', null=True, blank=True)
+    
+    title = models.CharField(max_length=200)
+    title_nl = models.CharField(max_length=200, blank=True)
+    description = models.TextField(blank=True)
+    description_nl = models.TextField(blank=True)
+    
+    passing_score = models.IntegerField(default=80)
+    time_limit = models.IntegerField(help_text="Time limit in minutes", default=45)
+    max_attempts = models.IntegerField(default=3)
+    
+    questions = models.JSONField()  # Store questions data
+    is_active = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.title
+
+
+class ExamAttempt(models.Model):
+    """Track exam attempts"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='exam_attempts')
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='attempts')
+    
+    score = models.IntegerField()
+    passed = models.BooleanField(default=False)
+    answers = models.JSONField()
+    time_taken = models.IntegerField()  # Seconds
+    attempt_number = models.IntegerField(default=1)
+    
+    started_at = models.DateTimeField()
+    completed_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-completed_at']
+        indexes = [
+            models.Index(fields=['user', 'exam']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.exam.title} - Attempt {self.attempt_number} - {self.score}%"
+
+
+class LessonVisual(models.Model):
+    """AI-generated visual assignments for lessons with admin approval workflow"""
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    
+    lesson = models.OneToOneField(
+        CourseLesson, 
+        on_delete=models.CASCADE, 
+        related_name='visual'
+    )
+    visual_id = models.CharField(
+        max_length=200,
+        help_text='Visual identifier (e.g., project-definition, timeline, stakeholder)'
+    )
+    ai_confidence = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2,
+        help_text='AI confidence score (0-100)'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    custom_keywords = models.TextField(
+        blank=True, 
+        null=True,
+        help_text='Custom keywords if AI suggestion was rejected'
+    )
+    ai_concepts = models.JSONField(
+        blank=True, 
+        null=True,
+        help_text='AI-detected concepts from OpenAI'
+    )
+    ai_intent = models.TextField(
+    blank=True, 
+    null=True,
+    help_text='AI-detected learning intent'
+)
+
+    ai_methodology = models.TextField(
+    blank=True, 
+    null=True,
+    help_text='AI-detected methodology'
+)
+    preview_image_url = models.URLField(
+        blank=True, 
+        null=True,
+        help_text='DALL-E generated preview image URL'
+    )
+    
+    
+    # Audit fields
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    approved_at = models.DateTimeField(blank=True, null=True)
+    approved_by = models.ForeignKey(
+        'accounts.CustomUser',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    
+    class Meta:
+        verbose_name = 'Lesson Visual'
+        verbose_name_plural = 'Lesson Visuals'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['lesson']),
+        ]
+    
+    def __str__(self):
+        return f"{self.lesson.title} - {self.visual_id} ({self.status})"
+    
+    # Mapping from LessonVisual.visual_id patterns → CourseLesson.visual_type.
+    # Kept in sync with resolveVisualType() in visualService.ts
+    VISUAL_ID_TO_TYPE = {
+        # Direct VisualType matches
+        'project_definition': 'project_def',
+        'project-definition': 'project_def',
+        'project_def': 'project_def',
+        'constraint': 'triple_constraint',
+        'triple_constraint': 'triple_constraint',
+        'triple-constraint': 'triple_constraint',
+        'triangle': 'triple_constraint',
+        'pm_role': 'pm_role',
+        'pm-role': 'pm_role',
+        'comparison': 'comparison',
+        'lifecycle': 'lifecycle',
+        'levenscyclus': 'lifecycle',
+        'stakeholder': 'stakeholder',
+        'risk': 'risk',
+        'risico': 'risk',
+        # OpenAI-generated visual_ids → closest VisualType
+        'charter': 'project_def',
+        'initiation': 'project_def',
+        'business_case': 'project_def',
+        'timeline': 'lifecycle',
+        'wbs': 'lifecycle',
+        'communication': 'stakeholder',
+        'change_control': 'risk',
+        'issue_log': 'risk',
+        'budget_variance': 'triple_constraint',
+        'acceptance_checklist': 'lifecycle',
+        'procurement': 'stakeholder',
+        'raci': 'stakeholder',
+        'swot': 'risk',
+        'sprint': 'lifecycle',
+        'backlog': 'lifecycle',
+        'scrum_events': 'lifecycle',
+        'velocity': 'triple_constraint',
+        'manifesto': 'comparison',
+        'principles': 'comparison',
+        'methodologies': 'comparison',
+    }
+
+    # Regex patterns for substring matching (handles long OpenAI visual_ids)
+    VISUAL_ID_PATTERNS = [
+        (r'charter', 'project_def'),
+        (r'initiat', 'project_def'),
+        (r'business.?case|roi', 'project_def'),
+        (r'project.?definition|scope.?definition', 'project_def'),
+        (r'stakeholder|belanghebbend', 'stakeholder'),
+        (r'risk|risico', 'risk'),
+        (r'constraint|triangle|driehoek|triple', 'triple_constraint'),
+        (r'budget|variance|earned.?value|cost', 'triple_constraint'),
+        (r'velocity|burndown', 'triple_constraint'),
+        (r'lifecycle|levenscyclus|project.?fase', 'lifecycle'),
+        (r'timeline|tijdlijn|gantt|planning', 'lifecycle'),
+        (r'wbs|breakdown|decomposit', 'lifecycle'),
+        (r'sprint|backlog|scrum', 'lifecycle'),
+        (r'acceptance|checklist|closure|closing', 'lifecycle'),
+        (r'communicat', 'stakeholder'),
+        (r'procurement|inkoop|vendor', 'stakeholder'),
+        (r'raci|team.?matrix|responsibility', 'stakeholder'),
+        (r'change.?control|wijziging', 'risk'),
+        (r'issue.?log|issue.?track', 'risk'),
+        (r'swot', 'risk'),
+        (r'comparison|agile.?vs|traditional.?vs', 'comparison'),
+        (r'manifesto', 'comparison'),
+        (r'principles?|princip', 'comparison'),
+        (r'methodolog|framework|prince2|pmbok', 'comparison'),
+        (r'pm.?rol|project.?manager', 'pm_role'),
+    ]
+
+    def _resolve_visual_type(self):
+        """Map visual_id to CourseLesson.visual_type"""
+        import re
+        vid = (self.visual_id or '').lower().strip()
+        # Direct match
+        if vid in self.VISUAL_ID_TO_TYPE:
+            return self.VISUAL_ID_TO_TYPE[vid]
+        # Substring match on direct keys
+        for pattern, vtype in self.VISUAL_ID_TO_TYPE.items():
+            if pattern in vid:
+                return vtype
+        # Regex pattern match (handles OpenAI's verbose visual_ids)
+        for pattern, vtype in self.VISUAL_ID_PATTERNS:
+            if re.search(pattern, vid):
+                return vtype
+        return 'generic'
+
+    def approve(self, user):
+        """Approve the visual and sync to CourseLesson"""
+        from django.utils import timezone
+        self.status = 'approved'
+        self.approved_by = user
+        self.approved_at = timezone.now()
+        self.save()
+
+        # Sync approved visual config to CourseLesson for unified player access
+        lesson = self.lesson
+        lesson.visual_type = self._resolve_visual_type()
+        lesson.visual_data = {
+            'visual_id': self.visual_id,
+            'ai_concepts': self.ai_concepts or [],
+            'ai_intent': self.ai_intent or '',
+            'ai_methodology': self.ai_methodology or '',
+            'ai_confidence': float(self.ai_confidence) if self.ai_confidence else 0,
+            'preview_image_url': self.preview_image_url or '',
+            'approved': True,
+            'approved_at': self.approved_at.isoformat() if self.approved_at else '',
+        }
+        lesson.save(update_fields=['visual_type', 'visual_data'])
+
+    def reject(self, custom_keywords=None):
+        """Reject the visual and optionally provide custom keywords"""
+        self.status = 'rejected'
+        if custom_keywords:
+            self.custom_keywords = custom_keywords
+        self.save()
+class PracticeAssignment(models.Model):
+    """Practical exercises and assignments"""
+    
+    id = models.AutoField(primary_key=True)
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    course = models.ForeignKey('Course', on_delete=models.CASCADE, related_name='practice_assignments', null=True, blank=True)
+    lesson = models.ForeignKey('CourseLesson', on_delete=models.CASCADE, related_name='practice_assignments', null=True, blank=True)
+    
+    duration_minutes = models.IntegerField(default=60)
+    points = models.IntegerField(default=10)
+    criteria = models.JSONField(default=dict, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return self.title
+
+
+class PracticeSubmission(models.Model):
+    """Student submissions for practice assignments"""
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('needs_work', 'Needs Work'),
+    ]
+    
+    id = models.AutoField(primary_key=True)
+    assignment = models.ForeignKey(PracticeAssignment, on_delete=models.CASCADE, related_name='submissions')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    submission_text = models.TextField(blank=True)
+    submission_file = models.FileField(upload_to='practice_submissions/', null=True, blank=True)
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    score = models.IntegerField(null=True, blank=True)
+    feedback = models.TextField(blank=True)
+    
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_submissions')
+    
+    class Meta:
+        ordering = ['-submitted_at']
+        
+    def __str__(self):
+        return f"{self.user.email} - {self.assignment.title}"

@@ -5,7 +5,10 @@ import { LayoutDashboard, MessageSquare, FolderKanban, Users,
   GraduationCap, Mail, Activity, CalendarDays, Table, Clock, Target, 
   Columns, Crown, Award, Repeat, Zap, ArrowDown, GitMerge, BarChart3, 
   TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
-  Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock, Package, Presentation, Briefcase, AlertCircle, CheckCircle } from "lucide-react";
+  Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock, 
+  Package, Presentation, Briefcase, AlertCircle, CheckCircle, 
+  BookOpen, Download, FlaskConical
+} from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -1180,20 +1183,226 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       
-          {/* Academy */}
-          <SidebarGroup>
-            
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <a href="/academy">
-                    <GraduationCap className="h-4 w-4" />
-                    <span>{'Academy'}</span>
-                  </a>
+              {/* Academy */}
+<SidebarGroup>
+  <SidebarMenu>
+    {(() => {
+      const isAcademyLearning = location.pathname.includes('/academy/course/') && location.pathname.includes('/learn');
+      
+      if (isAcademyLearning && !isCollapsed) {
+        return (
+          <Collapsible defaultOpen={true} className="group/academy">
+            <SidebarMenuItem>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton className={cn(
+                  "rounded-lg transition-all duration-200",
+                  location.pathname.startsWith('/academy')
+                    ? "bg-gradient-to-r from-purple-50 to-fuchsia-50 dark:from-purple-900/20 dark:to-fuchsia-900/20 text-purple-700 dark:text-purple-300 font-semibold shadow-sm"
+                    : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50"
+                )}>
+                  <div className={cn("flex items-center justify-center w-7 h-7 rounded-lg", location.pathname.startsWith('/academy') ? "bg-white dark:bg-gray-800 shadow-sm" : "bg-gray-100/80 dark:bg-gray-800")}>
+                    <GraduationCap className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <span className="text-sm">Academy</span>
+                  <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/academy:rotate-90" />
                 </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarMenuSub className="ml-5 mt-1 space-y-0.5 border-l-2 border-purple-200 dark:border-purple-800/40 pl-3">
+                  <SidebarMenuSubItem>
+  <SidebarMenuSubButton asChild>
+    <a 
+      href={`${location.pathname}?tab=content`}
+      className={cn(
+        "rounded-md transition-all duration-150 text-sm",
+        new URLSearchParams(location.search).get('tab') === 'content' || (!new URLSearchParams(location.search).get('tab'))
+          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
+          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
+      )}
+    >
+      <BookOpen className="h-3.5 w-3.5" />
+      <span>Inhoud</span>
+    </a>
+  </SidebarMenuSubButton>
+</SidebarMenuSubItem>
+
+<SidebarMenuSubItem>
+  <SidebarMenuSubButton asChild>
+    <a 
+      href={`${location.pathname}?tab=notes`}
+      className={cn(
+        "rounded-md transition-all duration-150 text-sm",
+        new URLSearchParams(location.search).get('tab') === 'notes'
+          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
+          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
+      )}
+    >
+      <FileText className="h-3.5 w-3.5" />
+      <span>Notities</span>
+    </a>
+  </SidebarMenuSubButton>
+</SidebarMenuSubItem>
+
+<SidebarMenuSubItem>
+  <SidebarMenuSubButton asChild>
+    <a 
+      href={`${location.pathname}?tab=resources`}
+      className={cn(
+        "rounded-md transition-all duration-150 text-sm",
+        new URLSearchParams(location.search).get('tab') === 'resources'
+          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
+          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
+      )}
+    >
+      <Download className="h-3.5 w-3.5" />
+      <span>Resources</span>
+    </a>
+  </SidebarMenuSubButton>
+</SidebarMenuSubItem>
+
+<SidebarMenuSubItem>
+  <SidebarMenuSubButton asChild>
+    <a 
+      href={`${location.pathname}?tab=questions`}
+      className={cn(
+        "rounded-md transition-all duration-150 text-sm",
+        new URLSearchParams(location.search).get('tab') === 'questions'
+          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
+          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
+      )}
+    >
+      <MessageSquare className="h-3.5 w-3.5" />
+      <span>Vragen</span>
+    </a>
+  </SidebarMenuSubButton>
+</SidebarMenuSubItem>
+
+<div className="h-px bg-purple-200 dark:bg-purple-800/40 my-1" />
+
+<SidebarMenuSubItem>
+  <SidebarMenuSubButton asChild>
+    <a 
+      href={`${location.pathname}?tab=skills`}
+      className={cn(
+        "rounded-md transition-all duration-150 text-sm",
+        new URLSearchParams(location.search).get('tab') === 'skills'
+          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
+          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
+      )}
+    >
+      <Target className="h-3.5 w-3.5" />
+      <span>Skills</span>
+    </a>
+  </SidebarMenuSubButton>
+</SidebarMenuSubItem>
+
+<SidebarMenuSubItem>
+  <SidebarMenuSubButton asChild>
+    <a 
+      href={`${location.pathname}?tab=simulation`}
+      className={cn(
+        "rounded-md transition-all duration-150 text-sm",
+        new URLSearchParams(location.search).get('tab') === 'simulation'
+          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
+          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
+      )}
+    >
+      <FlaskConical className="h-3.5 w-3.5" />
+      <span>Simulatie</span>
+    </a>
+  </SidebarMenuSubButton>
+</SidebarMenuSubItem>
+
+<SidebarMenuSubItem>
+  <SidebarMenuSubButton asChild>
+    <a 
+      href={`${location.pathname}?tab=practice`}
+      className={cn(
+        "rounded-md transition-all duration-150 text-sm",
+        new URLSearchParams(location.search).get('tab') === 'practice'
+          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
+          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
+      )}
+    >
+      <Briefcase className="h-3.5 w-3.5" />
+      <span>Praktijk</span>
+    </a>
+  </SidebarMenuSubButton>
+</SidebarMenuSubItem>
+
+<SidebarMenuSubItem>
+  <SidebarMenuSubButton asChild>
+    <a 
+      href={`${location.pathname}?tab=quiz`}
+      className={cn(
+        "rounded-md transition-all duration-150 text-sm",
+        new URLSearchParams(location.search).get('tab') === 'quiz'
+          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
+          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
+      )}
+    >
+      <CheckCircle className="h-3.5 w-3.5" />
+      <span>Quiz</span>
+    </a>
+  </SidebarMenuSubButton>
+</SidebarMenuSubItem>
+
+<div className="h-px bg-purple-200 dark:bg-purple-800/40 my-1" />
+
+<SidebarMenuSubItem>
+  <SidebarMenuSubButton asChild>
+    <a 
+      href={`${location.pathname}?tab=exam`}
+      className={cn(
+        "rounded-md transition-all duration-150 text-sm",
+        new URLSearchParams(location.search).get('tab') === 'exam'
+          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
+          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
+      )}
+    >
+      <GraduationCap className="h-3.5 w-3.5" />
+      <span>Examen</span>
+    </a>
+  </SidebarMenuSubButton>
+</SidebarMenuSubItem>
+
+<SidebarMenuSubItem>
+  <SidebarMenuSubButton asChild>
+    <a 
+      href={`${location.pathname}?tab=certificate`}
+      className={cn(
+        "rounded-md transition-all duration-150 text-sm",
+        new URLSearchParams(location.search).get('tab') === 'certificate'
+          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
+          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
+      )}
+    >
+      <Award className="h-3.5 w-3.5" />
+      <span>Certificaat</span>
+    </a>
+  </SidebarMenuSubButton>
+</SidebarMenuSubItem>
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+          </Collapsible>
+        );
+      }
+      
+      // Default Academy link (when not in learning mode)
+      return (
+        <SidebarMenuItem>
+          <SidebarMenuButton asChild>
+            <a href="/academy">
+              <GraduationCap className="h-4 w-4" />
+              <span>Academy</span>
+            </a>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      );
+    })()}
+  </SidebarMenu>
+    </SidebarGroup>
         </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border/50">

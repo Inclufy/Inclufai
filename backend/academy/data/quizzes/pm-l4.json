@@ -1,0 +1,68 @@
+{
+  "id": "pm-l4",
+  "title": "Project Planning Quiz",
+  "titleNL": "Project Planning Quiz",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "q1",
+      "text": "What is a key concept in Project Planning?",
+      "textNL": "Wat is een belangrijk concept in Project Planning?",
+      "options": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "optionsNL": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "correct": 1,
+      "explanation": "Concept B is correct for Project Planning.",
+      "explanationNL": "Concept B is correct voor Project Planning."
+    },
+    {
+      "id": "q2",
+      "text": "What is a key concept in Project Planning?",
+      "textNL": "Wat is een belangrijk concept in Project Planning?",
+      "options": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "optionsNL": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "correct": 1,
+      "explanation": "Concept B is correct for Project Planning.",
+      "explanationNL": "Concept B is correct voor Project Planning."
+    },
+    {
+      "id": "q3",
+      "text": "What is a key concept in Project Planning?",
+      "textNL": "Wat is een belangrijk concept in Project Planning?",
+      "options": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "optionsNL": [
+        "Concept A",
+        "Concept B (Correct)",
+        "Concept C",
+        "Concept D"
+      ],
+      "correct": 1,
+      "explanation": "Concept B is correct for Project Planning.",
+      "explanationNL": "Concept B is correct voor Project Planning."
+    }
+  ]
+}

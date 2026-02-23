@@ -1,0 +1,26 @@
+from rest_framework import serializers
+from .models import Course, CourseModule, CourseLesson
+
+class CourseLessonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CourseLesson
+        fields = '__all__'
+
+class CourseModuleSerializer(serializers.ModelSerializer):
+    lessons = CourseLessonSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = CourseModule
+        fields = ['id', 'title', 'description', 'order', 'lessons', 'course']
+
+class CourseSerializer(serializers.ModelSerializer):
+    modules = CourseModuleSerializer(many=True, read_only=True)
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    instructor_name = serializers.CharField(source='instructor.name', read_only=True)
+    
+    class Meta:
+        model = Course
+        fields = ['id', 'title', 'slug', 'description', 'price', 'difficulty', 
+                  'duration_hours', 'language', 'is_featured', 'is_bestseller', 
+                  'status', 'category', 'category_name', 'instructor', 
+                  'instructor_name', 'modules']  # MODULES EXPLICITLY ADDED!

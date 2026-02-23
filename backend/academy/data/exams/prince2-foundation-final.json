@@ -1,0 +1,392 @@
+{
+  "id": "prince2-foundation-final",
+  "title": "PRINCE2 Foundation - Final Exam",
+  "titleNL": "PRINCE2 Foundation - Eindexamen",
+  "description": "Comprehensive exam covering all PRINCE2 Foundation topics",
+  "descriptionNL": "Uitgebreid examen over alle PRINCE2 Foundation onderwerpen",
+  "passingScore": 80,
+  "timeLimit": 45,
+  "maxAttempts": 3,
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Question 1 about PRINCE2 Foundation",
+      "textNL": "Vraag 1 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q2",
+      "text": "Question 2 about PRINCE2 Foundation",
+      "textNL": "Vraag 2 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q3",
+      "text": "Question 3 about PRINCE2 Foundation",
+      "textNL": "Vraag 3 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q4",
+      "text": "Question 4 about PRINCE2 Foundation",
+      "textNL": "Vraag 4 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q5",
+      "text": "Question 5 about PRINCE2 Foundation",
+      "textNL": "Vraag 5 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q6",
+      "text": "Question 6 about PRINCE2 Foundation",
+      "textNL": "Vraag 6 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q7",
+      "text": "Question 7 about PRINCE2 Foundation",
+      "textNL": "Vraag 7 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q8",
+      "text": "Question 8 about PRINCE2 Foundation",
+      "textNL": "Vraag 8 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q9",
+      "text": "Question 9 about PRINCE2 Foundation",
+      "textNL": "Vraag 9 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q10",
+      "text": "Question 10 about PRINCE2 Foundation",
+      "textNL": "Vraag 10 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q11",
+      "text": "Question 11 about PRINCE2 Foundation",
+      "textNL": "Vraag 11 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q12",
+      "text": "Question 12 about PRINCE2 Foundation",
+      "textNL": "Vraag 12 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q13",
+      "text": "Question 13 about PRINCE2 Foundation",
+      "textNL": "Vraag 13 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q14",
+      "text": "Question 14 about PRINCE2 Foundation",
+      "textNL": "Vraag 14 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q15",
+      "text": "Question 15 about PRINCE2 Foundation",
+      "textNL": "Vraag 15 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q16",
+      "text": "Question 16 about PRINCE2 Foundation",
+      "textNL": "Vraag 16 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q17",
+      "text": "Question 17 about PRINCE2 Foundation",
+      "textNL": "Vraag 17 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q18",
+      "text": "Question 18 about PRINCE2 Foundation",
+      "textNL": "Vraag 18 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q19",
+      "text": "Question 19 about PRINCE2 Foundation",
+      "textNL": "Vraag 19 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q20",
+      "text": "Question 20 about PRINCE2 Foundation",
+      "textNL": "Vraag 20 over PRINCE2 Foundation",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    }
+  ]
+}

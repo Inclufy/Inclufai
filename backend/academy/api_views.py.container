@@ -1,0 +1,37 @@
+from rest_framework import viewsets
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from .models import Course, CourseModule, CourseLesson
+from .serializers import CourseSerializer, CourseModuleSerializer, CourseLessonSerializer
+
+class CourseViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = CourseSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        return Course.objects.prefetch_related('modules__lessons').all()
+
+class CourseModuleViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = CourseModule.objects.prefetch_related('lessons').all()
+    serializer_class = CourseModuleSerializer
+    permission_classes = [AllowAny]
+
+class CourseLessonViewSet(viewsets.ModelViewSet):
+    queryset = CourseLesson.objects.all()
+    serializer_class = CourseLessonSerializer
+    permission_classes = [AllowAny]
+    
+    @action(detail=True, methods=['patch'])
+    def update_content(self, request, pk=None):
+        lesson = self.get_object()
+        
+        if 'content' in request.data:
+            lesson.content = request.data['content']
+        if 'ai_profile' in request.data:
+            lesson.ai_profile = request.data['ai_profile']
+        if 'simulation_id' in request.data:
+            lesson.simulation_id = request.data['simulation_id']
+            
+        lesson.save()
+        return Response(self.get_serializer(lesson).data)

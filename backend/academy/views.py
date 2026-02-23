@@ -7,35 +7,62 @@ import stripe
 import json
 from decimal import Decimal
 from django.conf import settings
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from django.core.mail import send_mail
+from django.db import models
 from django.template.loader import render_to_string
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
+from .models import CourseLesson, Enrollment
+from .models import QuizAttempt
+from .models import Course
+from .models import Certificate
+# # from .models import LessonContent
+from .models import LessonResource
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from django.db.models import Sum, Avg
+from .models import (
+    SkillCategory, Skill, UserSkill, SkillGoal, 
+    LessonSkillMapping, SkillActivity
+)
+from .serializers import (
+    SkillCategorySerializer, SkillSerializer, UserSkillSerializer,
+    SkillGoalSerializer, SkillActivitySerializer
+)
+from rest_framework.decorators import api_view
+from openai import OpenAI
+from django.conf import settings
+import json
+import logging
 
-from django.http import FileResponse, JsonResponse
+logger = logging.getLogger(__name__)
 
-# Initialize Stripe
-stripe.api_key = settings.STRIPE_SECRET_KEY
+
+# Initialize Stripe (safe)
+stripe.api_key = getattr(settings, "STRIPE_SECRET_KEY", None)
 
 # ============================================
 # COURSE DATA (For Stripe/Public - maps to DB)
 # ============================================
 def get_course_stripe_data(course_id):
     """Get course data for Stripe checkout"""
+    if not course_id:
+        return None
+
     from .models import Course
     try:
         course = Course.objects.get(id=course_id)
         return {
-            'id': str(course.id),
-            'title': course.title,
-            'price': int(float(course.price) * 100),  # Convert to cents
-            'stripe_price_id': course.stripe_price_id or None,
+            "id": str(course.id),
+            "title": course.title,
+            "price": int(course.price * 100),  # cents, avoids float issues
+            "stripe_price_id": course.stripe_price_id or None,
         }
     except Course.DoesNotExist:
         return None
@@ -76,7 +103,7 @@ COUPON_CODES = {
 # ============================================
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def create_checkout_session(request):
     """
     Create a Stripe Checkout Session for course purchase
@@ -312,7 +339,7 @@ def send_enrollment_confirmation(email, first_name, course_title):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def request_quote(request):
     """
     Handle enterprise/team quote requests
@@ -427,7 +454,7 @@ def send_quote_confirmation(quote_request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def verify_payment(request):
     """
     Verify payment status after redirect from Stripe
@@ -458,7 +485,7 @@ def verify_payment(request):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def validate_coupon(request):
     """
     Validate a coupon code
@@ -484,7 +511,7 @@ def validate_coupon(request):
 # ============================================
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_get_courses(request):
     """
     Get all courses for admin panel - FROM DATABASE
@@ -512,7 +539,7 @@ def admin_get_courses(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_get_course(request, course_id):
     """
     Get single course details for admin
@@ -538,7 +565,7 @@ def admin_get_course(request, course_id):
 
 
 @api_view(['PATCH'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_update_course(request, course_id):
     """
     Update course details
@@ -579,7 +606,7 @@ def admin_update_course(request, course_id):
 # ============================================
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_get_enrollments(request):
     """
     Get all enrollments for admin panel
@@ -588,7 +615,7 @@ def admin_get_enrollments(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_get_enrollment(request, enrollment_id):
     """
     Get single enrollment details
@@ -601,7 +628,7 @@ def admin_get_enrollment(request, enrollment_id):
 
 
 @api_view(['PATCH'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_update_enrollment(request, enrollment_id):
     """
     Update enrollment status/progress
@@ -623,7 +650,7 @@ def admin_update_enrollment(request, enrollment_id):
 # ============================================
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_get_quotes(request):
     """
     Get all quote requests for admin panel
@@ -632,7 +659,7 @@ def admin_get_quotes(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_get_quote(request, quote_id):
     """
     Get single quote details
@@ -645,7 +672,7 @@ def admin_get_quote(request, quote_id):
 
 
 @api_view(['PATCH'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_update_quote(request, quote_id):
     """
     Update quote status
@@ -663,7 +690,7 @@ def admin_update_quote(request, quote_id):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_quote_mark_contacted(request, quote_id):
     """
     Mark quote as contacted
@@ -677,7 +704,7 @@ def admin_quote_mark_contacted(request, quote_id):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_quote_send(request, quote_id):
     """
     Mark quote as sent
@@ -695,7 +722,7 @@ def admin_quote_send(request, quote_id):
 # ============================================
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_get_analytics(request):
     """
     Get analytics for admin panel - FROM DATABASE
@@ -729,7 +756,7 @@ def admin_get_analytics(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_dashboard_summary(request):
     """
     Get dashboard summary for admin
@@ -759,7 +786,7 @@ def admin_dashboard_summary(request):
 # ============================================
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_get_modules(request, course_id):
     """Get all modules for a course"""
     from .models import CourseModule
@@ -781,7 +808,7 @@ def admin_get_modules(request, course_id):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_create_module(request, course_id):
     """Create a new module"""
     from .models import CourseModule, Course
@@ -815,7 +842,7 @@ def admin_create_module(request, course_id):
 
 
 @api_view(['PATCH'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_update_module(request, module_id):
     """Update a module"""
     from .models import CourseModule
@@ -842,7 +869,7 @@ def admin_update_module(request, module_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_delete_module(request, module_id):
     """Delete a module"""
     from .models import CourseModule
@@ -861,7 +888,7 @@ def admin_delete_module(request, module_id):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_get_lessons(request, module_id):
     """Get all lessons for a module"""
     from .models import CourseLesson
@@ -885,7 +912,7 @@ def admin_get_lessons(request, module_id):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_create_lesson(request, module_id):
     """Create a new lesson"""
     from .models import CourseLesson, CourseModule
@@ -900,23 +927,30 @@ def admin_create_lesson(request, module_id):
         lesson = CourseLesson.objects.create(
             module=module,
             title=data.get('title', 'New Lesson'),
+            title_nl=data.get('title_nl', ''),
             lesson_type=data.get('lesson_type', 'video'),
             duration_minutes=data.get('duration_minutes', 0),
             is_free_preview=data.get('is_free_preview', False),
             video_url=data.get('video_url', ''),
             content=data.get('content', ''),
+            content_nl=data.get('content_nl', ''),
+            visual_type=data.get('visual_type', 'auto'),
+            visual_data=data.get('visual_data', None),
             order=max_order + 1
         )
-        
+
         return Response({
             'success': True,
             'lesson': {
                 'id': lesson.id,
                 'title': lesson.title,
+                'title_nl': lesson.title_nl,
                 'lesson_type': lesson.lesson_type,
                 'duration_minutes': lesson.duration_minutes,
                 'is_free_preview': lesson.is_free_preview,
                 'order': lesson.order,
+                'visual_type': lesson.visual_type,
+                'visual_data': lesson.visual_data,
             }
         })
     except CourseModule.DoesNotExist:
@@ -924,29 +958,33 @@ def admin_create_lesson(request, module_id):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_get_lesson(request, lesson_id):
     """Get lesson details"""
     from .models import CourseLesson
-    
+
     try:
         lesson = CourseLesson.objects.get(id=lesson_id)
         return Response({
             'id': lesson.id,
             'title': lesson.title,
+            'title_nl': lesson.title_nl,
             'lesson_type': lesson.lesson_type,
             'duration_minutes': lesson.duration_minutes,
             'is_free_preview': lesson.is_free_preview,
             'order': lesson.order,
             'video_url': lesson.video_url,
             'content': lesson.content,
+            'content_nl': lesson.content_nl,
+            'visual_type': lesson.visual_type,
+            'visual_data': lesson.visual_data,
         })
     except CourseLesson.DoesNotExist:
         return Response({'error': 'Lesson not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['PATCH'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_update_lesson(request, lesson_id):
     """Update a lesson"""
     from .models import CourseLesson
@@ -967,11 +1005,17 @@ def admin_update_lesson(request, lesson_id):
             lesson.video_url = data['video_url']
         if 'content' in data:
             lesson.content = data['content']
+        if 'content_nl' in data:
+            lesson.content_nl = data['content_nl']
         if 'order' in data:
             lesson.order = data['order']
-        
+        if 'visual_type' in data:
+            lesson.visual_type = data['visual_type']
+        if 'visual_data' in data:
+            lesson.visual_data = data['visual_data']
+
         lesson.save()
-        
+
         return Response({
             'success': True,
             'message': 'Lesson updated'
@@ -980,8 +1024,35 @@ def admin_update_lesson(request, lesson_id):
         return Response({'error': 'Lesson not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
+@api_view(['PATCH'])
+@permission_classes([IsAdminUser])
+def admin_update_lesson_visual(request, lesson_id):
+    """Update visual template config for a lesson"""
+    from .models import CourseLesson
+
+    try:
+        lesson = CourseLesson.objects.get(id=lesson_id)
+        data = request.data
+
+        if 'visual_type' in data:
+            lesson.visual_type = data['visual_type']
+        if 'visual_data' in data:
+            lesson.visual_data = data['visual_data']
+
+        lesson.save()
+
+        return Response({
+            'success': True,
+            'lesson_id': lesson.id,
+            'visual_type': lesson.visual_type,
+            'visual_data': lesson.visual_data,
+        })
+    except CourseLesson.DoesNotExist:
+        return Response({'error': 'Lesson not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
 @api_view(['DELETE'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_delete_lesson(request, lesson_id):
     """Delete a lesson"""
     from .models import CourseLesson
@@ -1004,7 +1075,7 @@ def admin_delete_lesson(request, lesson_id):
 # ============================================
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def api_content_courses(request):
     """Get all published courses for content consumption"""
     from .models import Course
@@ -1027,7 +1098,7 @@ def api_content_courses(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def api_content_course_structure(request, course_id):
     """Get complete course structure with modules and lessons"""
     from .models import Course
@@ -1065,15 +1136,16 @@ def api_content_course_structure(request, course_id):
         })
     except Course.DoesNotExist:
         return Response({'error': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
-        # ============================================
+
+# ============================================
 # FILE UPLOAD ENDPOINTS
 # ============================================
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def upload_lesson_content(request, lesson_id):
     """Upload content file for a lesson"""
-    from .models import CourseLesson, LessonContent
+    from .models import CourseLesson  # LessonContent removed
     
     try:
         lesson = CourseLesson.objects.get(id=lesson_id)
@@ -1114,10 +1186,10 @@ def upload_lesson_content(request, lesson_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def delete_lesson_content(request, content_id):
     """Delete a content block"""
-    from .models import LessonContent
+    # # from .models import LessonContent
     
     try:
         content = LessonContent.objects.get(id=content_id)
@@ -1131,7 +1203,7 @@ def delete_lesson_content(request, content_id):
 # ============================================
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_create_course(request):
     """Create a new course"""
     from .models import Course
@@ -1165,7 +1237,7 @@ def admin_create_course(request):
 
 
 @api_view(['DELETE'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def admin_delete_course(request, course_id):
     """Delete a course"""
     from .models import Course
@@ -1189,10 +1261,10 @@ def admin_delete_course(request, course_id):
         }, status=400)
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def get_lesson_content(request, lesson_id):
     """Get all content blocks for a lesson"""
-    from .models import LessonContent
+    # # from .models import LessonContent
     
     try:
         contents = LessonContent.objects.filter(lesson_id=lesson_id).order_by('order')
@@ -1335,7 +1407,7 @@ def get_lesson_resources(request, lesson_id):
             'name': r.name_nl if request.GET.get('lang') == 'nl' and r.name_nl else r.name,
             'file_type': r.file_type,
             'file_size': r.file_size,
-            'download_url': f'/api/academy/resources/{r.id}/download/',
+            'download_url': f'/api/v1/academy/resources/{r.id}/download/',
         }
         for r in resources
     ]
@@ -1430,3 +1502,326 @@ def verify_certificate(request, certificate_number):
         'student_name': f"{cert.enrollment.first_name} {cert.enrollment.last_name}",
         'issued_at': cert.issued_at.isoformat(),
     })
+class SkillViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API endpoint for browsing available skills
+    """
+    queryset = Skill.objects.all().select_related('category')
+    serializer_class = SkillSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class SkillCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API endpoint for browsing skill categories with user progress
+    """
+    queryset = SkillCategory.objects.all().prefetch_related('skills')
+    serializer_class = SkillCategorySerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+
+class UserSkillViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API endpoint for viewing user's skill progress
+    """
+    serializer_class = UserSkillSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        return UserSkill.objects.filter(
+            user=self.request.user
+        ).select_related('skill', 'skill__category').order_by('-points')
+    
+    @action(detail=False, methods=['post'])
+    def award_points(self, request):
+        """
+        Award skill points to user
+        POST /api/v1/academy/skills/user-skills/award_points/
+        Body: {
+            "lesson_id": "l1",
+            "activity_type": "lesson_complete",  # optional
+            "bonus_multiplier": 1.0  # optional
+        }
+        """
+        lesson_id = request.data.get('lesson_id')
+        activity_type = request.data.get('activity_type', 'lesson_complete')
+        bonus_multiplier = float(request.data.get('bonus_multiplier', 1.0))
+        
+        if not lesson_id:
+            return Response(
+                {'error': 'lesson_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get skill mappings for this lesson
+        mappings = LessonSkillMapping.objects.filter(
+            lesson_id=lesson_id
+        ).select_related('skill')
+        
+        if not mappings.exists():
+            return Response(
+                {'error': f'No skill mappings found for lesson {lesson_id}'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        awarded_skills = []
+        level_ups = []
+        
+        for mapping in mappings:
+            # Calculate points based on activity type
+            points = mapping.points_awarded
+            
+            if activity_type == 'quiz_pass':
+                points += mapping.quiz_bonus
+            elif activity_type == 'simulation_correct':
+                points += mapping.simulation_bonus
+            elif activity_type == 'practice_submit':
+                points += mapping.practice_bonus
+            
+            # Apply bonus multiplier (for streaks, etc.)
+            points = int(points * bonus_multiplier)
+            
+            # Get or create user skill
+            user_skill, created = UserSkill.objects.get_or_create(
+                user=request.user,
+                skill=mapping.skill,
+                defaults={'points': 0, 'level': 1}
+            )
+            
+            old_level = user_skill.level
+            leveled_up = user_skill.add_points(points)
+            
+            # Log activity
+            SkillActivity.objects.create(
+                user=request.user,
+                skill=mapping.skill,
+                activity_type=activity_type,
+                points=points,
+                metadata={'lesson_id': lesson_id}
+            )
+            
+            awarded_skills.append({
+                'skill_id': mapping.skill.id,
+                'skill_name': mapping.skill.name,
+                'points_awarded': points,
+                'total_points': user_skill.points,
+                'level': user_skill.level,
+                'leveled_up': leveled_up
+            })
+            
+            if leveled_up:
+                level_ups.append({
+                    'skill_id': mapping.skill.id,
+                    'skill_name': mapping.skill.name,
+                    'old_level': old_level,
+                    'new_level': user_skill.level
+                })
+                
+                # Check if goal achieved
+                goals = SkillGoal.objects.filter(
+                    user=request.user,
+                    skill=mapping.skill,
+                    achieved=False
+                )
+                for goal in goals:
+                    if user_skill.level >= goal.target_level:
+                        goal.achieved = True
+                        goal.achieved_at = timezone.now()
+                        goal.save()
+        
+        return Response({
+            'awarded_skills': awarded_skills,
+            'level_ups': level_ups,
+            'total_skills_updated': len(awarded_skills)
+        })
+    
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """
+        Get overall skill progress summary
+        GET /api/v1/academy/skills/user-skills/summary/
+        """
+        user_skills = UserSkill.objects.filter(user=request.user)
+        
+        total_skills = Skill.objects.count()
+        skills_started = user_skills.count()
+        total_points = user_skills.aggregate(Sum('points'))['points__sum'] or 0
+        avg_level = user_skills.aggregate(Avg('level'))['level__avg'] or 0
+        
+        level_distribution = {
+            'beginner': user_skills.filter(level=1).count(),
+            'intermediate': user_skills.filter(level=2).count(),
+            'advanced': user_skills.filter(level=3).count(),
+            'expert': user_skills.filter(level=4).count(),
+            'master': user_skills.filter(level=5).count(),
+        }
+        
+        return Response({
+            'total_skills': total_skills,
+            'skills_started': skills_started,
+            'total_points': total_points,
+            'avg_level': round(avg_level, 2),
+            'level_distribution': level_distribution,
+            'completion_rate': round((skills_started / total_skills * 100), 1) if total_skills > 0 else 0
+        })
+
+
+class SkillGoalViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for managing skill goals
+    """
+    serializer_class = SkillGoalSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        return SkillGoal.objects.filter(
+            user=self.request.user
+        ).select_related('skill', 'skill__category')
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    
+    @action(detail=False, methods=['get'])
+    def active(self, request):
+        """Get only active (not achieved) goals"""
+        active_goals = self.get_queryset().filter(achieved=False)
+        serializer = self.get_serializer(active_goals, many=True)
+        return Response(serializer.data)
+
+
+class SkillActivityViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API endpoint for viewing skill activity log
+    """
+    serializer_class = SkillActivitySerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        queryset = SkillActivity.objects.filter(
+            user=self.request.user
+        ).select_related('skill').order_by('-created_at')
+        
+        # Filter by skill if provided
+        skill_id = self.request.query_params.get('skill_id')
+        if skill_id:
+            queryset = queryset.filter(skill_id=skill_id)
+        
+        # Filter by activity type if provided
+        activity_type = self.request.query_params.get('activity_type')
+        if activity_type:
+            queryset = queryset.filter(activity_type=activity_type)
+        
+        return queryset
+    
+    @action(detail=False, methods=['get'])
+    def recent(self, request):
+        """Get last 20 skill activities"""
+        recent_activities = self.get_queryset()[:20]
+        serializer = self.get_serializer(recent_activities, many=True)
+        return Response(serializer.data)
+@api_view(['POST'])
+def analyze_lesson_for_visual(request):
+    """
+    Analyze lesson content using OpenAI to select best visual.
+    
+    POST /api/academy/analyze-lesson/
+    Body: {
+        "courseTitle": "...",
+        "moduleTitle": "...",
+        "lessonTitle": "...",
+        "methodology": "..."
+    }
+    """
+    try:
+        # Get request data
+        course_title = request.data.get('courseTitle', '')
+        module_title = request.data.get('moduleTitle', '')
+        lesson_title = request.data.get('lessonTitle', '')
+        methodology = request.data.get('methodology', 'generic_pm')
+        
+        logger.info(f"Analyzing lesson: {lesson_title}")
+        
+        # Initialize OpenAI client
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        
+        # Create prompt
+        prompt = f"""Analyze this project management lesson and extract key concepts:
+
+**Course:** {course_title}
+**Module:** {module_title}
+**Lesson:** {lesson_title}
+**Methodology:** {methodology or 'generic PM'}
+
+Extract (respond ONLY with valid JSON):
+
+1. **primaryConcepts**: 3-5 core keywords/topics (lowercase)
+2. **learningIntent**: Choose ONE:
+   - explain_concept, compare_options, apply_template, measure_metric
+   - analyze_data, flow_visualization, role_definition, governance
+   - process_overview, decision_making, tooling
+
+3. **conceptClass**: Choose ONE:
+   - metric_visualization, diagram, template, framework, process_flow
+   - role_matrix, governance, comparison, analysis, planning
+   - tool_interface, definition
+
+4. **methodologyDetected**: Detect if lesson is methodology-specific:
+   - generic_pm, scrum, kanban, prince2, lean_six_sigma, safe
+   - agile, waterfall, leadership, program_management
+
+5. **confidence**: 0.0-1.0 score
+6. **reasoning**: Brief 1-sentence explanation
+
+Respond ONLY with JSON (no markdown):
+{{
+  "primaryConcepts": ["concept1", "concept2", "concept3"],
+  "learningIntent": "role_definition",
+  "conceptClass": "role_matrix",
+  "methodologyDetected": "generic_pm",
+  "confidence": 0.95,
+  "reasoning": "Lesson focuses on project manager roles and responsibilities"
+}}"""
+
+        # Call OpenAI
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert in project management education. Extract semantic concepts accurately and respond ONLY with valid JSON."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0.2,
+            max_tokens=300,
+            response_format={"type": "json_object"}
+        )
+        
+        # Parse result
+        result_str = response.choices[0].message.content
+        result = json.loads(result_str)
+        
+        logger.info(f"Analysis complete: {result.get('primaryConcepts', [])}")
+        
+        return Response(result, status=200)
+        
+    except Exception as e:
+        logger.error(f"Error in analyze_lesson_for_visual: {str(e)}", exc_info=True)
+        
+        # Return fallback (still 200 to not break frontend)
+        return Response({
+            "primaryConcepts": [lesson_title.lower()] if lesson_title else ["unknown"],
+            "learningIntent": "explain_concept",
+            "conceptClass": "framework",
+            "methodologyDetected": methodology or "generic_pm",
+            "confidence": 0.5,
+            "reasoning": f"Fallback due to error: {str(e)}"
+        }, status=200)

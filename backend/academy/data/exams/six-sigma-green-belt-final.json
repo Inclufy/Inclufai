@@ -1,0 +1,392 @@
+{
+  "id": "six-sigma-green-belt-final",
+  "title": "Six Sigma Green Belt - Final Exam",
+  "titleNL": "Six Sigma Green Belt - Eindexamen",
+  "description": "Comprehensive exam covering all Six Sigma Green Belt topics",
+  "descriptionNL": "Uitgebreid examen over alle Six Sigma Green Belt onderwerpen",
+  "passingScore": 80,
+  "timeLimit": 45,
+  "maxAttempts": 3,
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Question 1 about Six Sigma Green Belt",
+      "textNL": "Vraag 1 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q2",
+      "text": "Question 2 about Six Sigma Green Belt",
+      "textNL": "Vraag 2 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q3",
+      "text": "Question 3 about Six Sigma Green Belt",
+      "textNL": "Vraag 3 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q4",
+      "text": "Question 4 about Six Sigma Green Belt",
+      "textNL": "Vraag 4 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q5",
+      "text": "Question 5 about Six Sigma Green Belt",
+      "textNL": "Vraag 5 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q6",
+      "text": "Question 6 about Six Sigma Green Belt",
+      "textNL": "Vraag 6 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q7",
+      "text": "Question 7 about Six Sigma Green Belt",
+      "textNL": "Vraag 7 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q8",
+      "text": "Question 8 about Six Sigma Green Belt",
+      "textNL": "Vraag 8 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q9",
+      "text": "Question 9 about Six Sigma Green Belt",
+      "textNL": "Vraag 9 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q10",
+      "text": "Question 10 about Six Sigma Green Belt",
+      "textNL": "Vraag 10 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q11",
+      "text": "Question 11 about Six Sigma Green Belt",
+      "textNL": "Vraag 11 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q12",
+      "text": "Question 12 about Six Sigma Green Belt",
+      "textNL": "Vraag 12 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q13",
+      "text": "Question 13 about Six Sigma Green Belt",
+      "textNL": "Vraag 13 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q14",
+      "text": "Question 14 about Six Sigma Green Belt",
+      "textNL": "Vraag 14 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q15",
+      "text": "Question 15 about Six Sigma Green Belt",
+      "textNL": "Vraag 15 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q16",
+      "text": "Question 16 about Six Sigma Green Belt",
+      "textNL": "Vraag 16 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q17",
+      "text": "Question 17 about Six Sigma Green Belt",
+      "textNL": "Vraag 17 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q18",
+      "text": "Question 18 about Six Sigma Green Belt",
+      "textNL": "Vraag 18 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q19",
+      "text": "Question 19 about Six Sigma Green Belt",
+      "textNL": "Vraag 19 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    },
+    {
+      "id": "q20",
+      "text": "Question 20 about Six Sigma Green Belt",
+      "textNL": "Vraag 20 over Six Sigma Green Belt",
+      "options": [
+        "Option A",
+        "Option B (Correct)",
+        "Option C",
+        "Option D"
+      ],
+      "optionsNL": [
+        "Optie A",
+        "Optie B (Correct)",
+        "Optie C",
+        "Optie D"
+      ],
+      "correct": 1,
+      "points": 5
+    }
+  ]
+}

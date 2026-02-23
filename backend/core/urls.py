@@ -23,6 +23,10 @@ urlpatterns = [
     path("api/v1/governance/", include("governance.urls")),
     path("api/v1/execution/", include("execution.urls")),
     path("api/v1/sixsigma/", include("sixsigma.urls")),
+    
+    # ✅ MOVE ACADEMY HERE - BEFORE the broad api/v1/ patterns!
+    path("api/v1/academy/", include("academy.urls")),
+    
     path("api/v1/", include("prince2.urls")),
     path("api/v1/", include("scrum.urls")),
     path("api/v1/", include("kanban.urls")),
@@ -36,7 +40,6 @@ urlpatterns = [
     path("api/v1/newsletters/", include("newsletters.urls")),
     path("api/v1/bot/", include("bot.urls")),
     path("api/v1/workflow/", include("workflow.urls")),
-    path("api/v1/academy/", include("academy.urls")),
     path("api/v1/admin/", include("admin_portal.urls")),
     
     # Methodologies
