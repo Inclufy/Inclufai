@@ -53,21 +53,16 @@ const fetchProjects = async () => {
   const data = await response.json();
   const projectList = Array.isArray(data) ? data : data.results || [];
   
-  console.log('Fetched projects:', projectList);
-  
   // Fetch tasks for each project
   const projectsWithTasks = await Promise.all(
     projectList.map(async (project: any) => {
       try {
         const taskUrl = `${API_BASE_URL}/projects/tasks/?project=${project.id}`;
-        console.log('Fetching tasks from:', taskUrl);
-        
         const tasksResponse = await fetch(taskUrl, {
           headers: { Authorization: `Bearer ${token}` },
         });
         
         if (!tasksResponse.ok) {
-          console.log(`No tasks endpoint for project ${project.id}, status: ${tasksResponse.status}`);
           return {
             id: String(project.id),
             name: project.name || project.title,
@@ -77,9 +72,6 @@ const fetchProjects = async () => {
         
         const tasksData = await tasksResponse.json();
         const tasks = Array.isArray(tasksData) ? tasksData : tasksData.results || [];
-        
-        console.log(`Tasks for project ${project.id}:`, tasks);
-        
         return {
           id: String(project.id),
           name: project.name || project.title,
@@ -88,8 +80,7 @@ const fetchProjects = async () => {
             title: t.title || t.name,
           })),
         };
-      } catch (error) {
-        console.error(`Error fetching tasks for project ${project.id}:`, error);
+      } catch {
         return {
           id: String(project.id),
           name: project.name || project.title,
@@ -148,7 +139,6 @@ const fetchTimeEntries = async () => {
 };
 
 const formatDurationFromMinutes = (mins: number) => {
-  const { pt } = usePageTranslations();
   const h = Math.floor(mins / 60);
   const m = mins % 60;
   return `${h}h ${m.toString().padStart(2, "0")}m`;
@@ -170,7 +160,6 @@ const callAI = async (prompt: string): Promise<string> => {
     const data = await response.json();
     return data.response || "";
   } catch (error) {
-    console.error("AI call failed:", error);
     throw error;
   }
 };
@@ -377,8 +366,6 @@ const TimeTracking = () => {
         description: entryData.description || '',
       };
       
-      console.log('Creating time entry with payload:', payload);
-      
       const response = await fetch(`${API_BASE_URL}/projects/time-entries/`, {
         method: 'POST',
         headers: {
@@ -390,8 +377,6 @@ const TimeTracking = () => {
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('Time entry creation failed:', response.status, errorData);
-        // Show more detailed error
         const errorMsg = errorData?.detail || errorData?.message || 
           (errorData ? JSON.stringify(errorData) : 'Unknown error');
         throw new Error(errorMsg || 'Failed to create entry');
@@ -403,7 +388,6 @@ const TimeTracking = () => {
       toast.success("Time entry added successfully!");
     },
     onError: (error: Error) => {
-      console.error('Mutation error:', error);
       toast.error(error.message || "Failed to add time entry");
     },
   });
