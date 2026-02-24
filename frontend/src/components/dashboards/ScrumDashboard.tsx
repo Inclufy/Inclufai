@@ -1,12 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Target, CheckCircle2, Clock, TrendingUp, Flame } from 'lucide-react';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 interface ScrumDashboardProps {
   project: any;
 }
 
 const ScrumDashboard = ({ project }: ScrumDashboardProps) => {
+  const { pt } = usePageTranslations();
   const currentSprint = {
     name: 'Sprint 3',
     goal: 'Complete user authentication and dashboard',
@@ -40,12 +42,12 @@ const ScrumDashboard = ({ project }: ScrumDashboardProps) => {
           </div>
           <div className="text-right">
             <div className="text-3xl font-bold">{currentSprint.daysRemaining}</div>
-            <div className="text-amber-100">days remaining</div>
+            <div className="text-amber-100">{pt("Days")} remaining</div>
           </div>
         </div>
         <div className="mt-4">
           <div className="flex justify-between text-sm mb-1">
-            <span>Sprint Progress</span>
+            <span>{pt("Sprint Progress")}</span>
             <span>{currentSprint.completedPoints}/{currentSprint.totalPoints} points</span>
           </div>
           <div className="w-full bg-white/20 rounded-full h-3">
@@ -63,7 +65,7 @@ const ScrumDashboard = ({ project }: ScrumDashboardProps) => {
               </div>
               <div>
                 <p className="text-2xl font-bold">{doneStories.length}</p>
-                <p className="text-sm text-muted-foreground">Completed</p>
+                <p className="text-sm text-muted-foreground">{pt("Completed")}</p>
               </div>
             </div>
           </CardContent>
@@ -76,7 +78,7 @@ const ScrumDashboard = ({ project }: ScrumDashboardProps) => {
               </div>
               <div>
                 <p className="text-2xl font-bold">{inProgressStories.length}</p>
-                <p className="text-sm text-muted-foreground">In Progress</p>
+                <p className="text-sm text-muted-foreground">{pt("In Progress")}</p>
               </div>
             </div>
           </CardContent>
@@ -90,6 +92,7 @@ const ScrumDashboard = ({ project }: ScrumDashboardProps) => {
               <div>
                 <p className="text-2xl font-bold">{todoStories.length}</p>
                 <p className="text-sm text-muted-foreground">To Do</p>
+
               </div>
             </div>
           </CardContent>
@@ -102,7 +105,7 @@ const ScrumDashboard = ({ project }: ScrumDashboardProps) => {
               </div>
               <div>
                 <p className="text-2xl font-bold">30</p>
-                <p className="text-sm text-muted-foreground">Avg Velocity</p>
+                <p className="text-sm text-muted-foreground">{pt("Average Velocity")}</p>
               </div>
             </div>
           </CardContent>
@@ -113,7 +116,7 @@ const ScrumDashboard = ({ project }: ScrumDashboardProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5" />
-            Sprint Board
+            {pt("Sprint Board")}
           </CardTitle>
         </CardHeader>
         <CardContent>

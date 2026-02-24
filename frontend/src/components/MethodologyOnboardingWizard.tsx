@@ -41,6 +41,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 interface MethodologyStep {
   title: string;
@@ -1101,6 +1102,7 @@ export const MethodologyOnboardingWizard = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const navigate = useNavigate();
+  const { pt } = usePageTranslations();
 
   const config = getMethodologyConfig(methodology);
   const Icon = config.icon;
@@ -1130,10 +1132,10 @@ export const MethodologyOnboardingWizard = ({
             </div>
             <div>
               <DialogTitle className="text-xl">
-                {currentStep === 0 ? `Welcome to ${config.name}` : config.steps[currentStep - 1]?.title || 'Get Started'}
+                {currentStep === 0 ? `${pt("Welcome to")} ${config.name}` : config.steps[currentStep - 1]?.title || pt('Get Started')}
               </DialogTitle>
               <DialogDescription>
-                {projectName ? `Setting up: ${projectName}` : config.tagline}
+                {projectName ? `${pt("Setting up")}: ${projectName}` : config.tagline}
               </DialogDescription>
             </div>
           </div>
@@ -1145,12 +1147,12 @@ export const MethodologyOnboardingWizard = ({
           {currentStep === 0 && (
             <div className="space-y-6">
               <div>
-                <h3 className="font-semibold mb-2">What is {config.name}?</h3>
+                <h3 className="font-semibold mb-2">{pt("What is")} {config.name}?</h3>
                 <p className="text-sm text-muted-foreground">{config.overview}</p>
               </div>
 
               <div>
-                <h3 className="font-semibold mb-2">When to use {config.name}</h3>
+                <h3 className="font-semibold mb-2">{pt("When to use")} {config.name}</h3>
                 <ul className="space-y-2">
                   {config.whenToUse.map((item, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm">
@@ -1165,7 +1167,7 @@ export const MethodologyOnboardingWizard = ({
                 <div>
                   <h3 className="font-semibold mb-2 flex items-center gap-2">
                     <Users className="h-4 w-4" />
-                    Key Roles
+                    {pt("Key Roles")}
                   </h3>
                   <div className="space-y-2">
                     {config.keyRoles.map((role, i) => (
@@ -1179,7 +1181,7 @@ export const MethodologyOnboardingWizard = ({
                 <div>
                   <h3 className="font-semibold mb-2 flex items-center gap-2">
                     <FileText className="h-4 w-4" />
-                    Key Artifacts
+                    {pt("Key Artifacts")}
                   </h3>
                   <div className="space-y-2">
                     {config.keyArtifacts.map((artifact, i) => (
@@ -1237,30 +1239,30 @@ export const MethodologyOnboardingWizard = ({
               onCheckedChange={(checked) => setDontShowAgain(checked as boolean)}
             />
             <label htmlFor="dont-show" className="text-sm text-muted-foreground cursor-pointer">
-              Don't show this again for {config.name}
+              {pt("Don't show this again for")} {config.name}
             </label>
           </div>
           <div className="flex items-center gap-2">
             {currentStep === 0 && (
               <Button variant="ghost" onClick={handleSkip}>
-                Skip Tutorial
+                {pt("Skip Tutorial")}
               </Button>
             )}
             {currentStep > 0 && (
               <Button variant="outline" onClick={() => setCurrentStep(currentStep - 1)}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
+                {pt("Back")}
               </Button>
             )}
             {currentStep < totalSteps - 1 ? (
               <Button onClick={() => setCurrentStep(currentStep + 1)}>
-                Next
+                {pt("Next")}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             ) : (
               <Button onClick={handleComplete} className={cn(config.bgColor, config.color, "hover:opacity-90")}>
                 <Play className="h-4 w-4 mr-2" />
-                Start Project
+                {pt("Start Project")}
               </Button>
             )}
           </div>
@@ -1274,7 +1276,7 @@ export const MethodologyOnboardingWizard = ({
               onClick={() => navigate(config.academyCourse!.link)}
             >
               <GraduationCap className="h-4 w-4" />
-              Want to learn more? Take the {config.academyCourse.title}
+              {pt("Want to learn more?")} {config.academyCourse.title}
             </Button>
           </div>
         )}
