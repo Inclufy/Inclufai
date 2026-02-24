@@ -4,11 +4,10 @@ services:
     container_name: projectpal-postgres
     ports:
       - "5432:5432"
-    env_file:
-      - ./backend/.env
     environment:
       - POSTGRES_DB=projextpal
       - POSTGRES_USER=projextpal
+      - POSTGRES_PASSWORD=ZinedineLoukile2013
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -44,6 +43,7 @@ services:
       - ./backend/.env
     environment:
       - POSTGRES_HOST=postgres
+      - POSTGRES_PASSWORD=ZinedineLoukile2013
       - REDIS_HOST=redis
       - ALLOWED_HOSTS=localhost,127.0.0.1,backend,projectpal-backend,projextpal.com,www.projextpal.com
       - FRONTEND_URL=https://projextpal.com
