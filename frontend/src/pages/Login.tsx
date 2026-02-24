@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Shield, ArrowLeft, Eye, EyeOff, Mail, Lock, KeyRound } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/contexts/AuthContext';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -21,7 +20,6 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language } = useLanguage();
-  const { login: authLogin } = useAuth();
 
   const isNL = language === 'nl';
   const txt = {
@@ -62,51 +60,60 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      if (requires2FA) {
-        // 2FA step: use login-2fa endpoint with TOTP code
-        const response = await fetch(`${API_BASE_URL}/auth/login-2fa/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, totp_code: totpCode }),
-        });
+      const response = await fetch(`${API_BASE_URL}/auth/login-2fa/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          totp_code: requires2FA ? totpCode : undefined
+        }),
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (!response.ok) {
-          throw new Error(data.error || 'Login failed');
-        }
-
-        // Store tokens from 2FA login
-        localStorage.setItem('access_token', data.access);
-        localStorage.setItem('refresh_token', data.refresh);
-      } else {
-        // Use the standard SimpleJWT login endpoint (always works with email)
-        await authLogin(email, password);
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
       }
+
+      if (data.requires_2fa) {
+        setRequires2FA(true);
+        toast({
+          title: txt.twoFARequired,
+          description: txt.enterAuthCodeMsg,
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('refresh_token', data.refresh);
+      localStorage.setItem('user_data', JSON.stringify(data.user));
 
       toast({
         title: txt.welcomeBackMsg,
         description: txt.authSuccess,
       });
 
-      // Check for checkout redirect
+      // ✅ CHECK FOR CHECKOUT REDIRECT
       const searchParams = new URLSearchParams(window.location.search);
       const redirect = searchParams.get('redirect');
       const plan = searchParams.get('plan');
       const billing = searchParams.get('billing');
 
       if (redirect === 'checkout' && plan) {
+        // User came from pricing page - redirect back to pricing with auto-checkout
         toast({
-          title: txt.redirecting,
+          title: `🚀 ${txt.redirecting}`,
           description: `${txt.settingUpPlan} ${plan.charAt(0).toUpperCase() + plan.slice(1)} ${txt.plan}`,
         });
 
+        // Small delay to show toast
         setTimeout(() => {
-          // Full reload so AuthContext picks up new tokens
           window.location.href = `/pricing?auto_checkout=${plan}&billing=${billing || 'monthly'}`;
         }, 800);
       } else {
-        // Full reload so AuthContext picks up new tokens (needed for 2FA case)
+        // Normal login - go to dashboard
         window.location.href = '/dashboard';
       }
     } catch (error: any) {
@@ -132,7 +139,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Refined gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-violet-900/20" />
-      
+
       {/* Refined animated blobs */}
       <div className="absolute top-0 -left-4 w-[28rem] h-[28rem] bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
       <div className="absolute top-0 -right-4 w-[28rem] h-[28rem] bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
@@ -170,7 +177,7 @@ const Login = () => {
             </CardDescription>
           </div>
         </CardHeader>
-        
+
         <CardContent className="px-10 pb-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {!requires2FA ? (
@@ -237,8 +244,8 @@ const Login = () => {
 
                 {/* Remember Me */}
                 <div className="flex items-center pt-1">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     id="remember"
                     className="w-4 h-4 rounded-md border-purple-300 dark:border-purple-700 text-purple-600 focus:ring-purple-500 focus:ring-offset-0"
                   />
@@ -278,10 +285,10 @@ const Login = () => {
                     {txt.enterAuthCode}
                   </p>
                 </div>
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  className="w-full hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl font-semibold" 
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl font-semibold"
                   onClick={handleBack}
                   disabled={isLoading}
                 >
@@ -292,8 +299,8 @@ const Login = () => {
             )}
 
             {/* Submit Button */}
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full h-13 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-base font-bold shadow-xl shadow-purple-500/30 hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300 rounded-xl border-0 group"
               disabled={isLoading}
             >
