@@ -80,30 +80,7 @@ const Login = () => {
         localStorage.setItem('access_token', data.access);
         localStorage.setItem('refresh_token', data.refresh);
       } else {
-        // Step 1: Check if 2FA is needed via login-2fa endpoint (without TOTP code)
-        const checkResponse = await fetch(`${API_BASE_URL}/auth/login-2fa/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        });
-
-        const checkData = await checkResponse.json();
-
-        if (!checkResponse.ok) {
-          throw new Error(checkData.error || checkData.detail || 'Login failed');
-        }
-
-        if (checkData.requires_2fa) {
-          setRequires2FA(true);
-          toast({
-            title: txt.twoFARequired,
-            description: txt.enterAuthCodeMsg,
-          });
-          setIsLoading(false);
-          return;
-        }
-
-        // No 2FA needed - use AuthContext login for consistent token handling
+        // Use the standard SimpleJWT login endpoint (always works with email)
         await authLogin(email, password);
       }
 
