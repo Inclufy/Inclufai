@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useQuery } from "@tanstack/react-query";
 import { AISummaryModal } from "@/components/AISummaryModal";
 import AICommander from "@/components/AICommander";
@@ -195,6 +196,7 @@ const StatCard = ({
 const TeamMemberDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { pt } = usePageTranslations();
   const currencyCode = getCurrencyFromLanguage(language);
   const [aiSummaryOpen, setAiSummaryOpen] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
@@ -273,18 +275,18 @@ const TeamMemberDashboard: React.FC = () => {
         <div className="text-center mb-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
             <Sparkles className="h-4 w-4" />
-            <span>👤 Team Member Dashboard</span>
+            <span>👤 {pt("Team Member Dashboard")}</span>
             <Badge className="ml-1 bg-green-500 text-white text-xs">AI-Powered</Badge>
           </div>
 
           <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
             <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
-              My Work
+              {pt("My Work")}
             </span>
           </h1>
           
           <p className="text-gray-600 dark:text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
-            Track your tasks and project contributions
+            {pt("Track your tasks and project contributions")}
           </p>
 
           <AICommander 
@@ -311,12 +313,12 @@ const TeamMemberDashboard: React.FC = () => {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
-          <StatCard title="My Projects" value={totalProjects} subtitle="I'm assigned to" icon={FolderKanban} color="blue" />
-          <StatCard title="Active" value={activeProjects} subtitle="In progress" icon={Activity} color="emerald" />
-          <StatCard title="Completed" value={completedProjects} subtitle="Finished" icon={CheckCircle2} color="purple" />
-          <StatCard title="My Tasks" value={myTasks} subtitle="Assigned to me" icon={ListTodo} color="amber" />
-          <StatCard title="Done" value={completedTasks} subtitle="Tasks completed" icon={Target} color="emerald" />
-          <StatCard title="Avg Progress" value={`${avgProgress}%`} subtitle="Across projects" icon={TrendingUp} color="blue" />
+          <StatCard title={pt("My Projects")} value={totalProjects} subtitle={pt("I'm assigned to")} icon={FolderKanban} color="blue" />
+          <StatCard title={pt("Active")} value={activeProjects} subtitle={pt("In progress")} icon={Activity} color="emerald" />
+          <StatCard title={pt("Completed")} value={completedProjects} subtitle={pt("Finished")} icon={CheckCircle2} color="purple" />
+          <StatCard title={pt("My Tasks")} value={myTasks} subtitle={pt("Assigned to me")} icon={ListTodo} color="amber" />
+          <StatCard title={pt("Done")} value={completedTasks} subtitle={pt("Tasks completed")} icon={Target} color="emerald" />
+          <StatCard title={pt("Avg Progress")} value={`${avgProgress}%`} subtitle={pt("Across projects")} icon={TrendingUp} color="blue" />
         </div>
 
         <div className="grid grid-cols-1 gap-6">
@@ -327,10 +329,10 @@ const TeamMemberDashboard: React.FC = () => {
                   <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
                     <FolderKanban className="h-5 w-5 text-white" />
                   </div>
-                  My Project Status
+                  {pt("My Project Status")}
                 </CardTitle>
                 <Badge className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 ring-1 ring-inset ring-blue-600/20 font-mono text-sm font-semibold px-3 py-1">
-                  {totalProjects} Total
+                  {totalProjects} {pt("Total")}
                 </Badge>
               </div>
             </CardHeader>
@@ -338,7 +340,7 @@ const TeamMemberDashboard: React.FC = () => {
               <DonutChart 
                 total={totalProjects} 
                 segments={projectSegments.length > 0 ? projectSegments : [{ label: 'Pending', value: 1, color: '#f59e0b' }]} 
-                centerLabel="Projects" 
+                centerLabel={pt("Projects")} 
               />
             </CardContent>
           </Card>
@@ -347,14 +349,14 @@ const TeamMemberDashboard: React.FC = () => {
         <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl">
           <CardHeader className="border-b border-purple-100 dark:border-purple-900/30">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Projects I'm Working On</CardTitle>
+              <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">{pt("Projects I'm Working On")}</CardTitle>
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={() => navigate('/projects')}
                 className="font-bold ring-2 ring-inset ring-purple-200 hover:ring-purple-300 hover:bg-purple-50 dark:ring-purple-800 dark:hover:ring-purple-700 dark:hover:bg-purple-900/20 border-0 rounded-xl"
               >
-                View All <ArrowRight className="h-4 w-4 ml-2" />
+                {pt("View All")} <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
           </CardHeader>
@@ -363,12 +365,12 @@ const TeamMemberDashboard: React.FC = () => {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-b border-purple-100 dark:border-purple-900/50">
-                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Project Name</th>
-                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">End Date</th>
-                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Team Size</th>
-                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Progress</th>
-                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Status</th>
-                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Health</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Project Name")}</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("End Date")}</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Team Size")}</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Progress")}</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Status")}</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Health")}</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-900 divide-y divide-purple-50 dark:divide-purple-900/20">
@@ -415,7 +417,7 @@ const TeamMemberDashboard: React.FC = () => {
                           <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center ring-4 ring-purple-50 dark:ring-purple-900/20">
                             <FolderKanban className="h-8 w-8 text-purple-400" />
                           </div>
-                          <p className="text-gray-500 dark:text-gray-400 font-medium">No projects assigned yet</p>
+                          <p className="text-gray-500 dark:text-gray-400 font-medium">{pt("No projects assigned yet")}</p>
                         </div>
                       </td>
                     </tr>

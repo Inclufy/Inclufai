@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AISummaryModal } from "@/components/AISummaryModal";
 import AICommander from "@/components/AICommander";
 import { formatBudget, getCurrencyFromLanguage } from "@/lib/currencies";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Building2, 
@@ -228,6 +229,7 @@ const ExecutiveDashboard: React.FC = () => {
 
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { pt } = usePageTranslations();
   const currencyCode = getCurrencyFromLanguage(language);
   const [aiSummaryOpen, setAiSummaryOpen] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
@@ -349,7 +351,7 @@ const ExecutiveDashboard: React.FC = () => {
 
           <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
             <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
-              Executive Dashboard
+              {pt("Executive Dashboard")}
             </span>
           </h1>
           
@@ -381,12 +383,12 @@ const ExecutiveDashboard: React.FC = () => {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
-          <StatCard title="Programs" value={totalPrograms} subtitle={t.app.totalPrograms} icon={Building2} color="purple" />
-          <StatCard title="Projects" value={totalProjects} subtitle={t.app.totalProjects} icon={FolderKanban} color="blue" />
-          <StatCard title="Active" value={activeProjects} subtitle={t.app.inProgress} icon={Activity} color="emerald" trend="up" trendValue="+12%" />
-          <StatCard title="At Risk" value={atRiskProjects} subtitle={t.app.requiresAttention} icon={AlertTriangle} color="red" />
-          <StatCard title="Budget" value={formatBudget(totalBudget, currencyCode)} subtitle={t.app.totalAllocated} icon={DollarSign} color="amber" />
-          <StatCard title="Progress" value={`${avgProgress}%`} subtitle="Average Completion" icon={Target} color="emerald" />
+          <StatCard title={pt("Programs")} value={totalPrograms} subtitle={t.app.totalPrograms} icon={Building2} color="purple" />
+          <StatCard title={pt("Projects")} value={totalProjects} subtitle={t.app.totalProjects} icon={FolderKanban} color="blue" />
+          <StatCard title={pt("Active")} value={activeProjects} subtitle={t.app.inProgress} icon={Activity} color="emerald" trend="up" trendValue="+12%" />
+          <StatCard title={pt("At Risk")} value={atRiskProjects} subtitle={t.app.requiresAttention} icon={AlertTriangle} color="red" />
+          <StatCard title={pt("Budget")} value={formatBudget(totalBudget, currencyCode)} subtitle={t.app.totalAllocated} icon={DollarSign} color="amber" />
+          <StatCard title={pt("Progress")} value={`${avgProgress}%`} subtitle={pt("Average Completion")} icon={Target} color="emerald" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -408,7 +410,7 @@ const ExecutiveDashboard: React.FC = () => {
               <DonutChart 
                 total={totalPrograms} 
                 segments={programSegments.length > 0 ? programSegments : [{ label: t.app.planning, value: 5, color: '#8B5CF6' }]} 
-                centerLabel="Programs" 
+                centerLabel={pt("Programs")}
               />
             </CardContent>
           </Card>
@@ -431,7 +433,7 @@ const ExecutiveDashboard: React.FC = () => {
               <DonutChart 
                 total={totalProjects} 
                 segments={projectSegments.length > 0 ? projectSegments : [{ label: t.app.pending, value: 14, color: '#f59e0b' }]} 
-                centerLabel="Projects" 
+                centerLabel={pt("Projects")}
               />
             </CardContent>
           </Card>
@@ -531,13 +533,13 @@ const ExecutiveDashboard: React.FC = () => {
                             <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center ring-4 ring-purple-50 dark:ring-purple-900/20">
                               <Building2 className="h-8 w-8 text-purple-400" />
                             </div>
-                            <p className="text-gray-500 dark:text-gray-400 font-medium">No programs found</p>
+                            <p className="text-gray-500 dark:text-gray-400 font-medium">{pt("No programs found")}</p>
                             <Button 
                               onClick={() => navigate('/programs/new')} 
                               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold shadow-lg rounded-xl"
                             >
                               <Sparkles className="h-4 w-4 mr-2" />
-                              Create Program
+                              {pt("Create Program")}
                             </Button>
                           </div>
                         </td>
@@ -566,7 +568,7 @@ const ExecutiveDashboard: React.FC = () => {
                   <thead>
                     <tr className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-b border-purple-100 dark:border-purple-900/50">
                       <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{t.app.name}</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">End Date</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("End Date")}</th>
                       <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{t.app.budget}</th>
                       <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{t.app.progress}</th>
                       <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{t.app.status}</th>
@@ -611,13 +613,13 @@ const ExecutiveDashboard: React.FC = () => {
                             <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center ring-4 ring-purple-50 dark:ring-purple-900/20">
                               <FolderKanban className="h-8 w-8 text-purple-400" />
                             </div>
-                            <p className="text-gray-500 dark:text-gray-400 font-medium">No projects found</p>
+                            <p className="text-gray-500 dark:text-gray-400 font-medium">{pt("No projects found")}</p>
                             <Button 
                               onClick={() => navigate('/projects/new')} 
                               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold shadow-lg rounded-xl"
                             >
                               <Sparkles className="h-4 w-4 mr-2" />
-                              Create Project
+                              {pt("Create Project")}
                             </Button>
                           </div>
                         </td>
