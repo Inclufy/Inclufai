@@ -952,7 +952,7 @@ if (!sendInviteEmail) {
       <div className="min-h-full bg-background p-8 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary mb-4" />
-          <p className="text-muted-foreground">Team laden...</p>
+          <p className="text-muted-foreground">{pt("Loading team...")}</p>
         </div>
       </div>
     );
@@ -965,7 +965,7 @@ if (!sendInviteEmail) {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">{tt.title}</h1>
-            <p className="text-muted-foreground">Beheer teamleden, toewijzingen en tijdregistratie</p>
+            <p className="text-muted-foreground">{pt("Manage team members, assignments and time tracking")}</p>
           </div>
           <div className="flex gap-2 flex-wrap">
             {/* AI Assistant Dropdown */}
@@ -973,15 +973,15 @@ if (!sendInviteEmail) {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="gap-2 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20">
                   <Sparkles className="h-4 w-4" />
-                  AI Assistent
+                  {pt("AI Assistant")}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem onClick={() => setIsAITeamBuilderOpen(true)}>
                   <Brain className="h-4 w-4 mr-2 text-purple-500" />
                   <div>
-                    <p className="font-medium">Team Samenstelling</p>
-                    <p className="text-xs text-muted-foreground">Analyseer en optimaliseer teams</p>
+                    <p className="font-medium">{pt("Team Composition")}</p>
+                    <p className="text-xs text-muted-foreground">{pt("Analyze and optimize teams")}</p>
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => {
@@ -990,16 +990,16 @@ if (!sendInviteEmail) {
                 }}>
                   <BarChart3 className="h-4 w-4 mr-2 text-blue-500" />
                   <div>
-                    <p className="font-medium">Werkbelasting Analyse</p>
-                    <p className="text-xs text-muted-foreground">Bekijk capaciteit & balans</p>
+                    <p className="font-medium">{pt("Workload Analysis")}</p>
+                    <p className="text-xs text-muted-foreground">{pt("View capacity & balance")}</p>
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setIsAIAssistantOpen(true)}>
                   <Lightbulb className="h-4 w-4 mr-2 text-amber-500" />
                   <div>
-                    <p className="font-medium">Slimme Suggesties</p>
-                    <p className="text-xs text-muted-foreground">Tips voor teambeheer</p>
+                    <p className="font-medium">{pt("Smart Suggestions")}</p>
+                    <p className="text-xs text-muted-foreground">{pt("Tips for team management")}</p>
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -1014,7 +1014,7 @@ if (!sendInviteEmail) {
               className="gap-2"
             >
               <Send className="h-4 w-4" />
-              Uitnodigen
+              {pt("Invite")}
             </Button>
             <Button onClick={() => setIsCreateDialogOpen(true)} className="gap-2">
               <UserPlus className="h-4 w-4" />
@@ -1033,7 +1033,7 @@ if (!sendInviteEmail) {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.total}</p>
-                  <p className="text-xs text-muted-foreground">Totaal</p>
+                  <p className="text-xs text-muted-foreground">{pt("Total")}</p>
                 </div>
               </div>
             </CardContent>
@@ -1046,7 +1046,7 @@ if (!sendInviteEmail) {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.active}</p>
-                  <p className="text-xs text-muted-foreground">Actief</p>
+                  <p className="text-xs text-muted-foreground">{pt("Active")}</p>
                 </div>
               </div>
             </CardContent>
@@ -1059,7 +1059,7 @@ if (!sendInviteEmail) {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.inactive}</p>
-                  <p className="text-xs text-muted-foreground">Inactief</p>
+                  <p className="text-xs text-muted-foreground">{pt("Inactive")}</p>
                 </div>
               </div>
             </CardContent>
@@ -1072,7 +1072,7 @@ if (!sendInviteEmail) {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.pending}</p>
-                  <p className="text-xs text-muted-foreground">In afwachting</p>
+                  <p className="text-xs text-muted-foreground">{pt("Pending")}</p>
                 </div>
               </div>
             </CardContent>
@@ -1085,7 +1085,7 @@ if (!sendInviteEmail) {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.timeTrackingEnabled}</p>
-                  <p className="text-xs text-muted-foreground">Tijdreg. actief</p>
+                  <p className="text-xs text-muted-foreground">{pt("Time tracking active")}</p>
                 </div>
               </div>
             </CardContent>
@@ -1098,7 +1098,7 @@ if (!sendInviteEmail) {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.totalHoursThisWeek}u</p>
-                  <p className="text-xs text-muted-foreground">Deze week</p>
+                  <p className="text-xs text-muted-foreground">{pt("This week")}</p>
                 </div>
               </div>
             </CardContent>
@@ -1112,7 +1112,7 @@ if (!sendInviteEmail) {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Zoek op naam, e-mail of afdeling..."
+                  placeholder={pt("Search by name, email or department...")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -1120,10 +1120,10 @@ if (!sendInviteEmail) {
               </div>
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger className="w-full md:w-[180px]">
-                  <SelectValue placeholder="Alle rollen" />
+                  <SelectValue placeholder={pt("All roles")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Alle rollen</SelectItem>
+                  <SelectItem value="all">{pt("All roles")}</SelectItem>
                   <SelectItem value="ADMIN">{pt("Admin")}</SelectItem>
                   <SelectItem value="PROGRAM_MANAGER">{pt("Program Manager")}</SelectItem>
                   <SelectItem value="PM">{pt("Project Manager")}</SelectItem>
@@ -1134,13 +1134,13 @@ if (!sendInviteEmail) {
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full md:w-[180px]">
-                  <SelectValue placeholder="Alle statussen" />
+                  <SelectValue placeholder={pt("All statuses")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Alle statussen</SelectItem>
-                  <SelectItem value="Active">Actief</SelectItem>
-                  <SelectItem value="Inactive">Inactief</SelectItem>
-                  <SelectItem value="Pending">In afwachting</SelectItem>
+                  <SelectItem value="all">{pt("All statuses")}</SelectItem>
+                  <SelectItem value="Active">{pt("Active")}</SelectItem>
+                  <SelectItem value="Inactive">{pt("Inactive")}</SelectItem>
+                  <SelectItem value="Pending">{pt("Pending")}</SelectItem>
                 </SelectContent>
               </Select>
               {(searchQuery || roleFilter !== "all" || statusFilter !== "all") && (
@@ -1209,13 +1209,13 @@ if (!sendInviteEmail) {
                         }}
                       >
                         <Users className="h-4 w-4 mr-2" />
-                        Details bekijken
+                        {pt("View details")}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => openEditDialog(member)}
                       >
                         <Edit className="h-4 w-4 mr-2" />
-                        Bewerken
+                        {pt("Edit")}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -1226,7 +1226,7 @@ if (!sendInviteEmail) {
                         }}
                       >
                         <FolderKanban className="h-4 w-4 mr-2" />
-                        Toewijzen aan project
+                        {pt("Assign to project")}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => {
@@ -1236,30 +1236,30 @@ if (!sendInviteEmail) {
                         }}
                       >
                         <Layers className="h-4 w-4 mr-2" />
-                        Toewijzen aan programma
+                        {pt("Assign to program")}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => handleToggleTimeTracking(member.id)}>
                         <Clock className="h-4 w-4 mr-2" />
-                        {member.timeTracking?.enabled ? "Tijdregistratie uit" : "Tijdregistratie aan"}
+                        {member.timeTracking?.enabled ? pt("Time tracking off") : pt("Time tracking on")}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleToggleStatus(member.id)}>
                         {member.status === "Active" ? (
                           <>
                             <UserX className="h-4 w-4 mr-2" />
-                            Deactiveren
+                            {pt("Deactivate")}
                           </>
                         ) : (
                           <>
                             <UserCheck className="h-4 w-4 mr-2" />
-                            Activeren
+                            {pt("Activate")}
                           </>
                         )}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => handleResetPassword(member.id)}>
                         <KeyRound className="h-4 w-4 mr-2" />
-                        Wachtwoord Resetten
+                        {pt("Reset Password")}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
@@ -1269,7 +1269,7 @@ if (!sendInviteEmail) {
                         }}
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
-                        Verwijderen
+                        {pt("Delete")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -1278,12 +1278,12 @@ if (!sendInviteEmail) {
                 {/* Status Badges */}
                 <div className="flex gap-2 mb-4">
                   <Badge variant="secondary" className={cn("text-xs", getStatusColor(member.status))}>
-                    {member.status === "Active" ? "Actief" : member.status === "Inactive" ? "Inactief" : "In afwachting"}
+                    {member.status === "Active" ? pt("Active") : member.status === "Inactive" ? pt("Inactive") : pt("Pending")}
                   </Badge>
                   {member.timeTracking?.enabled && (
                     <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800">
                       <Clock className="h-3 w-3 mr-1" />
-                      Tijdreg.
+                      {pt("Time tr.")}
                     </Badge>
                   )}
                 </div>
@@ -1306,7 +1306,7 @@ if (!sendInviteEmail) {
                 {member.timeTracking?.enabled && (member.timeTracking?.thisWeek || 0) > 0 && (
                   <div className="mt-4 pt-4 border-t">
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                      <span>Deze week</span>
+                      <span>{pt("This week")}</span>
                       <span className="font-medium">{member.timeTracking?.thisWeek || 0}u / 40u</span>
                     </div>
                     <Progress value={((member.timeTracking?.thisWeek || 0) / 40) * 100} className="h-1.5" />
@@ -1319,13 +1319,13 @@ if (!sendInviteEmail) {
                     {(member.projectAssignments?.length || 0) > 0 && (
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <FolderKanban className="h-3.5 w-3.5" />
-                        <span>{(member.projectAssignments?.length || 0)} project(en)</span>
+                        <span>{(member.projectAssignments?.length || 0)} {pt("project(s)")}</span>
                       </div>
                     )}
                     {(member.programAssignments?.length || 0) > 0 && (
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Layers className="h-3.5 w-3.5" />
-                        <span>{(member.programAssignments?.length || 0)} programma('s)</span>
+                        <span>{(member.programAssignments?.length || 0)} {pt("program(s)")}</span>
                       </div>
                     )}
                   </div>
@@ -1335,7 +1335,7 @@ if (!sendInviteEmail) {
                 {(member.invitations || []).filter((i) => i.status === "pending").length > 0 && (
                   <div className="mt-3 flex items-center gap-1.5 text-xs text-yellow-600 dark:text-yellow-400">
                     <AlertCircle className="h-3.5 w-3.5" />
-                    <span>{(member.invitations || []).filter((i) => i.status === "pending").length} uitnodiging(en) in afwachting</span>
+                    <span>{(member.invitations || []).filter((i) => i.status === "pending").length} {pt("invitation(s) pending")}</span>
                   </div>
                 )}
               </CardContent>
@@ -1353,7 +1353,7 @@ if (!sendInviteEmail) {
               </div>
               <div className="text-center">
                 <p className="text-sm font-medium text-foreground mb-1">{tt.createNewMember}</p>
-                <p className="text-xs text-muted-foreground">Voeg een nieuw teamlid toe</p>
+                <p className="text-xs text-muted-foreground">{pt("Add a new team member")}</p>
               </div>
             </CardContent>
           </Card>
@@ -1364,9 +1364,9 @@ if (!sendInviteEmail) {
           <Card className="mt-6">
             <CardContent className="p-12 text-center">
               <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Geen teamleden gevonden</h3>
+              <h3 className="text-lg font-medium mb-2">{pt("No team members found")}</h3>
               <p className="text-muted-foreground mb-4">
-                Pas je filters aan of voeg een nieuw teamlid toe.
+                {pt("Adjust your filters or add a new team member.")}
               </p>
               <Button onClick={() => setIsCreateDialogOpen(true)}>
                 <UserPlus className="h-4 w-4 mr-2" />
@@ -1381,21 +1381,21 @@ if (!sendInviteEmail) {
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Nieuw Teamlid Toevoegen</DialogTitle>
-            <DialogDescription>Vul de gegevens in voor het nieuwe teamlid.</DialogDescription>
+            <DialogTitle>{pt("Add New Team Member")}</DialogTitle>
+            <DialogDescription>{pt("Fill in the details for the new team member.")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Naam *</Label>
+              <Label htmlFor="name">{pt("Name")} *</Label>
               <Input
                 id="name"
-                placeholder="Volledige naam"
+                placeholder={pt("Full name")}
                 value={newMember.name}
                 onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail *</Label>
+              <Label htmlFor="email">{pt("Email")} *</Label>
               <Input
                 id="email"
                 type="email"
@@ -1410,10 +1410,10 @@ if (!sendInviteEmail) {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label className="text-sm font-medium">
-                    Uitnodigingsmail versturen
+                    {pt("Send invitation email")}
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Gebruiker ontvangt email om wachtwoord in te stellen
+                    {pt("User will receive email to set password")}
                   </p>
                 </div>
                 <Switch
@@ -1426,21 +1426,21 @@ if (!sendInviteEmail) {
             {/* Password field - only show if NOT sending invite */}
             {!sendInviteEmail && (
             <div className="space-y-2">
-              <Label htmlFor="password">Wachtwoord *</Label>
+              <Label htmlFor="password">{pt("Password")} *</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Min. 8 tekens"
+                placeholder={pt("Min. 8 characters")}
                 value={newMember.password}
                 onChange={(e) => setNewMember({ ...newMember, password: e.target.value })}
               />
               <p className="text-xs text-muted-foreground">
-                Gebruiker kan dit later wijzigen
+                {pt("User can change this later")}
               </p>
             </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="phone">Telefoonnummer</Label>
+              <Label htmlFor="phone">{pt("Phone number")}</Label>
               <Input
                 id="phone"
                 placeholder="+31 6 12345678"
@@ -1449,7 +1449,7 @@ if (!sendInviteEmail) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Telefoonnummer</Label>
+              <Label htmlFor="phone">{pt("Phone number")}</Label>
               <Input
                 id="phone"
                 placeholder="+31 6 12345678"
@@ -1459,7 +1459,7 @@ if (!sendInviteEmail) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Rol</Label>
+                <Label>{pt("Role")}</Label>
                 <Select
                   value={newMember.role}
                   onValueChange={(value: any) => setNewMember({ ...newMember, role: value })}
@@ -1478,13 +1478,13 @@ if (!sendInviteEmail) {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Afdeling</Label>
+                <Label>{pt("Department")}</Label>
                 <Select
                   value={newMember.department}
                   onValueChange={(value) => setNewMember({ ...newMember, department: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecteer..." />
+                    <SelectValue placeholder={pt("Select...")} />
                   </SelectTrigger>
                   <SelectContent>
                     {departments.map((dept) => (
@@ -1499,8 +1499,8 @@ if (!sendInviteEmail) {
             <Separator />
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Tijdregistratie inschakelen</Label>
-                <p className="text-xs text-muted-foreground">Sta toe dat dit lid uren registreert</p>
+                <Label>{pt("Enable time tracking")}</Label>
+                <p className="text-xs text-muted-foreground">{pt("Allow this member to track hours")}</p>
               </div>
               <Switch
                 checked={newMember.enableTimeTracking}
@@ -1510,16 +1510,16 @@ if (!sendInviteEmail) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-              Annuleren
+              {pt("Cancel")}
             </Button>
             <Button onClick={handleCreateMember} disabled={createMemberMutation.isPending}>
               {createMemberMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Toevoegen...
+                  {pt("Adding...")}
                 </>
               ) : (
-                'Toevoegen'
+                pt("Add")
               )}
             </Button>
           </DialogFooter>
@@ -1531,22 +1531,22 @@ if (!sendInviteEmail) {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Teamlid Bewerken</DialogTitle>
-            <DialogDescription>Wijzig de gegevens van het teamlid.</DialogDescription>
+            <DialogTitle>{pt("Edit Team Member")}</DialogTitle>
+            <DialogDescription>{pt("Edit the team member details.")}</DialogDescription>
           </DialogHeader>
           {selectedMember && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-name">Naam *</Label>
+                <Label htmlFor="edit-name">{pt("Name")} *</Label>
                 <Input
                   id="edit-name"
-                  placeholder="Volledige naam"
+                  placeholder={pt("Full name")}
                   value={selectedMember.name}
                   onChange={(e) => setSelectedMember({ ...selectedMember, name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-email">E-mail *</Label>
+                <Label htmlFor="edit-email">{pt("Email")} *</Label>
                 <Input
                   id="edit-email"
                   type="email"
@@ -1556,7 +1556,7 @@ if (!sendInviteEmail) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-phone">Telefoonnummer</Label>
+                <Label htmlFor="edit-phone">{pt("Phone number")}</Label>
                 <Input
                   id="edit-phone"
                   placeholder="+31 6 12345678"
@@ -1566,7 +1566,7 @@ if (!sendInviteEmail) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Rol</Label>
+                  <Label>{pt("Role")}</Label>
                   <Select
                     value={selectedMember.role}
                     onValueChange={(value: any) => setSelectedMember({ ...selectedMember, role: value })}
@@ -1585,13 +1585,13 @@ if (!sendInviteEmail) {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Afdeling</Label>
+                  <Label>{pt("Department")}</Label>
                   <Select
                     value={selectedMember.department || ''}
                     onValueChange={(value) => setSelectedMember({ ...selectedMember, department: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecteer..." />
+                      <SelectValue placeholder={pt("Select...")} />
                     </SelectTrigger>
                     <SelectContent>
                       {departments.map((dept) => (
@@ -1607,16 +1607,16 @@ if (!sendInviteEmail) {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Annuleren
+              {pt("Cancel")}
             </Button>
             <Button onClick={handleUpdateMember} disabled={updateMemberMutation.isPending}>
               {updateMemberMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Bijwerken...
+                  {pt("Updating...")}
                 </>
               ) : (
-                'Opslaan'
+                pt("Save")
               )}
             </Button>
           </DialogFooter>
@@ -1627,15 +1627,17 @@ if (!sendInviteEmail) {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {assignmentType === "project" ? "Toewijzen aan Project" : "Toewijzen aan Programma"}
+              {assignmentType === "project" ? pt("Assign to Project") : pt("Assign to Program")}
             </DialogTitle>
             <DialogDescription>
-              Wijs {selectedMember?.name} toe aan een {assignmentType === "project" ? "project" : "programma"}.
+              {assignmentType === "project"
+                ? `${pt("Assign")} ${selectedMember?.name} ${pt("to a project")}.`
+                : `${pt("Assign")} ${selectedMember?.name} ${pt("to a program")}.`}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>{assignmentType === "project" ? "Project" : "Programma"}</Label>
+              <Label>{assignmentType === "project" ? pt("Project") : pt("Program")}</Label>
               <Select 
                 value={selectedItemId} 
                 onValueChange={(value) => {
@@ -1644,7 +1646,7 @@ if (!sendInviteEmail) {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={`Selecteer ${assignmentType === "project" ? "project" : "programma"}...`} />
+                  <SelectValue placeholder={assignmentType === "project" ? pt("Select project...") : pt("Select program...")} />
                 </SelectTrigger>
                 <SelectContent>
                   {(assignmentType === "project" ? projects : programs).map((item) => (
@@ -1686,10 +1688,10 @@ if (!sendInviteEmail) {
             )}
             
             <div className="space-y-2">
-              <Label>Rol {selectedItemId && "(gebaseerd op methodology)"}</Label>
+              <Label>{pt("Role")} {selectedItemId && `(${pt("Role (based on methodology)").split("(")[1]}`}</Label>
               <Select value={selectedRole} onValueChange={setSelectedRole} disabled={!selectedItemId}>
                 <SelectTrigger>
-                  <SelectValue placeholder={selectedItemId ? "Selecteer rol..." : "Selecteer eerst een project/programma"} />
+                  <SelectValue placeholder={selectedItemId ? pt("Select role...") : pt("Select a project/program first")} />
                 </SelectTrigger>
                 <SelectContent>
                   {selectedItemId && (
@@ -1707,9 +1709,9 @@ if (!sendInviteEmail) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAssignDialogOpen(false)}>
-              Annuleren
+              {pt("Cancel")}
             </Button>
-            <Button onClick={handleAssignment}>Toewijzen</Button>
+            <Button onClick={handleAssignment}>{pt("Assign")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1723,10 +1725,10 @@ if (!sendInviteEmail) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Send className="h-5 w-5" />
-              Teamleden Uitnodigen
+              {pt("Invite Team Members")}
             </DialogTitle>
             <DialogDescription>
-              Nodig mensen uit om deel te nemen aan een project of programma.
+              {pt("Invite people to join a project or program.")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -1742,13 +1744,13 @@ if (!sendInviteEmail) {
                 </TabsTrigger>
                 <TabsTrigger value="program" className="gap-2">
                   <Layers className="h-4 w-4" />
-                  Programma
+                  {pt("Program")}
                 </TabsTrigger>
               </TabsList>
             </Tabs>
 
             <div className="space-y-2">
-              <Label>{inviteType === "project" ? "Project" : "Programma"} *</Label>
+              <Label>{inviteType === "project" ? pt("Project") : pt("Program")} *</Label>
               <Select 
                 value={inviteItemId} 
                 onValueChange={(value) => {
@@ -1757,7 +1759,7 @@ if (!sendInviteEmail) {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={`Selecteer ${inviteType === "project" ? "project" : "programma"}...`} />
+                  <SelectValue placeholder={inviteType === "project" ? pt("Select project...") : pt("Select program...")} />
                 </SelectTrigger>
                 <SelectContent>
                   {(inviteType === "project" ? projects : programs).map((item) => (
@@ -1775,10 +1777,10 @@ if (!sendInviteEmail) {
             </div>
 
             <div className="space-y-2">
-              <Label>Rol *</Label>
+              <Label>{pt("Role")} *</Label>
               <Select value={inviteRole} onValueChange={setInviteRole} disabled={!inviteItemId}>
                 <SelectTrigger>
-                  <SelectValue placeholder={inviteItemId ? "Selecteer rol..." : "Selecteer eerst een project/programma"} />
+                  <SelectValue placeholder={inviteItemId ? pt("Select role...") : pt("Select a project/program first")} />
                 </SelectTrigger>
                 <SelectContent>
                   {inviteItemId && (
@@ -1795,7 +1797,7 @@ if (!sendInviteEmail) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="invite-emails">E-mailadressen *</Label>
+              <Label htmlFor="invite-emails">{pt("Email addresses")} *</Label>
               <Textarea
                 id="invite-emails"
                 placeholder="jan@company.nl, maria@company.nl, ..."
@@ -1803,14 +1805,14 @@ if (!sendInviteEmail) {
                 onChange={(e) => setInviteEmails(e.target.value)}
                 rows={2}
               />
-              <p className="text-xs text-muted-foreground">Meerdere e-mailadressen scheiden met een komma</p>
+              <p className="text-xs text-muted-foreground">{pt("Separate multiple email addresses with a comma")}</p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="invite-message">Persoonlijk bericht (optioneel)</Label>
+              <Label htmlFor="invite-message">{pt("Personal message (optional)")}</Label>
               <Textarea
                 id="invite-message"
-                placeholder="Voeg een persoonlijk bericht toe aan de uitnodiging..."
+                placeholder={pt("Add a personal message to the invitation...")}
                 value={inviteMessage}
                 onChange={(e) => setInviteMessage(e.target.value)}
                 rows={4}
@@ -1821,10 +1823,10 @@ if (!sendInviteEmail) {
               <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                 <div className="flex items-center gap-2 text-green-700 dark:text-green-400 mb-2">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span className="font-medium">Uitnodigingen verzonden!</span>
+                  <span className="font-medium">{pt("Invitations sent!")}</span>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Of deel deze link:</Label>
+                  <Label className="text-xs">{pt("Or share this link:")}</Label>
                   <div className="flex gap-2">
                     <Input value={generatedLink} readOnly className="text-xs" />
                     <Button size="sm" variant="outline" onClick={handleCopyLink}>
@@ -1840,12 +1842,12 @@ if (!sendInviteEmail) {
               setIsInviteDialogOpen(false);
               resetInviteForm();
             }}>
-              {generatedLink ? "Sluiten" : "Annuleren"}
+              {generatedLink ? pt("Close") : pt("Cancel")}
             </Button>
             {!generatedLink && (
               <Button onClick={handleSendInvitation} className="gap-2">
                 <Send className="h-4 w-4" />
-                Uitnodigingen Versturen
+                {pt("Send Invitations")}
               </Button>
             )}
           </DialogFooter>
@@ -1856,7 +1858,7 @@ if (!sendInviteEmail) {
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Teamlid Details</DialogTitle>
+            <DialogTitle>{pt("Member Details")}</DialogTitle>
           </DialogHeader>
           {selectedMember && (
             <div className="space-y-6">
@@ -1874,7 +1876,7 @@ if (!sendInviteEmail) {
                       {selectedMember.role}
                     </Badge>
                     <Badge variant="secondary" className={cn(getStatusColor(selectedMember.status))}>
-                      {selectedMember.status === "Active" ? "Actief" : selectedMember.status === "Inactive" ? "Inactief" : "In afwachting"}
+                      {selectedMember.status === "Active" ? pt("Active") : selectedMember.status === "Inactive" ? pt("Inactive") : pt("Pending")}
                     </Badge>
                   </div>
                 </div>
@@ -1900,7 +1902,7 @@ if (!sendInviteEmail) {
                 )}
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>Lid sinds {selectedMember.joinedDate}</span>
+                  <span>{pt("Member since")} {selectedMember.joinedDate}</span>
                 </div>
               </div>
 
@@ -1911,31 +1913,31 @@ if (!sendInviteEmail) {
                   <div>
                     <h4 className="font-medium mb-4 flex items-center gap-2">
                       <Clock className="h-4 w-4" />
-                      Tijdregistratie Overzicht
+                      {pt("Time Tracking Overview")}
                     </h4>
                     <div className="grid grid-cols-4 gap-4">
                       <Card>
                         <CardContent className="p-4 text-center">
                           <p className="text-2xl font-bold text-primary">{selectedMember.timeTracking?.thisWeek || 0}u</p>
-                          <p className="text-xs text-muted-foreground">Deze week</p>
+                          <p className="text-xs text-muted-foreground">{pt("This week")}</p>
                         </CardContent>
                       </Card>
                       <Card>
                         <CardContent className="p-4 text-center">
                           <p className="text-2xl font-bold">{selectedMember.timeTracking?.thisMonth || 0}u</p>
-                          <p className="text-xs text-muted-foreground">Deze maand</p>
+                          <p className="text-xs text-muted-foreground">{pt("This month")}</p>
                         </CardContent>
                       </Card>
                       <Card>
                         <CardContent className="p-4 text-center">
                           <p className="text-2xl font-bold">{selectedMember.timeTracking?.totalHours || 0}u</p>
-                          <p className="text-xs text-muted-foreground">Totaal</p>
+                          <p className="text-xs text-muted-foreground">{pt("Total")}</p>
                         </CardContent>
                       </Card>
                       <Card>
                         <CardContent className="p-4 text-center">
                           <p className="text-2xl font-bold">{Math.round(((selectedMember.timeTracking?.thisWeek || 0) / 40) * 100)}%</p>
-                          <p className="text-xs text-muted-foreground">Weekdoel</p>
+                          <p className="text-xs text-muted-foreground">{pt("Week goal")}</p>
                         </CardContent>
                       </Card>
                     </div>
@@ -1950,11 +1952,11 @@ if (!sendInviteEmail) {
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="projects" className="gap-2">
                     <FolderKanban className="h-4 w-4" />
-                    Projecten ({(selectedMember.projectAssignments?.length || 0)})
+                    {pt("Projects")} ({(selectedMember.projectAssignments?.length || 0)})
                   </TabsTrigger>
                   <TabsTrigger value="programs" className="gap-2">
                     <Layers className="h-4 w-4" />
-                    Programma's ({(selectedMember.programAssignments?.length || 0)})
+                    {pt("Programs")} ({(selectedMember.programAssignments?.length || 0)})
                   </TabsTrigger>
                 </TabsList>
 
@@ -1963,7 +1965,7 @@ if (!sendInviteEmail) {
                     {(selectedMember.projectAssignments?.length || 0) === 0 ? (
                       <div className="text-center py-8 text-muted-foreground">
                         <FolderKanban className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p>Geen projecten toegewezen</p>
+                        <p>{pt("No projects assigned")}</p>
                         <Button
                           variant="outline"
                           size="sm"
@@ -1975,7 +1977,7 @@ if (!sendInviteEmail) {
                           }}
                         >
                           <Plus className="h-4 w-4 mr-1" />
-                          Project toewijzen
+                          {pt("Assign project")}
                         </Button>
                       </div>
                     ) : (
@@ -2005,7 +2007,7 @@ if (!sendInviteEmail) {
                           }}
                         >
                           <Plus className="h-4 w-4 mr-1" />
-                          Project toewijzen
+                          {pt("Assign project")}
                         </Button>
                       </>
                     )}
@@ -2017,7 +2019,7 @@ if (!sendInviteEmail) {
                     {(selectedMember.programAssignments?.length || 0) === 0 ? (
                       <div className="text-center py-8 text-muted-foreground">
                         <Layers className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p>Geen programma's toegewezen</p>
+                        <p>{pt("No programs assigned")}</p>
                         <Button
                           variant="outline"
                           size="sm"
@@ -2029,7 +2031,7 @@ if (!sendInviteEmail) {
                           }}
                         >
                           <Plus className="h-4 w-4 mr-1" />
-                          Programma toewijzen
+                          {pt("Assign program")}
                         </Button>
                       </div>
                     ) : (
@@ -2059,7 +2061,7 @@ if (!sendInviteEmail) {
                           }}
                         >
                           <Plus className="h-4 w-4 mr-1" />
-                          Programma toewijzen
+                          {pt("Assign program")}
                         </Button>
                       </>
                     )}
@@ -2077,10 +2079,10 @@ if (!sendInviteEmail) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-blue-500" />
-              AI Werkbelasting Analyse
+              {pt("AI Workload Analysis")}
             </DialogTitle>
             <DialogDescription>
-              Overzicht van de werkbelasting van alle actieve teamleden met AI-aanbevelingen.
+              {pt("Overview of workload of all active team members with AI recommendations.")}
             </DialogDescription>
           </DialogHeader>
           
@@ -2088,7 +2090,7 @@ if (!sendInviteEmail) {
             {aiLoading ? (
               <div className="py-12 text-center">
                 <RefreshCw className="h-8 w-8 animate-spin mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Werkbelasting analyseren...</p>
+                <p className="text-muted-foreground">{pt("Analyzing workload...")}</p>
               </div>
             ) : aiWorkloadAnalysis.length > 0 ? (
               <>
@@ -2098,7 +2100,7 @@ if (!sendInviteEmail) {
                       <p className="text-2xl font-bold text-green-700 dark:text-green-400">
                         {aiWorkloadAnalysis.filter(a => a.status === "optimal").length}
                       </p>
-                      <p className="text-xs text-green-600 dark:text-green-500">Optimaal belast</p>
+                      <p className="text-xs text-green-600 dark:text-green-500">{pt("Optimally loaded")}</p>
                     </CardContent>
                   </Card>
                   <Card className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
@@ -2106,7 +2108,7 @@ if (!sendInviteEmail) {
                       <p className="text-2xl font-bold text-amber-700 dark:text-amber-400">
                         {aiWorkloadAnalysis.filter(a => a.status === "underutilized").length}
                       </p>
-                      <p className="text-xs text-amber-600 dark:text-amber-500">Onderbenut</p>
+                      <p className="text-xs text-amber-600 dark:text-amber-500">{pt("Underutilized")}</p>
                     </CardContent>
                   </Card>
                   <Card className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
@@ -2114,7 +2116,7 @@ if (!sendInviteEmail) {
                       <p className="text-2xl font-bold text-red-700 dark:text-red-400">
                         {aiWorkloadAnalysis.filter(a => a.status === "overloaded").length}
                       </p>
-                      <p className="text-xs text-red-600 dark:text-red-500">Overbelast</p>
+                      <p className="text-xs text-red-600 dark:text-red-500">{pt("Overloaded")}</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -2137,9 +2139,9 @@ if (!sendInviteEmail) {
                             <div>
                               <p className="font-medium">{analysis.memberName}</p>
                               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <span>{analysis.projectCount} toewijzingen</span>
+                                <span>{analysis.projectCount} {pt("assignments")}</span>
                                 <span>•</span>
-                                <span>{analysis.hoursThisWeek}u deze week</span>
+                                <span>{analysis.hoursThisWeek}u {pt("this week")}</span>
                               </div>
                             </div>
                           </div>
@@ -2148,14 +2150,14 @@ if (!sendInviteEmail) {
                             analysis.status === "underutilized" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
                             "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                           )}>
-                            {analysis.status === "optimal" ? "Optimaal" :
-                             analysis.status === "underutilized" ? "Onderbenut" : "Overbelast"}
+                            {analysis.status === "optimal" ? pt("Optimal") :
+                             analysis.status === "underutilized" ? pt("Underutilized") : pt("Overloaded")}
                           </Badge>
                         </div>
                         
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-sm">
-                            <span>Werkbelasting</span>
+                            <span>{pt("Workload")}</span>
                             <span className="font-medium">{analysis.currentLoad}%</span>
                           </div>
                           <Progress 
@@ -2179,7 +2181,7 @@ if (!sendInviteEmail) {
             ) : (
               <div className="py-12 text-center text-muted-foreground">
                 <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Geen actieve teamleden met tijdregistratie gevonden.</p>
+                <p>{pt("No active team members with time tracking found.")}</p>
               </div>
             )}
           </div>
@@ -2192,10 +2194,10 @@ if (!sendInviteEmail) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Lightbulb className="h-5 w-5 text-amber-500" />
-              Slimme Suggesties
+              {pt("Smart Suggestions")}
             </DialogTitle>
             <DialogDescription>
-              AI-gegenereerde tips voor beter teambeheer.
+              {pt("AI-generated tips for better team management.")}
             </DialogDescription>
           </DialogHeader>
           
@@ -2206,15 +2208,15 @@ if (!sendInviteEmail) {
                   <div className="flex items-start gap-3">
                     <AlertTriangle className="h-5 w-5 text-yellow-500 shrink-0" />
                     <div>
-                      <p className="font-medium">Openstaande uitnodigingen</p>
+                      <p className="font-medium">{pt("Open invitations")}</p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Er zijn {members.filter(m => m.status === "Pending").length} teamleden met status "In afwachting".
+                        {members.filter(m => m.status === "Pending").length} {pt("team members with status \"Pending\".")}
                       </p>
                       <Button variant="link" size="sm" className="px-0 mt-1" onClick={() => {
                         setStatusFilter("Pending");
                         setIsAIAssistantOpen(false);
                       }}>
-                        Bekijk leden <ChevronRight className="h-3 w-3 ml-1" />
+                        {pt("View members")} <ChevronRight className="h-3 w-3 ml-1" />
                       </Button>
                     </div>
                   </div>
@@ -2228,10 +2230,9 @@ if (!sendInviteEmail) {
                   <div className="flex items-start gap-3">
                     <Users className="h-5 w-5 text-blue-500 shrink-0" />
                     <div>
-                      <p className="font-medium">Niet-toegewezen teamleden</p>
+                      <p className="font-medium">{pt("Unassigned team members")}</p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        {members.filter(m => m.status === "Active" && (m.projectAssignments?.length || 0) === 0 && (m.programAssignments?.length || 0) === 0).length} actieve 
-                        teamleden hebben geen project- of programmatoewijzingen.
+                        {members.filter(m => m.status === "Active" && (m.projectAssignments?.length || 0) === 0 && (m.programAssignments?.length || 0) === 0).length} {pt("active team members have no project or program assignments.")}
                       </p>
                     </div>
                   </div>
@@ -2245,16 +2246,16 @@ if (!sendInviteEmail) {
                   <div className="flex items-start gap-3">
                     <TrendingUp className="h-5 w-5 text-red-500 shrink-0" />
                     <div>
-                      <p className="font-medium">Hoge werkbelasting gedetecteerd</p>
+                      <p className="font-medium">{pt("High workload detected")}</p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Sommige teamleden werken meer dan 45 uur deze week.
+                        {pt("Some team members are working more than 45 hours this week.")}
                       </p>
                       <Button variant="link" size="sm" className="px-0 mt-1" onClick={() => {
                         analyzeWorkload();
                         setIsAIWorkloadOpen(true);
                         setIsAIAssistantOpen(false);
                       }}>
-                        Bekijk analyse <ChevronRight className="h-3 w-3 ml-1" />
+                        {pt("View analysis")} <ChevronRight className="h-3 w-3 ml-1" />
                       </Button>
                     </div>
                   </div>
@@ -2267,9 +2268,9 @@ if (!sendInviteEmail) {
                 <div className="flex items-start gap-3">
                   <CheckCheck className="h-5 w-5 text-green-500 shrink-0" />
                   <div>
-                    <p className="font-medium">Best Practice Tip</p>
+                    <p className="font-medium">{pt("Best Practice Tip")}</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Zorg dat elk project minimaal 1 Product Owner/Manager en 2-3 teamleden heeft.
+                      {pt("Ensure each project has at least 1 Product Owner/Manager and 2-3 team members.")}
                     </p>
                   </div>
                 </div>
@@ -2285,17 +2286,17 @@ if (!sendInviteEmail) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Brain className="h-5 w-5 text-purple-500" />
-              AI Team Samenstelling
+              {pt("AI Team Composition")}
             </DialogTitle>
             <DialogDescription>
-              Analyseer welke rollen en teamleden het beste passen bij je project of programma.
+              {pt("Analyze which roles and team members best fit your project or program.")}
             </DialogDescription>
           </DialogHeader>
           
           <div className="text-center py-8 text-muted-foreground">
             <Brain className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Selecteer een project of programma om AI-aanbevelingen te genereren.</p>
-            <p className="text-sm mt-2">Deze functie is beschikbaar in de Pro versie.</p>
+            <p>{pt("Select a project or program to generate AI recommendations.")}</p>
+            <p className="text-sm mt-2">{pt("This feature is available in the Pro version.")}</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -2304,19 +2305,20 @@ if (!sendInviteEmail) {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Teamlid Verwijderen</AlertDialogTitle>
+            <AlertDialogTitle>{pt("Delete Team Member")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Weet je zeker dat je {selectedMember?.name} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.
+              {pt("Are you sure you want to delete")} {selectedMember?.name}? {pt("This action cannot be undone.")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuleren</AlertDialogCancel>
+            <AlertDialogCancel>{pt("Cancel")}</AlertDialogCancel>
+
             <AlertDialogAction 
               onClick={handleDeleteMember} 
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={deleteMemberMutation.isPending}
             >
-              {deleteMemberMutation.isPending ? 'Verwijderen...' : 'Verwijderen'}
+              {deleteMemberMutation.isPending ? pt("Deleting...") : pt("Delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
