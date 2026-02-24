@@ -237,12 +237,12 @@ const callAI = async (prompt: string): Promise<string> => {
 };
 
 // Question type icons and labels - only types supported by backend
-const questionTypeConfig: Record<string, { icon: any; label: string; color: string }> = {
-  rating: { icon: Star, label: "Rating (1-5)", color: "text-amber-500" },
-  text: { icon: MessageSquare, label: "Open Text", color: "text-blue-500" },
-  multiple_choice: { icon: ListChecks, label: "Multiple Choice", color: "text-green-500" },
-  yes_no: { icon: ThumbsUp, label: "Yes/No", color: "text-purple-500" },
-  scale: { icon: BarChart3, label: "Scale (1-10)", color: "text-pink-500" },
+const questionTypeConfig: Record<string, { icon: any; labelKey: string; color: string }> = {
+  rating: { icon: Star, labelKey: "Rating (1-5)", color: "text-amber-500" },
+  text: { icon: MessageSquare, labelKey: "Open Text", color: "text-blue-500" },
+  multiple_choice: { icon: ListChecks, labelKey: "Multiple Choice", color: "text-green-500" },
+  yes_no: { icon: ThumbsUp, labelKey: "Yes/No", color: "text-purple-500" },
+  scale: { icon: BarChart3, labelKey: "Scale (1-10)", color: "text-pink-500" },
 };
 
 export default function PostProject() {
@@ -1263,7 +1263,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                 id="name"
                 value={projectFormData.name}
                 onChange={(e) => setProjectFormData({ ...projectFormData, name: e.target.value })}
-                placeholder="Enter project name"
+                placeholder={pt("Enter project name")}
               />
             </div>
             <div className="grid gap-2">
@@ -1272,7 +1272,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                 id="company"
                 value={projectFormData.company}
                 onChange={(e) => setProjectFormData({ ...projectFormData, company: e.target.value })}
-                placeholder="Enter company name"
+                placeholder={pt("Enter company name")}
               />
             </div>
             <div className="grid gap-2">
@@ -1281,7 +1281,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                 id="lessonsLearned"
                 value={projectFormData.lessonsLearned}
                 onChange={(e) => setProjectFormData({ ...projectFormData, lessonsLearned: e.target.value })}
-                placeholder="What did you learn from this project?"
+                placeholder={pt("What did you learn from this project?")}
                 rows={3}
               />
             </div>
@@ -1291,7 +1291,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                 id="achievedResults"
                 value={projectFormData.achievedResults}
                 onChange={(e) => setProjectFormData({ ...projectFormData, achievedResults: e.target.value })}
-                placeholder="What results were achieved?"
+                placeholder={pt("What results were achieved?")}
                 rows={3}
               />
             </div>
@@ -1302,7 +1302,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                   id="roi"
                   value={projectFormData.roi}
                   onChange={(e) => setProjectFormData({ ...projectFormData, roi: e.target.value })}
-                  placeholder="e.g., 53%"
+                  placeholder={pt("e.g., 53%")}
                 />
               </div>
               <div className="grid gap-2">
@@ -1311,7 +1311,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                   id="savings"
                   value={projectFormData.savings}
                   onChange={(e) => setProjectFormData({ ...projectFormData, savings: e.target.value })}
-                  placeholder="e.g., €97,000"
+                  placeholder={pt("e.g., €97,000")}
                 />
               </div>
             </div>
@@ -1358,7 +1358,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                   id="surveyTitle"
                   value={surveyFormData.title}
                   onChange={(e) => setSurveyFormData({ ...surveyFormData, title: e.target.value })}
-                  placeholder="Enter survey title"
+                  placeholder={pt("Enter survey title")}
                 />
               </div>
               <div className="grid gap-2">
@@ -1367,7 +1367,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                   id="surveyDescription"
                   value={surveyFormData.description}
                   onChange={(e) => setSurveyFormData({ ...surveyFormData, description: e.target.value })}
-                  placeholder="Describe the purpose of this survey"
+                  placeholder={pt("Describe the purpose of this survey")}
                   rows={2}
                 />
               </div>
@@ -1414,7 +1414,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                           onClick={() => addQuestion(type as SurveyQuestion["type"])}
                         >
                           <Icon className={cn("h-4 w-4 mr-2", config.color)} />
-                          {config.label}
+                          {pt(config.labelKey)}
                         </DropdownMenuItem>
                       );
                     })}
@@ -1442,7 +1442,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                               <span className="text-sm font-medium text-muted-foreground">Q{idx + 1}</span>
                               <Badge variant="outline" className="gap-1">
                                 <Icon className={cn("h-3 w-3", typeConfig.color)} />
-                                {typeConfig.label}
+                                {pt(typeConfig.labelKey)}
                               </Badge>
                             </div>
                             <Button
@@ -1458,7 +1458,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                           <Input
                             value={question.question}
                             onChange={(e) => updateQuestion(question.id, { question: e.target.value })}
-                            placeholder="Enter your question"
+                            placeholder={pt("Enter your question")}
                           />
 
                           {question.type === "multiple_choice" && (
@@ -1596,13 +1596,13 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Link to Project (Optional)</Label>
+                  <Label>{pt("Link to Project (Optional)")}</Label>
                   <Select value={aiProjectId} onValueChange={setAiProjectId}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a project for context..." />
+                      <SelectValue placeholder={pt("Select a project for context...")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">No specific project</SelectItem>
+                      <SelectItem value="none">{pt("No specific project")}</SelectItem>
                       {projects.map((project) => (
                         <SelectItem key={project.id} value={project.id}>
                           {project.name}
@@ -1611,7 +1611,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    Linking a project helps AI create more relevant questions.
+                    {pt("Linking a project helps AI create more relevant questions.")}
                   </p>
                 </div>
 
@@ -1620,7 +1620,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                   <Textarea
                     value={aiCustomPrompt}
                     onChange={(e) => setAiCustomPrompt(e.target.value)}
-                    placeholder="E.g., Focus on communication aspects, include questions about timeline adherence, ask about budget management..."
+                    placeholder={pt("E.g., Focus on communication aspects, include questions about timeline adherence, ask about budget management...")}
                     rows={3}
                   />
                 </div>
@@ -1629,12 +1629,12 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                   <div className="flex items-start gap-3">
                     <Brain className="h-5 w-5 text-purple-500 mt-0.5" />
                     <div>
-                      <p className="font-medium text-purple-900 dark:text-purple-100">AI will generate:</p>
+                      <p className="font-medium text-purple-900 dark:text-purple-100">{pt("AI will generate:")}</p>
                       <ul className="text-sm text-purple-700 dark:text-purple-300 mt-1 space-y-1">
-                        <li>• 6-10 professional questions</li>
-                        <li>• Mix of rating, text, and choice questions</li>
-                        <li>• Tailored to your selected survey type</li>
-                        {aiProjectId !== "none" && <li>• Contextualized for your project</li>}
+                        <li>• {pt("6-10 professional questions")}</li>
+                        <li>• {pt("Mix of rating, text, and choice questions")}</li>
+                        <li>• {pt("Tailored to your selected survey type")}</li>
+                        {aiProjectId !== "none" && <li>• {pt("Contextualized for your project")}</li>}
                       </ul>
                     </div>
                   </div>
@@ -1645,7 +1645,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                 <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
                   <div className="flex items-center gap-2 text-green-700 dark:text-green-400 mb-2">
                     <CheckCircle2 className="h-5 w-5" />
-                    <span className="font-medium">Survey Generated Successfully!</span>
+                    <span className="font-medium">{pt("Survey Generated Successfully!")}</span>
                   </div>
                 </div>
 
@@ -1656,7 +1656,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <p className="text-sm font-medium">{aiGeneratedSurvey.questions.length} Questions:</p>
+                      <p className="text-sm font-medium">{aiGeneratedSurvey.questions.length} {pt("Questions")}:</p>
                       {aiGeneratedSurvey.questions.map((q, idx) => {
                         const typeConfig = questionTypeConfig[q.type] || questionTypeConfig.text;
                         const Icon = typeConfig.icon;
@@ -1847,13 +1847,13 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                     id="manualEmails"
                     value={manualEmail}
                     onChange={(e) => setManualEmail(e.target.value)}
-                    placeholder="Enter emails (comma separated)"
+                    placeholder={pt("Enter emails (comma separated)")}
                     className="pl-9"
                   />
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                Add external recipients who are not team members. Separate multiple emails with commas.
+                {pt("Add external recipients who are not team members. Separate multiple emails with commas.")}
               </p>
             </div>
 
@@ -1868,7 +1868,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                 id="shareMessage"
                 value={shareMessage}
                 onChange={(e) => setShareMessage(e.target.value)}
-                placeholder="Add a personal message to your invitation..."
+                placeholder={pt("Add a personal message to your invitation...")}
                 rows={3}
               />
             </div>
@@ -1883,7 +1883,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                     {typeof window !== 'undefined' ? `${window.location.origin}/survey/${sharingSurvey?.id}` : ''}
                   </code>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Recipients will receive this link to complete the survey.
+                    {pt("Recipients will receive this link to complete the survey.")}
                   </p>
                 </div>
               </div>

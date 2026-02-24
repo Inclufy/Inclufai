@@ -109,17 +109,17 @@ const CreateBoard: React.FC = () => {
         <div className="text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
             <Sparkles className="h-4 w-4" />
-            <span>🛡️ Create Governance Board</span>
+            <span>🛡️ {pt("Create Governance Board")}</span>
           </div>
 
           <h1 className="text-4xl font-bold mb-4 leading-tight">
             <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
-              New Governance Board
+              {pt("New Governance Board")}
             </span>
           </h1>
 
           <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
-            Create a governance board to oversee portfolio initiatives
+            {pt("Create a governance board to oversee portfolio initiatives")}
           </p>
         </div>
 
@@ -171,7 +171,7 @@ const CreateBoard: React.FC = () => {
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Strategic Investment Board"
+                  placeholder={pt("e.g., Strategic Investment Board")}
                   required
                   className="h-12 text-base"
                 />
@@ -185,7 +185,7 @@ const CreateBoard: React.FC = () => {
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Describe the board's responsibilities and scope..."
+                  placeholder={pt("Describe the board's responsibilities and scope...")}
                   rows={6}
                   className="text-base"
                 />

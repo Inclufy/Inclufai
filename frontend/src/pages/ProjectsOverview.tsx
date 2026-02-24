@@ -567,7 +567,7 @@ Respond in this EXACT JSON format only, no other text:
                   </div>
 
                   <Textarea
-                    placeholder="Example: We want to develop a training program for soft skills development in our healthcare organization. The focus should be on communication, leadership, and teamwork skills for about 50 employees..."
+                    placeholder={pt("Example: We want to develop a training program for soft skills development in our healthcare organization. The focus should be on communication, leadership, and teamwork skills for about 50 employees...")}
                     value={projectIdea}
                     onChange={(e) => setProjectIdea(e.target.value)}
                     rows={5}
