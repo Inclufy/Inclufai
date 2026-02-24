@@ -928,7 +928,7 @@ export function AppSidebar() {
                 const isActive = location.pathname === item.url || 
                                  (item.isProgramLink && isProgramContext);
                 const isGovActive = item.children && location.pathname.startsWith('/governance');
-                const iconColor = getIconColor(item.title, item.url);
+                const iconColor = getIconColor(item.title);
 
                 // Render collapsible for items with children
                 if (item.children && !isCollapsed) {
@@ -1393,10 +1393,10 @@ export function AppSidebar() {
       return (
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
-            <a href="/academy">
+            <NavLink to="/academy">
               <GraduationCap className="h-4 w-4" />
               <span>Academy</span>
-            </a>
+            </NavLink>
           </SidebarMenuButton>
         </SidebarMenuItem>
       );
