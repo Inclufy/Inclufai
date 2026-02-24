@@ -895,23 +895,28 @@ export function AppSidebar() {
   const projectPhases = projectId ? getMethodologyPhases(projectId, methodology) : [];
   const programPhases = programId ? getProgramPhases(programId, programMethodology) : [];
 
-  // Color mapping for menu icons
-  const iconColors: Record<string, string> = {
-    "Dashboard": "text-violet-500",
-    "AI Chat": "text-fuchsia-500",
-    "Governance": "text-indigo-500",
-    "Programs": "text-orange-500",
-    "Reports": "text-emerald-500",
-    "Projects": "text-sky-500",
-    "Team": "text-pink-500",
-    "Time Tracking": "text-amber-500",
-    "Post Project": "text-teal-500",
-    "Profile": "text-blue-500",
-    "Settings": "text-gray-500",
-    "Admin Portal": "text-purple-600",
+  // Color mapping for menu icons - use URL-based matching to work with any language
+  const iconColorsByUrl: Record<string, string> = {
+    "/dashboard": "text-violet-500",
+    "/ai-assistant": "text-fuchsia-500",
+    "/governance/portfolios": "text-indigo-500",
+    "/programs": "text-orange-500",
+    "/reports": "text-emerald-500",
+    "/projects": "text-sky-500",
+    "/team": "text-pink-500",
+    "/time-tracking": "text-amber-500",
+    "/post-project": "text-teal-500",
+    "/profile": "text-blue-500",
+    "/settings": "text-gray-500",
+    "/admin": "text-purple-600",
   };
 
-  const getIconColor = (title: string) => iconColors[title] || "text-gray-500";
+  const getIconColor = (_title: string, url?: string) => {
+    if (url) {
+      return iconColorsByUrl[url] || "text-gray-500";
+    }
+    return "text-gray-500";
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -982,7 +987,7 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton 
                       asChild
-                      tooltip={isLocked ? "🔒 Upgrade Required" : item.title}
+                      tooltip={isLocked ? `🔒 ${ts.upgradeRequired}` : item.title}
                       className={cn(
                         "rounded-lg transition-all duration-200",
                         isLocked && "opacity-60 hover:opacity-80"
@@ -995,15 +1000,15 @@ export function AppSidebar() {
                           if (isLocked) {
                             e.preventDefault();
                             toast({
-                              title: "🔒 Upgrade Required",
-                              description: `${item.title} is available with a paid subscription.`,
+                              title: `🔒 ${ts.upgradeRequired}`,
+                              description: `${item.title} ${ts.upgradeDescription}`,
                               action: (
-                                <Button 
-                                  variant="outline" 
+                                <Button
+                                  variant="outline"
                                   size="sm"
                                   onClick={() => navigate('/profile?tab=subscription')}
                                 >
-                                  View Plans
+                                  {ts.viewPlans}
                                 </Button>
                               ),
                             });
@@ -1203,7 +1208,7 @@ export function AppSidebar() {
                   <div className={cn("flex items-center justify-center w-7 h-7 rounded-lg", location.pathname.startsWith('/academy') ? "bg-white dark:bg-gray-800 shadow-sm" : "bg-gray-100/80 dark:bg-gray-800")}>
                     <GraduationCap className="h-4 w-4 text-purple-600" />
                   </div>
-                  <span className="text-sm">Academy</span>
+                  <span className="text-sm">{ts.academy}</span>
                   <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/academy:rotate-90" />
                 </SidebarMenuButton>
               </CollapsibleTrigger>
@@ -1221,7 +1226,7 @@ export function AppSidebar() {
       )}
     >
       <BookOpen className="h-3.5 w-3.5" />
-      <span>Inhoud</span>
+      <span>{ts.content}</span>
     </a>
   </SidebarMenuSubButton>
 </SidebarMenuSubItem>
@@ -1238,7 +1243,7 @@ export function AppSidebar() {
       )}
     >
       <FileText className="h-3.5 w-3.5" />
-      <span>Notities</span>
+      <span>{ts.notes}</span>
     </a>
   </SidebarMenuSubButton>
 </SidebarMenuSubItem>
@@ -1255,14 +1260,14 @@ export function AppSidebar() {
       )}
     >
       <Download className="h-3.5 w-3.5" />
-      <span>Resources</span>
+      <span>{ts.resources}</span>
     </a>
   </SidebarMenuSubButton>
 </SidebarMenuSubItem>
 
 <SidebarMenuSubItem>
   <SidebarMenuSubButton asChild>
-    <a 
+    <a
       href={`${location.pathname}?tab=questions`}
       className={cn(
         "rounded-md transition-all duration-150 text-sm",
@@ -1272,7 +1277,7 @@ export function AppSidebar() {
       )}
     >
       <MessageSquare className="h-3.5 w-3.5" />
-      <span>Vragen</span>
+      <span>{ts.questions}</span>
     </a>
   </SidebarMenuSubButton>
 </SidebarMenuSubItem>
@@ -1291,7 +1296,7 @@ export function AppSidebar() {
       )}
     >
       <Target className="h-3.5 w-3.5" />
-      <span>Skills</span>
+      <span>{ts.skills}</span>
     </a>
   </SidebarMenuSubButton>
 </SidebarMenuSubItem>
@@ -1308,7 +1313,7 @@ export function AppSidebar() {
       )}
     >
       <FlaskConical className="h-3.5 w-3.5" />
-      <span>Simulatie</span>
+      <span>{ts.simulation}</span>
     </a>
   </SidebarMenuSubButton>
 </SidebarMenuSubItem>
@@ -1325,7 +1330,7 @@ export function AppSidebar() {
       )}
     >
       <Briefcase className="h-3.5 w-3.5" />
-      <span>Praktijk</span>
+      <span>{ts.practice}</span>
     </a>
   </SidebarMenuSubButton>
 </SidebarMenuSubItem>
@@ -1342,7 +1347,7 @@ export function AppSidebar() {
       )}
     >
       <CheckCircle className="h-3.5 w-3.5" />
-      <span>Quiz</span>
+      <span>{ts.quiz}</span>
     </a>
   </SidebarMenuSubButton>
 </SidebarMenuSubItem>
@@ -1361,7 +1366,7 @@ export function AppSidebar() {
       )}
     >
       <GraduationCap className="h-3.5 w-3.5" />
-      <span>Examen</span>
+      <span>{ts.exam}</span>
     </a>
   </SidebarMenuSubButton>
 </SidebarMenuSubItem>
@@ -1378,7 +1383,7 @@ export function AppSidebar() {
       )}
     >
       <Award className="h-3.5 w-3.5" />
-      <span>Certificaat</span>
+      <span>{ts.certificate}</span>
     </a>
   </SidebarMenuSubButton>
 </SidebarMenuSubItem>
@@ -1395,7 +1400,7 @@ export function AppSidebar() {
           <SidebarMenuButton asChild>
             <a href="/academy">
               <GraduationCap className="h-4 w-4" />
-              <span>Academy</span>
+              <span>{ts.academy}</span>
             </a>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -1411,7 +1416,7 @@ export function AppSidebar() {
             <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-fuchsia-500/10 dark:from-violet-500/20 dark:via-purple-500/20 dark:to-fuchsia-500/20 p-3 border border-purple-200/50 dark:border-purple-800/30">
               <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-purple-400/20 to-fuchsia-400/20 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="relative">
-                <p className="text-[10px] uppercase tracking-wider text-purple-600/70 dark:text-purple-400/70 font-semibold mb-1">Current Plan</p>
+                <p className="text-[10px] uppercase tracking-wider text-purple-600/70 dark:text-purple-400/70 font-semibold mb-1">{ts.currentPlan}</p>
                 <Badge className={cn(getTierColor(userFeatures.tier), "text-xs font-semibold")}>
                   {getTierName(userFeatures.tier)}
                 </Badge>
@@ -1422,7 +1427,7 @@ export function AppSidebar() {
                   onClick={() => window.location.href = '/profile?tab=subscription'}
                 >
                   <CreditCard className="w-3 h-3 mr-1.5" />
-                  Manage Plan
+                  {ts.managePlan}
                 </Button>
               </div>
             </div>

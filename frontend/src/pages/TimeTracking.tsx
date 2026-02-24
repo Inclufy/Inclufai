@@ -200,6 +200,7 @@ interface TeamMember {
 
 const TimeTracking = () => {
   const { t } = useLanguage();
+  const { pt } = usePageTranslations();
   const queryClient = useQueryClient();
   
   const tt = t.timeTracking || {
@@ -385,10 +386,10 @@ const TimeTracking = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['time-entries'] });
-      toast.success("Time entry added successfully!");
+      toast.success(pt("Created"));
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to add time entry");
+      toast.error(error.message || pt("Create failed"));
     },
   });
 
@@ -512,13 +513,13 @@ const TimeTracking = () => {
 
   const handleAddEntry = () => {
     if (!selectedProject || !selectedTask) {
-      toast.error("Please select a project and task");
+      toast.error(pt("Please select a project and task"));
       return;
     }
 
     const totalMinutes = (parseInt(hours) || 0) * 60 + (parseInt(minutes) || 0);
     if (totalMinutes === 0) {
-      toast.error("Please enter a duration");
+      toast.error(pt("Please enter a duration"));
       return;
     }
 
@@ -545,7 +546,7 @@ const TimeTracking = () => {
 
   const handleStartTimer = () => {
     if (!timerProject || !timerTask) {
-      toast.error("Please select a project and task");
+      toast.error(pt("Please select a project and task"));
       return;
     }
     setIsTimerRunning(true);
@@ -600,7 +601,7 @@ Provide:
       const response = await callAI(prompt);
       setAiResponse(response);
     } catch (error) {
-      toast.error("AI insights temporarily unavailable");
+      toast.error(t.common.aiUnavailable);
     } finally {
       setAiLoading(false);
     }
@@ -608,7 +609,7 @@ Provide:
 
   const handleAISmartEntry = async () => {
     if (!aiPrompt.trim()) {
-      toast.error("Please describe what you worked on");
+      toast.error(t.common.describeFirst);
       return;
     }
 
@@ -655,10 +656,10 @@ Respond in JSON format only, no other text:
           description: parsed.description || aiPrompt,
         });
       } else {
-        toast.error("Could not parse AI suggestion");
+        toast.error(t.common.generateFailed);
       }
     } catch (error) {
-      toast.error("AI smart entry temporarily unavailable");
+      toast.error(t.common.aiUnavailable);
     } finally {
       setAiLoading(false);
     }
@@ -711,7 +712,7 @@ Generate a report with:
       const response = await callAI(prompt);
       setAiResponse(response);
     } catch (error) {
-      toast.error("AI report generation temporarily unavailable");
+      toast.error(t.common.aiUnavailable);
     } finally {
       setAiLoading(false);
     }
@@ -938,7 +939,7 @@ Generate a report with:
                   <>
                     <Button variant="outline" onClick={() => {
                       navigator.clipboard.writeText(aiResponse);
-                      toast.success("Report copied to clipboard!");
+                      toast.success(pt("Copied to clipboard"));
                     }}>
                       {tt.copyReport}
                     </Button>

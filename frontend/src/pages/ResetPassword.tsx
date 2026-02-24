@@ -7,12 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CheckCircle, XCircle, Eye, EyeOff, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
 export default function ResetPassword() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,12 +27,12 @@ export default function ResetPassword() {
 
     // Validation
     if (!password || password.length < 8) {
-      toast.error('Wachtwoord moet minimaal 8 tekens zijn');
+      toast.error(t.common.passwordMinLength);
       return;
     }
 
     if (password !== confirmPassword) {
-      toast.error('Wachtwoorden komen niet overeen');
+      toast.error(t.common.passwordsMismatch);
       return;
     }
 
@@ -51,14 +53,14 @@ export default function ResetPassword() {
         throw new Error(data.token?.[0] || data.error || 'Failed to reset password');
       }
 
-      toast.success('Wachtwoord gereset! Je kunt nu inloggen.');
+      toast.success(t.common.passwordReset);
       
       // Redirect to login after 2 seconds
       setTimeout(() => {
         navigate('/login');
       }, 2000);
     } catch (err: any) {
-      toast.error(err.message || 'Er is iets misgegaan. Token mogelijk verlopen.');
+      toast.error(err.message || t.common.error);
     } finally {
       setIsSubmitting(false);
     }
