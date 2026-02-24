@@ -145,23 +145,23 @@ export default function Settings() {
   return (
     <div className="container max-w-4xl py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">Manage your account settings and preferences</p>
+        <h1 className="text-3xl font-bold">{pt("Settings")}</h1>
+        <p className="text-muted-foreground">{pt("Manage your account settings and preferences")}</p>
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="profile">
             <User className="h-4 w-4 mr-2" />
-            Profile
+            {pt("Profile")}
           </TabsTrigger>
           <TabsTrigger value="security">
             <Shield className="h-4 w-4 mr-2" />
-            Security
+            {pt("Security")}
           </TabsTrigger>
           <TabsTrigger value="preferences">
             <SettingsIcon className="h-4 w-4 mr-2" />
-            Preferences
+            {pt("Preferences")}
           </TabsTrigger>
         </TabsList>
 
@@ -169,8 +169,8 @@ export default function Settings() {
         <TabsContent value="profile">
           <Card>
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>Update your personal information</CardDescription>
+              <CardTitle>{pt("Profile Information")}</CardTitle>
+              <CardDescription>{pt("Update your personal information")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -201,7 +201,7 @@ export default function Settings() {
                   disabled 
                 />
                 <p className="text-sm text-muted-foreground">
-                  Email address cannot be changed
+                  {pt("Email address cannot be changed")}
                 </p>
               </div>
 
@@ -220,10 +220,10 @@ export default function Settings() {
                 {loading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
+                    {pt("Saving...")}
                   </>
                 ) : (
-                  'Save Changes'
+                  pt('Save Changes')
                 )}
               </Button>
             </CardContent>
@@ -236,14 +236,14 @@ export default function Settings() {
             {/* Change Password Card */}
             <Card>
               <CardHeader>
-                <CardTitle>Change Password</CardTitle>
+                <CardTitle>{pt("Change Password")}</CardTitle>
                 <CardDescription>
-                  Update your password regularly for security
+                  {pt("Update your password regularly for security")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="oldPassword">Current Password</Label>
+                  <Label htmlFor="oldPassword">{pt("Current Password")}</Label>
                   <Input
                     id="oldPassword"
                     type="password"
@@ -255,7 +255,7 @@ export default function Settings() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
+                  <Label htmlFor="newPassword">{pt("New Password")}</Label>
                   <Input
                     id="newPassword"
                     type="password"
@@ -265,12 +265,12 @@ export default function Settings() {
                     }
                   />
                   <p className="text-sm text-muted-foreground">
-                    Minimum 8 characters
+                    {pt("Minimum 8 characters")}
                   </p>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Label htmlFor="confirmPassword">{pt("Confirm New Password")}</Label>
                   <Input
                     id="confirmPassword"
                     type="password"
@@ -288,10 +288,10 @@ export default function Settings() {
                   {loading ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Changing...
+                      {pt("Changing...")}
                     </>
                   ) : (
-                    'Change Password'
+                    pt('Change Password')
                   )}
                 </Button>
               </CardContent>
@@ -300,24 +300,24 @@ export default function Settings() {
             {/* 2FA Card */}
             <Card>
               <CardHeader>
-                <CardTitle>Two-Factor Authentication</CardTitle>
+                <CardTitle>{pt("Two-Factor Authentication")}</CardTitle>
                 <CardDescription>
-                  Add an extra layer of security to your account
+                  {pt("Add an extra layer of security to your account")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Secure your account with 2FA</p>
+                    <p className="font-medium">{pt("Secure your account with 2FA")}</p>
                     <p className="text-sm text-muted-foreground">
-                      Use an authenticator app for additional security
+                      {pt("Use an authenticator app for additional security")}
                     </p>
                   </div>
                   <Button 
                     variant="outline"
                     onClick={() => navigate('/settings/2fa')}
                   >
-                    Manage 2FA
+                    {pt("Manage 2FA")}
                   </Button>
                 </div>
               </CardContent>
@@ -329,13 +329,13 @@ export default function Settings() {
         <TabsContent value="preferences">
           <Card>
             <CardHeader>
-              <CardTitle>Preferences</CardTitle>
-              <CardDescription>Customize your experience</CardDescription>
+              <CardTitle>{pt("Preferences")}</CardTitle>
+              <CardDescription>{pt("Customize your experience")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Language Selection */}
               <div className="space-y-2">
-                <Label htmlFor="language">Language</Label>
+                <Label htmlFor="language">{pt("Language")}</Label>
                 <Select 
                   value={language} 
                   onValueChange={setLanguage}
@@ -356,7 +356,7 @@ export default function Settings() {
 
               {/* Theme Selection */}
               <div className="space-y-2">
-                <Label>Theme</Label>
+                <Label>{pt("Theme")}</Label>
                 <RadioGroup 
                   value={theme} 
                   onValueChange={handleThemeChange}
@@ -364,19 +364,19 @@ export default function Settings() {
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="light" id="light" />
                     <Label htmlFor="light" className="font-normal">
-                      Light
+                      {pt("Light")}
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="dark" id="dark" />
                     <Label htmlFor="dark" className="font-normal">
-                      Dark
+                      {pt("Dark")}
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="auto" id="auto" />
                     <Label htmlFor="auto" className="font-normal">
-                      Auto (System)
+                      {pt("Auto (System)")}
                     </Label>
                   </div>
                 </RadioGroup>
@@ -384,7 +384,7 @@ export default function Settings() {
 
               <div className="pt-4 border-t">
                 <p className="text-sm text-muted-foreground">
-                  Changes are saved automatically
+                  {pt("Changes are saved automatically")}
                 </p>
               </div>
             </CardContent>

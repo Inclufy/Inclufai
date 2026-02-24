@@ -36,12 +36,13 @@ interface ReportTemplate {
   aiPowered: boolean;
 }
 
-const reportTemplates: ReportTemplate[] = [
+// Report template keys - will be translated in the component using pt()
+const reportTemplateKeys = [
   // Executive Reports
   {
     id: "portfolio-analysis",
-    title: "Portfolio Analysis",
-    description: "AI-powered analysis of all programs and projects with strategic insights",
+    titleKey: "Portfolio Analysis",
+    descKey: "AI-powered analysis of all programs and projects with strategic insights",
     icon: Briefcase,
     category: "executive",
     roles: ["superadmin", "admin"],
@@ -49,8 +50,8 @@ const reportTemplates: ReportTemplate[] = [
   },
   {
     id: "executive-summary",
-    title: "Executive Summary",
-    description: "High-level overview of portfolio health, budget, and key risks",
+    titleKey: "Executive Summary",
+    descKey: "High-level overview of portfolio health, budget, and key risks",
     icon: TrendingUp,
     category: "executive",
     roles: ["superadmin", "admin"],
@@ -58,19 +59,19 @@ const reportTemplates: ReportTemplate[] = [
   },
   {
     id: "financial-overview",
-    title: "Financial Overview",
-    description: "Budget allocation, spending trends, and financial forecasts",
+    titleKey: "Financial Overview",
+    descKey: "Budget allocation, spending trends, and financial forecasts",
     icon: DollarSign,
     category: "executive",
     roles: ["superadmin", "admin"],
     aiPowered: true,
   },
-  
+
   // Program Manager Reports
   {
     id: "program-performance",
-    title: "Program Performance",
-    description: "Detailed analysis of program progress, milestones, and deliverables",
+    titleKey: "Program Performance",
+    descKey: "Detailed analysis of program progress, milestones, and deliverables",
     icon: Building2,
     category: "program",
     roles: ["program_manager", "admin", "superadmin"],
@@ -78,8 +79,8 @@ const reportTemplates: ReportTemplate[] = [
   },
   {
     id: "benefits-realization",
-    title: "Benefits Realization",
-    description: "Track and analyze program benefits against planned outcomes",
+    titleKey: "Benefits Realization",
+    descKey: "Track and analyze program benefits against planned outcomes",
     icon: Target,
     category: "program",
     roles: ["program_manager", "admin", "superadmin"],
@@ -87,19 +88,19 @@ const reportTemplates: ReportTemplate[] = [
   },
   {
     id: "governance-report",
-    title: "Governance Report",
-    description: "Board updates, compliance status, and governance metrics",
+    titleKey: "Governance Report",
+    descKey: "Board updates, compliance status, and governance metrics",
     icon: Award,
     category: "program",
     roles: ["program_manager", "admin", "superadmin"],
     aiPowered: false,
   },
-  
+
   // Project Manager Reports
   {
     id: "project-status",
-    title: "Project Status Report",
-    description: "Current project status, tasks, risks, and upcoming milestones",
+    titleKey: "Project Status Report",
+    descKey: "Current project status, tasks, risks, and upcoming milestones",
     icon: FolderKanban,
     category: "project",
     roles: ["pm", "program_manager", "admin", "superadmin"],
@@ -107,8 +108,8 @@ const reportTemplates: ReportTemplate[] = [
   },
   {
     id: "team-performance",
-    title: "Team Performance",
-    description: "Team productivity, capacity, and resource utilization",
+    titleKey: "Team Performance",
+    descKey: "Team productivity, capacity, and resource utilization",
     icon: Users,
     category: "project",
     roles: ["pm", "program_manager", "admin", "superadmin"],
@@ -116,8 +117,8 @@ const reportTemplates: ReportTemplate[] = [
   },
   {
     id: "budget-analysis",
-    title: "Budget Analysis",
-    description: "Project budget vs actual, spending trends, and forecasts",
+    titleKey: "Budget Analysis",
+    descKey: "Project budget vs actual, spending trends, and forecasts",
     icon: BarChart3,
     category: "project",
     roles: ["pm", "program_manager", "admin", "superadmin"],
@@ -125,19 +126,19 @@ const reportTemplates: ReportTemplate[] = [
   },
   {
     id: "risk-analysis",
-    title: "Risk Analysis",
-    description: "Identified risks, mitigation plans, and risk trends",
+    titleKey: "Risk Analysis",
+    descKey: "Identified risks, mitigation plans, and risk trends",
     icon: AlertTriangle,
     category: "project",
     roles: ["pm", "program_manager", "admin", "superadmin"],
     aiPowered: true,
   },
-  
+
   // Team Member Reports
   {
     id: "time-tracking",
-    title: "Time Tracking Report",
-    description: "Personal time logs, hours worked, and productivity metrics",
+    titleKey: "Time Tracking Report",
+    descKey: "Personal time logs, hours worked, and productivity metrics",
     icon: Clock,
     category: "personal",
     roles: ["guest", "member", "pm", "program_manager", "admin", "superadmin"],
@@ -145,19 +146,19 @@ const reportTemplates: ReportTemplate[] = [
   },
   {
     id: "personal-performance",
-    title: "Personal Performance",
-    description: "Your contributions, completed tasks, and achievements",
+    titleKey: "Personal Performance",
+    descKey: "Your contributions, completed tasks, and achievements",
     icon: Activity,
     category: "personal",
     roles: ["guest", "member", "pm", "program_manager", "admin", "superadmin"],
     aiPowered: true,
   },
-  
+
   // Scheduled Reports
   {
     id: "weekly-summary",
-    title: "Weekly Summary",
-    description: "Automated weekly summary of key activities and metrics",
+    titleKey: "Weekly Summary",
+    descKey: "Automated weekly summary of key activities and metrics",
     icon: Calendar,
     category: "scheduled",
     roles: ["pm", "program_manager", "admin", "superadmin"],
@@ -174,18 +175,29 @@ const ReportsPage: React.FC = () => {
 
   const userRole = user?.role || "guest";
 
+  // Build translated report templates
+  const reportTemplates: ReportTemplate[] = reportTemplateKeys.map(r => ({
+    id: r.id,
+    title: pt(r.titleKey),
+    description: pt(r.descKey),
+    icon: r.icon,
+    category: r.category,
+    roles: r.roles,
+    aiPowered: r.aiPowered,
+  }));
+
   // Filter reports based on user role
   const availableReports = reportTemplates.filter((report) =>
     report.roles.includes(userRole)
   );
 
   const categories = [
-    { id: "all", label: "All Reports", icon: FileText },
-    { id: "executive", label: "Executive", icon: Briefcase, roles: ["superadmin", "admin"] },
-    { id: "program", label: "Program", icon: Building2, roles: ["program_manager", "admin", "superadmin"] },
-    { id: "project", label: "Project", icon: FolderKanban, roles: ["pm", "program_manager", "admin", "superadmin"] },
-    { id: "personal", label: "Personal", icon: Users, roles: ["guest", "member", "pm", "program_manager", "admin", "superadmin"] },
-    { id: "scheduled", label: "Scheduled", icon: Calendar, roles: ["pm", "program_manager", "admin", "superadmin"] },
+    { id: "all", label: pt("All Reports"), icon: FileText },
+    { id: "executive", label: pt("Executive"), icon: Briefcase, roles: ["superadmin", "admin"] },
+    { id: "program", label: pt("Program"), icon: Building2, roles: ["program_manager", "admin", "superadmin"] },
+    { id: "project", label: pt("Project"), icon: FolderKanban, roles: ["pm", "program_manager", "admin", "superadmin"] },
+    { id: "personal", label: pt("Personal"), icon: Users, roles: ["guest", "member", "pm", "program_manager", "admin", "superadmin"] },
+    { id: "scheduled", label: pt("Scheduled"), icon: Calendar, roles: ["pm", "program_manager", "admin", "superadmin"] },
   ];
 
   const visibleCategories = categories.filter(
@@ -250,18 +262,18 @@ const ReportsPage: React.FC = () => {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
             <Sparkles className="h-4 w-4" />
-            <span>📊 AI-Powered Reports</span>
+            <span>{pt("AI-Powered Reports")}</span>
             <Badge className="ml-1 bg-green-500 text-white text-xs">{pt("New")}</Badge>
           </div>
 
           <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
             <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
-              Reports & Analytics
+              {pt("Reports & Analytics")}
             </span>
           </h1>
 
           <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
-            Generate AI-powered insights and reports tailored to your role
+            {pt("Generate AI-powered insights and reports tailored to your role")}
           </p>
         </div>
 
@@ -319,12 +331,12 @@ const ReportsPage: React.FC = () => {
                             {isGenerating ? (
                               <>
                                 <Sparkles className="h-4 w-4 mr-2 animate-spin" />
-                                Generating...
+                                {pt("Generating...")}
                               </>
                             ) : (
                               <>
                                 <FileText className="h-4 w-4 mr-2" />
-                                Generate
+                                {pt("Generate")}
                               </>
                             )}
                           </Button>
@@ -349,7 +361,7 @@ const ReportsPage: React.FC = () => {
                     <FileText className="h-8 w-8 text-purple-400" />
                   </div>
                   <p className="text-gray-500 dark:text-gray-400 font-medium">
-                    No reports available for this category
+                    {pt("No reports available for this category")}
                   </p>
                 </div>
               )}
