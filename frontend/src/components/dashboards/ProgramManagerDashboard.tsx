@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useQuery } from "@tanstack/react-query";
 import { AISummaryModal } from "@/components/AISummaryModal";
 import AICommander from "@/components/AICommander";
@@ -223,6 +224,7 @@ const StatCard = ({
 const ProgramManagerDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { pt } = usePageTranslations();
   const currencyCode = getCurrencyFromLanguage(language);
   const [aiSummaryOpen, setAiSummaryOpen] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
@@ -325,18 +327,18 @@ const ProgramManagerDashboard: React.FC = () => {
         <div className="text-center mb-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
             <Sparkles className="h-4 w-4" />
-            <span>📋 Program Manager Dashboard</span>
+            <span>📋 {pt("Program Manager Dashboard")}</span>
             <Badge className="ml-1 bg-green-500 text-white text-xs">AI-Powered</Badge>
           </div>
 
           <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
             <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
-              My Programs & Projects
+              {pt("My Programs & Projects")}
             </span>
           </h1>
           
           <p className="text-gray-600 dark:text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
-            Manage your programs and track project performance
+            {pt("Manage your programs and track project performance")}
           </p>
 
           <AICommander 
@@ -363,12 +365,12 @@ const ProgramManagerDashboard: React.FC = () => {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
-          <StatCard title="My Programs" value={totalPrograms} subtitle="Programs I manage" icon={Building2} color="purple" />
-          <StatCard title="Total Projects" value={totalProjects} subtitle="Across all programs" icon={FolderKanban} color="blue" />
-          <StatCard title="Active" value={activeProjects} subtitle="In progress" icon={Activity} color="emerald" />
-          <StatCard title="At Risk" value={atRiskProjects} subtitle="Need attention" icon={AlertTriangle} color="red" />
-          <StatCard title="Budget" value={formatBudget(totalBudget, currencyCode)} subtitle="Total allocated" icon={DollarSign} color="amber" />
-          <StatCard title="Progress" value={`${avgProgress}%`} subtitle="Average completion" icon={Target} color="emerald" />
+          <StatCard title={pt("My Programs")} value={totalPrograms} subtitle={pt("Programs I manage")} icon={Building2} color="purple" />
+          <StatCard title={pt("Total Projects")} value={totalProjects} subtitle={pt("Across all programs")} icon={FolderKanban} color="blue" />
+          <StatCard title={pt("Active")} value={activeProjects} subtitle={pt("In progress")} icon={Activity} color="emerald" />
+          <StatCard title={pt("At Risk")} value={atRiskProjects} subtitle={pt("Need attention")} icon={AlertTriangle} color="red" />
+          <StatCard title={pt("Budget")} value={formatBudget(totalBudget, currencyCode)} subtitle={pt("Total allocated")} icon={DollarSign} color="amber" />
+          <StatCard title={pt("Progress")} value={`${avgProgress}%`} subtitle={pt("Average completion")} icon={Target} color="emerald" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -379,10 +381,10 @@ const ProgramManagerDashboard: React.FC = () => {
                   <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
                     <Building2 className="h-5 w-5 text-white" />
                   </div>
-                  Program Status
+                  {pt("Program Status")}
                 </CardTitle>
                 <Badge className="bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 ring-1 ring-inset ring-purple-600/20 font-mono text-sm font-semibold px-3 py-1">
-                  {totalPrograms} Total
+                  {totalPrograms} {pt("Total")}
                 </Badge>
               </div>
             </CardHeader>
@@ -390,7 +392,7 @@ const ProgramManagerDashboard: React.FC = () => {
               <DonutChart 
                 total={totalPrograms} 
                 segments={programSegments.length > 0 ? programSegments : [{ label: 'Planning', value: 1, color: '#8B5CF6' }]} 
-                centerLabel="Programs" 
+                centerLabel={pt("Programs")} 
               />
             </CardContent>
           </Card>
@@ -402,10 +404,10 @@ const ProgramManagerDashboard: React.FC = () => {
                   <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
                     <FolderKanban className="h-5 w-5 text-white" />
                   </div>
-                  Project Status
+                  {pt("Project Status")}
                 </CardTitle>
                 <Badge className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 ring-1 ring-inset ring-blue-600/20 font-mono text-sm font-semibold px-3 py-1">
-                  {totalProjects} Total
+                  {totalProjects} {pt("Total")}
                 </Badge>
               </div>
             </CardHeader>
@@ -413,7 +415,7 @@ const ProgramManagerDashboard: React.FC = () => {
               <DonutChart 
                 total={totalProjects} 
                 segments={projectSegments.length > 0 ? projectSegments : [{ label: 'Pending', value: 1, color: '#f59e0b' }]} 
-                centerLabel="Projects" 
+                centerLabel={pt("Projects")} 
               />
             </CardContent>
           </Card>
@@ -428,28 +430,28 @@ const ProgramManagerDashboard: React.FC = () => {
                   className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg data-[state=active]:ring-1 data-[state=active]:ring-purple-100 dark:data-[state=active]:ring-purple-800 rounded-xl px-6 py-2.5 text-sm font-bold transition-all"
                 >
                   <Building2 className="h-4 w-4 mr-2" />
-                  My Programs ({totalPrograms})
+                  {pt("My Programs")} ({totalPrograms})
                 </TabsTrigger>
                 <TabsTrigger 
                   value="projects"
                   className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg data-[state=active]:ring-1 data-[state=active]:ring-purple-100 dark:data-[state=active]:ring-purple-800 rounded-xl px-6 py-2.5 text-sm font-bold transition-all"
                 >
                   <FolderKanban className="h-4 w-4 mr-2" />
-                  All Projects ({totalProjects})
+                  {pt("All Projects")} ({totalProjects})
                 </TabsTrigger>
               </TabsList>
             </div>
 
             <TabsContent value="programs" className="p-7">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Programs I Manage</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">{pt("Programs I Manage")}</h3>
                 <Button 
                   variant="outline" 
                   size="sm" 
                   onClick={() => navigate('/programs')}
                   className="font-bold ring-2 ring-inset ring-purple-200 hover:ring-purple-300 hover:bg-purple-50 dark:ring-purple-800 dark:hover:ring-purple-700 dark:hover:bg-purple-900/20 border-0 rounded-xl"
                 >
-                  View All <ArrowRight className="h-4 w-4 ml-2" />
+                  {pt("View All")} <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>
               
@@ -457,13 +459,13 @@ const ProgramManagerDashboard: React.FC = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-b border-purple-100 dark:border-purple-900/50">
-                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Program Name</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Framework</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Projects</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Budget</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Progress</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Status</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Health</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Program Name")}</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Framework")}</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Projects")}</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Budget")}</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Progress")}</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Status")}</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Health")}</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-900 divide-y divide-purple-50 dark:divide-purple-900/20">
@@ -513,7 +515,7 @@ const ProgramManagerDashboard: React.FC = () => {
                             <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center ring-4 ring-purple-50 dark:ring-purple-900/20">
                               <Building2 className="h-8 w-8 text-purple-400" />
                             </div>
-                            <p className="text-gray-500 dark:text-gray-400 font-medium">No programs assigned</p>
+                            <p className="text-gray-500 dark:text-gray-400 font-medium">{pt("No programs assigned")}</p>
                           </div>
                         </td>
                       </tr>
@@ -525,14 +527,14 @@ const ProgramManagerDashboard: React.FC = () => {
 
             <TabsContent value="projects" className="p-7">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">All Projects in My Programs</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">{pt("All Projects in My Programs")}</h3>
                 <Button 
                   variant="outline" 
                   size="sm" 
                   onClick={() => navigate('/projects')}
                   className="font-bold ring-2 ring-inset ring-purple-200 hover:ring-purple-300 hover:bg-purple-50 dark:ring-purple-800 dark:hover:ring-purple-700 dark:hover:bg-purple-900/20 border-0 rounded-xl"
                 >
-                  View All <ArrowRight className="h-4 w-4 ml-2" />
+                  {pt("View All")} <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>
               
@@ -540,12 +542,12 @@ const ProgramManagerDashboard: React.FC = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-b border-purple-100 dark:border-purple-900/50">
-                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Project Name</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">End Date</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Budget</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Progress</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Status</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Health</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Project Name")}</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("End Date")}</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Budget")}</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Progress")}</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Status")}</th>
+                      <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Health")}</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-900 divide-y divide-purple-50 dark:divide-purple-900/20">
@@ -586,7 +588,7 @@ const ProgramManagerDashboard: React.FC = () => {
                             <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center ring-4 ring-purple-50 dark:ring-purple-900/20">
                               <FolderKanban className="h-8 w-8 text-purple-400" />
                             </div>
-                            <p className="text-gray-500 dark:text-gray-400 font-medium">No projects in your programs</p>
+                            <p className="text-gray-500 dark:text-gray-400 font-medium">{pt("No projects in your programs")}</p>
                           </div>
                         </td>
                       </tr>

@@ -36,6 +36,7 @@ const PortfolioDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { pt } = usePageTranslations();
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [boards, setBoards] = useState<Board[]>([]);
   const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
