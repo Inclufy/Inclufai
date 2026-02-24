@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Calendar, Database, Cloud } from "lucide-react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 interface Integration {
   id: string;
@@ -13,6 +14,7 @@ interface Integration {
 }
 
 const PlanningSystemIntegration = () => {
+  const { pt } = usePageTranslations();
   const integrations: Integration[] = [
     {
       id: "1",
@@ -48,7 +50,7 @@ const PlanningSystemIntegration = () => {
     <div className="min-h-full bg-background">
       <ProjectHeader />
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-foreground mb-6">System Integrations</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-6">{pt("System Integrations")}</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {integrations.map((integration) => (
@@ -62,11 +64,11 @@ const PlanningSystemIntegration = () => {
                 </div>
                 {integration.status === "connected" ? (
                   <Badge className="bg-primary text-primary-foreground hover:bg-primary">
-                    Connected
+                    {pt("Connected")}
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="text-muted-foreground border-muted-foreground">
-                    Not Connected
+                    {pt("Not Connected")}
                   </Badge>
                 )}
               </div>

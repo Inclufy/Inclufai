@@ -739,6 +739,144 @@ const translations: Record<string, Record<string, string>> = {
     "Project information": "Project information",
     "Link projects": "Link projects",
     "Confirm & create": "Confirm & create",
+
+    // === Email Verification ===
+    "Invalid verification link": "Invalid verification link",
+    "Your email has been verified successfully!": "Your email has been verified successfully!",
+    "Verification failed. Link may be expired or invalid.": "Verification failed. Link may be expired or invalid.",
+    "Verification failed. Please try again.": "Verification failed. Please try again.",
+    "Verifying Email...": "Verifying Email...",
+    "Email Verified!": "Email Verified!",
+    "Verification Failed": "Verification Failed",
+    "Continue to Login": "Continue to Login",
+    "Back to Signup": "Back to Signup",
+    "Need help? Contact": "Need help? Contact",
+
+    // === Project Header ===
+    "Update your project details": "Update your project details",
+    "Saving...": "Saving...",
+    "Project updated successfully": "Project updated successfully",
+    "Failed to update project": "Failed to update project",
+
+    // === Upgrade Prompt ===
+    "Upgrade Required": "Upgrade Required",
+    "Recommended Plan": "Recommended Plan",
+    "View Plans": "View Plans",
+    "Maybe Later": "Maybe Later",
+    "Upgrade": "Upgrade",
+    "is not available in your current plan.": "is not available in your current plan.",
+    "This feature is not available in your current plan.": "This feature is not available in your current plan.",
+    "Upgrade to": "Upgrade to",
+    "to unlock this feature.": "to unlock this feature.",
+    "You've reached your limit of": "You've reached your limit of",
+    "Upgrade to add more.": "Upgrade to add more.",
+
+    // === Not Found ===
+    "Oops! Page not found": "Oops! Page not found",
+    "Return to Home": "Return to Home",
+
+    // === Planning Calendar ===
+    "Project Calendar": "Project Calendar",
+    "Select a date range to view or add project events.": "Select a date range to view or add project events.",
+    "Mon": "Mon",
+    "Tue": "Tue",
+    "Wed": "Wed",
+    "Thu": "Thu",
+    "Fri": "Fri",
+    "Sat": "Sat",
+    "Sun": "Sun",
+    "Add Event": "Add Event",
+    "Events": "Events",
+    "No events scheduled in this date range.": "No events scheduled in this date range.",
+
+    // === Planning RACI ===
+    "RACI Matrix": "RACI Matrix",
+    "Responsibility Assignment Matrix for Project Tasks": "Responsibility Assignment Matrix for Project Tasks",
+    "Search tasks...": "Search tasks...",
+    "TASK/ACTIVITIES": "TASK/ACTIVITIES",
+    "Responsible": "Responsible",
+    "Accountable": "Accountable",
+    "Consulted": "Consulted",
+    "Informed": "Informed",
+
+    // === Planning Risks ===
+    "Risk Register": "Risk Register",
+    "Add Risk": "Add Risk",
+    "No Risks Yet": "No Risks Yet",
+    "Start identifying and managing potential risks for your project.": "Start identifying and managing potential risks for your project.",
+    "Add Your First Risk": "Add Your First Risk",
+
+    // === System Integrations ===
+    "System Integrations": "System Integrations",
+    "Connected": "Connected",
+    "Not Connected": "Not Connected",
+
+    // === Project Timeline ===
+    "Project Timeline": "Project Timeline",
+    "Track project progress, milestones, and deliverables": "Track project progress, milestones, and deliverables",
+
+    // === Deployment ===
+    "Deployment Strategy": "Deployment Strategy",
+    "Task Management Application": "Task Management Application",
+    "A comprehensive plan for deploying an AI-powered task management application": "A comprehensive plan for deploying an AI-powered task management application",
+    "Review Sent For": "Review Sent For",
+    "No strategy overview yet.": "No strategy overview yet.",
+    "Add Strategy Item": "Add Strategy Item",
+    "Roll-Out Plan": "Roll-Out Plan",
+    "No roll-out overview yet.": "No roll-out overview yet.",
+    "+ Add Task": "+ Add Task",
+
+    // === Meeting ===
+    "Meeting Scheduling": "Meeting Scheduling",
+    "Setup recurring and ad-hoc meetings": "Setup recurring and ad-hoc meetings",
+    "Types": "Types",
+    "Add Meeting": "Add Meeting",
+    "Session Organization": "Session Organization",
+    "Workshops": "Workshops",
+    "Agenda": "Agenda",
+    "Pre-read files": "Pre-read files",
+    "Attendee list": "Attendee list",
+    "Upcoming Meetings": "Upcoming Meetings",
+    "Select a meeting from the calendar to view details": "Select a meeting from the calendar to view details",
+    "Schedule New Meeting": "Schedule New Meeting",
+
+    // === Newsletters ===
+    "Newsletters": "Newsletters",
+    "Create Newsletter": "Create Newsletter",
+    "SUBJECT": "SUBJECT",
+    "RECIPIENTS": "RECIPIENTS",
+    "CREATED BY": "CREATED BY",
+    "DATE": "DATE",
+    "Sent": "Sent",
+    "recipients": "recipients",
+
+    // === Status Reporting ===
+    "Add Report": "Add Report",
+    "REPORT ID": "REPORT ID",
+    "PROGRESS (%)": "PROGRESS (%)",
+    "LAST UPDATED": "LAST UPDATED",
+
+    // === Document Library ===
+    "Document Library": "Document Library",
+    "Upload Document": "Upload Document",
+    "Documents": "Documents",
+    "Current Project": "Current Project",
+    "document": "document",
+    "In Review": "In Review",
+
+    // === Stages ===
+    "Stages": "Stages",
+    "linked documents": "linked documents",
+    "View": "View",
+    "Add Document": "Add Document",
+    "pending": "pending",
+
+    // === Training ===
+    "Training Materials": "Training Materials",
+    "Add Training Material": "Add Training Material",
+    "No training materials yet": "No training materials yet",
+    "Create training materials to help your team learn about the project.": "Create training materials to help your team learn about the project.",
+    "Create Training Material": "Create Training Material",
   },
   nl: {
     // === Common UI ===
@@ -1473,6 +1611,144 @@ const translations: Record<string, Record<string, string>> = {
     "Sprint Items": "Sprint Items",
     "Backlog Items": "Backlog Items",
     "Product": "Product",
+
+    // === Email Verificatie ===
+    "Invalid verification link": "Ongeldige verificatielink",
+    "Your email has been verified successfully!": "Uw e-mail is succesvol geverifieerd!",
+    "Verification failed. Link may be expired or invalid.": "Verificatie mislukt. De link is mogelijk verlopen of ongeldig.",
+    "Verification failed. Please try again.": "Verificatie mislukt. Probeer het opnieuw.",
+    "Verifying Email...": "E-mail verifiëren...",
+    "Email Verified!": "E-mail Geverifieerd!",
+    "Verification Failed": "Verificatie Mislukt",
+    "Continue to Login": "Doorgaan naar Inloggen",
+    "Back to Signup": "Terug naar Registratie",
+    "Need help? Contact": "Hulp nodig? Neem contact op met",
+
+    // === Project Header ===
+    "Update your project details": "Werk je projectgegevens bij",
+    "Saving...": "Opslaan...",
+    "Project updated successfully": "Project succesvol bijgewerkt",
+    "Failed to update project": "Project bijwerken mislukt",
+
+    // === Upgrade Prompt ===
+    "Upgrade Required": "Upgrade Vereist",
+    "Recommended Plan": "Aanbevolen Plan",
+    "View Plans": "Bekijk Plannen",
+    "Maybe Later": "Misschien Later",
+    "Upgrade": "Upgraden",
+    "is not available in your current plan.": "is niet beschikbaar in uw huidige plan.",
+    "This feature is not available in your current plan.": "Deze functie is niet beschikbaar in uw huidige plan.",
+    "Upgrade to": "Upgrade naar",
+    "to unlock this feature.": "om deze functie te ontgrendelen.",
+    "You've reached your limit of": "U heeft uw limiet bereikt van",
+    "Upgrade to add more.": "Upgrade om meer toe te voegen.",
+
+    // === Niet Gevonden ===
+    "Oops! Page not found": "Oeps! Pagina niet gevonden",
+    "Return to Home": "Terug naar Home",
+
+    // === Planning Kalender ===
+    "Project Calendar": "Projectkalender",
+    "Select a date range to view or add project events.": "Selecteer een datumbereik om projectevenementen te bekijken of toe te voegen.",
+    "Mon": "Ma",
+    "Tue": "Di",
+    "Wed": "Wo",
+    "Thu": "Do",
+    "Fri": "Vr",
+    "Sat": "Za",
+    "Sun": "Zo",
+    "Add Event": "Evenement Toevoegen",
+    "Events": "Evenementen",
+    "No events scheduled in this date range.": "Geen evenementen gepland in dit datumbereik.",
+
+    // === Planning RACI ===
+    "RACI Matrix": "RACI Matrix",
+    "Responsibility Assignment Matrix for Project Tasks": "Verantwoordelijkheidsmatrix voor Projecttaken",
+    "Search tasks...": "Taken zoeken...",
+    "TASK/ACTIVITIES": "TAAK/ACTIVITEITEN",
+    "Responsible": "Verantwoordelijk",
+    "Accountable": "Eindverantwoordelijk",
+    "Consulted": "Geraadpleegd",
+    "Informed": "Geïnformeerd",
+
+    // === Planning Risico's ===
+    "Risk Register": "Risicoregister",
+    "Add Risk": "Risico Toevoegen",
+    "No Risks Yet": "Nog Geen Risico's",
+    "Start identifying and managing potential risks for your project.": "Begin met het identificeren en beheren van potentiële risico's voor uw project.",
+    "Add Your First Risk": "Voeg Uw Eerste Risico Toe",
+
+    // === Systeemintegraties ===
+    "System Integrations": "Systeemintegraties",
+    "Connected": "Verbonden",
+    "Not Connected": "Niet Verbonden",
+
+    // === Projecttijdlijn ===
+    "Project Timeline": "Projecttijdlijn",
+    "Track project progress, milestones, and deliverables": "Volg projectvoortgang, mijlpalen en deliverables",
+
+    // === Deployment ===
+    "Deployment Strategy": "Uitrolstrategie",
+    "Task Management Application": "Taakbeheer Applicatie",
+    "A comprehensive plan for deploying an AI-powered task management application": "Een uitgebreid plan voor het uitrollen van een AI-gestuurde taakbeheer applicatie",
+    "Review Sent For": "Review Verzonden Voor",
+    "No strategy overview yet.": "Nog geen strategieoverzicht.",
+    "Add Strategy Item": "Strategie-item Toevoegen",
+    "Roll-Out Plan": "Uitrolplan",
+    "No roll-out overview yet.": "Nog geen uitroloverzicht.",
+    "+ Add Task": "+ Taak Toevoegen",
+
+    // === Vergadering ===
+    "Meeting Scheduling": "Vergadering Plannen",
+    "Setup recurring and ad-hoc meetings": "Plan terugkerende en ad-hoc vergaderingen",
+    "Types": "Types",
+    "Add Meeting": "Vergadering Toevoegen",
+    "Session Organization": "Sessie Organisatie",
+    "Workshops": "Workshops",
+    "Agenda": "Agenda",
+    "Pre-read files": "Voorbereidende documenten",
+    "Attendee list": "Deelnemerslijst",
+    "Upcoming Meetings": "Aankomende Vergaderingen",
+    "Select a meeting from the calendar to view details": "Selecteer een vergadering uit de kalender om details te bekijken",
+    "Schedule New Meeting": "Nieuwe Vergadering Plannen",
+
+    // === Nieuwsbrieven ===
+    "Newsletters": "Nieuwsbrieven",
+    "Create Newsletter": "Nieuwsbrief Aanmaken",
+    "SUBJECT": "ONDERWERP",
+    "RECIPIENTS": "ONTVANGERS",
+    "CREATED BY": "AANGEMAAKT DOOR",
+    "DATE": "DATUM",
+    "Sent": "Verzonden",
+    "recipients": "ontvangers",
+
+    // === Statusrapportage ===
+    "Add Report": "Rapport Toevoegen",
+    "REPORT ID": "RAPPORT ID",
+    "PROGRESS (%)": "VOORTGANG (%)",
+    "LAST UPDATED": "LAATST BIJGEWERKT",
+
+    // === Documentbibliotheek ===
+    "Document Library": "Documentbibliotheek",
+    "Upload Document": "Document Uploaden",
+    "Documents": "Documenten",
+    "Current Project": "Huidig Project",
+    "document": "document",
+    "In Review": "In Beoordeling",
+
+    // === Fases ===
+    "Stages": "Fases",
+    "linked documents": "gekoppelde documenten",
+    "View": "Bekijken",
+    "Add Document": "Document Toevoegen",
+    "pending": "in afwachting",
+
+    // === Training ===
+    "Training Materials": "Trainingsmateriaal",
+    "Add Training Material": "Trainingsmateriaal Toevoegen",
+    "No training materials yet": "Nog geen trainingsmateriaal",
+    "Create training materials to help your team learn about the project.": "Maak trainingsmateriaal om uw team te helpen leren over het project.",
+    "Create Training Material": "Trainingsmateriaal Aanmaken",
   }
 };
 

@@ -3,8 +3,10 @@ import { ProjectHeader } from "@/components/ProjectHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Plus, Eye, Calendar, Clock, User } from "lucide-react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const ExecutionNewsletters = () => {
+  const { pt } = usePageTranslations();
   const newsletters = [
     {
       subject: "Inclufy Newsletter",
@@ -23,11 +25,11 @@ const ExecutionNewsletters = () => {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <Mail className="h-6 w-6 text-foreground" />
-            <h1 className="text-2xl font-bold text-foreground">Newsletters</h1>
+            <h1 className="text-2xl font-bold text-foreground">{pt("Newsletters")}</h1>
           </div>
           <Button className="bg-primary hover:bg-primary/90">
             <Plus className="h-4 w-4 mr-2" />
-            Create Newsletter
+            {pt("Create Newsletter")}
           </Button>
         </div>
 
@@ -36,12 +38,12 @@ const ExecutionNewsletters = () => {
             <table className="w-full">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="text-left p-4 font-medium text-muted-foreground text-sm">SUBJECT</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground text-sm">RECIPIENTS</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground text-sm">STATUS</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground text-sm">CREATED BY</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground text-sm">DATE</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground text-sm">ACTIONS</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground text-sm">{pt("SUBJECT")}</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground text-sm">{pt("RECIPIENTS")}</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground text-sm">{pt("STATUS")}</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground text-sm">{pt("CREATED BY")}</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground text-sm">{pt("DATE")}</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground text-sm">{pt("ACTIONS")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -51,12 +53,12 @@ const ExecutionNewsletters = () => {
                     <td className="p-4">
                       <div>
                         <p className="text-foreground">{newsletter.recipients.type}</p>
-                        <p className="text-sm text-muted-foreground">{newsletter.recipients.count} recipients</p>
+                        <p className="text-sm text-muted-foreground">{newsletter.recipients.count} {pt("recipients")}</p>
                       </div>
                     </td>
                     <td className="p-4">
                       <Badge variant="outline" className="bg-success/10 text-success border-success/20">
-                        {newsletter.status}
+                        {pt(newsletter.status)}
                       </Badge>
                     </td>
                     <td className="p-4">

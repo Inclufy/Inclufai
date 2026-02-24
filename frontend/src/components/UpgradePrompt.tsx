@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 interface UpgradePromptProps {
   feature?: string;
@@ -28,18 +29,19 @@ const UpgradePrompt = ({
   onClose,
   inline = false
 }: UpgradePromptProps) => {
-  
+  const { pt } = usePageTranslations();
+
   const getMessage = () => {
     if (resourceType && currentLimit !== undefined) {
       const limitText = currentLimit === -1 ? 'unlimited' : currentLimit;
-      return `You've reached your limit of ${limitText} ${resourceType}. Upgrade to add more.`;
+      return pt(`You've reached your limit of ${limitText} ${resourceType}. Upgrade to add more.`);
     }
-    
+
     if (feature) {
-      return `${feature} is not available in your current plan.`;
+      return pt(`${feature} is not available in your current plan.`);
     }
-    
-    return 'This feature is not available in your current plan.';
+
+    return pt('This feature is not available in your current plan.');
   };
 
   if (inline) {
@@ -49,7 +51,7 @@ const UpgradePrompt = ({
         <div className="flex-1">
           <p className="text-sm font-medium text-yellow-800">{getMessage()}</p>
           <p className="text-sm text-yellow-700 mt-1">
-            Upgrade to <span className="font-semibold">{requiredTier}</span> to unlock this feature.
+            {pt(`Upgrade to ${requiredTier} to unlock this feature.`)}
           </p>
         </div>
         <Button
@@ -58,7 +60,7 @@ const UpgradePrompt = ({
           onClick={() => window.location.href = '/profile?tab=subscription'}
         >
           <Crown className="w-4 h-4 mr-1" />
-          Upgrade
+          {pt("Upgrade")}
         </Button>
       </div>
     );
@@ -77,21 +79,21 @@ const UpgradePrompt = ({
         )}
         <div className="flex items-center gap-2">
           <Crown className="w-6 h-6 text-purple-600" />
-          <CardTitle>Upgrade Required</CardTitle>
+          <CardTitle>{pt("Upgrade Required")}</CardTitle>
         </div>
         <CardDescription>{getMessage()}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="bg-white rounded-lg p-4 border border-purple-100">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">Recommended Plan</span>
+            <span className="text-sm font-medium text-gray-700">{pt("Recommended Plan")}</span>
             <Badge className="bg-purple-100 text-purple-800">
               {requiredTier}
             </Badge>
           </div>
           {resourceType && currentLimit !== undefined && currentLimit !== -1 && (
             <div className="text-sm text-gray-600">
-              Current: {currentUsage || 0} / {currentLimit} {resourceType}
+              {pt("Current:")} {currentUsage || 0} / {currentLimit} {resourceType}
             </div>
           )}
         </div>
@@ -102,14 +104,14 @@ const UpgradePrompt = ({
             onClick={() => window.location.href = '/profile?tab=subscription'}
           >
             <Crown className="w-4 h-4 mr-2" />
-            View Plans
+            {pt("View Plans")}
           </Button>
           {onClose && (
             <Button
               variant="outline"
               onClick={onClose}
             >
-              Maybe Later
+              {pt("Maybe Later")}
             </Button>
           )}
         </div>

@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const fetchProject = async (id: string) => {
   const token = localStorage.getItem("access_token");
@@ -48,6 +49,7 @@ export const ProjectHeader = () => {
     description: "",
     budget: "",
   });
+  const { pt } = usePageTranslations();
 
   const { data: project } = useQuery({
     queryKey: ["project", id],
@@ -59,11 +61,11 @@ export const ProjectHeader = () => {
     mutationFn: updateProject,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project", id] });
-      toast.success("Project updated successfully");
+      toast.success(pt("Project updated successfully"));
       setEditOpen(false);
     },
     onError: () => {
-      toast.error("Failed to update project");
+      toast.error(pt("Failed to update project"));
     },
   });
 
@@ -93,17 +95,17 @@ export const ProjectHeader = () => {
     <>
       <div className="border-b border-border bg-card">
         <div className="px-6 py-4 flex justify-end gap-2">
-          <Button 
+          <Button
             variant="outline"
             onClick={handleEditClick}
             className="gap-2"
           >
             <Edit2 className="h-4 w-4" />
-            Edit Project
+            {pt("Edit Project")}
           </Button>
           <Button className="gap-2">
             <Sparkles className="h-4 w-4" />
-            Analyze with AI
+            {pt("Analyze with AI")}
           </Button>
         </div>
       </div>
@@ -111,14 +113,14 @@ export const ProjectHeader = () => {
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Project</DialogTitle>
+            <DialogTitle>{pt("Edit Project")}</DialogTitle>
             <DialogDescription>
-              Update your project details
+              {pt("Update your project details")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Project Name</Label>
+              <Label htmlFor="name">{pt("Project Name")}</Label>
               <Input
                 id="name"
                 value={formData.name}
@@ -126,7 +128,7 @@ export const ProjectHeader = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{pt("Description")}</Label>
               <Textarea
                 id="description"
                 value={formData.description}
@@ -135,7 +137,7 @@ export const ProjectHeader = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="budget">Budget (€)</Label>
+              <Label htmlFor="budget">{pt("Budget")} (€)</Label>
               <Input
                 id="budget"
                 type="number"
@@ -146,10 +148,10 @@ export const ProjectHeader = () => {
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setEditOpen(false)}>
-              Cancel
+              {pt("Cancel")}
             </Button>
             <Button onClick={handleSave} disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? "Saving..." : "Save Changes"}
+              {updateMutation.isPending ? pt("Saving...") : pt("Save Changes")}
             </Button>
           </div>
         </DialogContent>

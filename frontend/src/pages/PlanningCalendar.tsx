@@ -3,13 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, ChevronDown, Plus } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const PlanningCalendar = () => {
   const [currentMonth, setCurrentMonth] = useState("October");
   const [currentYear, setCurrentYear] = useState("2025");
-  
-  const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  
+  const { pt } = usePageTranslations();
+
+  const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => pt(day));
+
   // Calendar grid - starting from 29 (previous month) to show full weeks
   const calendarDays = [
     { day: 29, isPrevMonth: true },
@@ -27,8 +29,8 @@ const PlanningCalendar = () => {
       <ProjectHeader />
       <div className="p-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Project Calendar</h1>
-          <p className="text-muted-foreground">Select a date range to view or add project events.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">{pt("Project Calendar")}</h1>
+          <p className="text-muted-foreground">{pt("Select a date range to view or add project events.")}</p>
         </div>
 
         <div className="bg-card rounded-lg border border-border p-6">
@@ -86,16 +88,16 @@ const PlanningCalendar = () => {
           {/* Add Event Button */}
           <Button variant="ghost" className="mt-6 text-muted-foreground hover:text-foreground">
             <Plus className="h-4 w-4 mr-2" />
-            Add Event
+            {pt("Add Event")}
           </Button>
 
           {/* Events List */}
           <div className="mt-8 pt-6 border-t border-border">
             <h3 className="text-lg font-semibold text-foreground mb-4">
-              Events from Sat Oct 25 2025 to Sat Oct 25 2025
+              {pt("Events from")} Sat Oct 25 2025 {pt("to")} Sat Oct 25 2025
             </h3>
             <p className="text-center py-12 text-muted-foreground">
-              No events scheduled in this date range. Click "Add Event" to create one!
+              {pt('No events scheduled in this date range. Click "Add Event" to create one!')}
             </p>
           </div>
         </div>

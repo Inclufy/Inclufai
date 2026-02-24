@@ -2,8 +2,10 @@ import { ProjectHeader } from "@/components/ProjectHeader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AlertTriangle, Plus } from "lucide-react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const PlanningRisks = () => {
+  const { pt } = usePageTranslations();
   const hasRisks = false;
 
   return (
@@ -11,10 +13,10 @@ const PlanningRisks = () => {
       <ProjectHeader />
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Risk Register</h1>
+          <h1 className="text-2xl font-bold text-foreground">{pt("Risk Register")}</h1>
           <Button className="bg-foreground text-background hover:bg-foreground/90">
             <Plus className="h-4 w-4 mr-2" />
-            Add Risk
+            {pt("Add Risk")}
           </Button>
         </div>
 
@@ -24,13 +26,13 @@ const PlanningRisks = () => {
               <div className="h-24 w-24 rounded-full bg-muted flex items-center justify-center mb-6">
                 <AlertTriangle className="h-12 w-12 text-muted-foreground" />
               </div>
-              <h2 className="text-xl font-semibold text-foreground mb-3">No Risks Yet</h2>
+              <h2 className="text-xl font-semibold text-foreground mb-3">{pt("No Risks Yet")}</h2>
               <p className="text-muted-foreground mb-6">
-                Start identifying and managing potential risks for your project. Click the button below to add your first risk.
+                {pt("Start identifying and managing potential risks for your project. Click the button below to add your first risk.")}
               </p>
               <Button className="bg-foreground text-background hover:bg-foreground/90">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Your First Risk
+                {pt("Add Your First Risk")}
               </Button>
             </div>
           </Card>
