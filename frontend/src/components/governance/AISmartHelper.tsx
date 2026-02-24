@@ -11,8 +11,27 @@ interface AISmartHelperProps {
   context?: string;
 }
 
+const portfolioSuggestions = [
+  { name: "Digital Transformation Initiative 2025", description: "Strategic portfolio focused on modernizing legacy systems, implementing cloud infrastructure, and enhancing digital customer experiences. Includes data analytics platform, mobile app development, and AI/ML capabilities. Expected ROI: 25% within 18 months." },
+  { name: "Sustainability & Green Operations", description: "Portfolio dedicated to reducing carbon footprint and implementing sustainable business practices. Covers energy-efficient infrastructure, supply chain optimization, and ESG compliance initiatives." },
+  { name: "Customer Experience Innovation", description: "Strategic portfolio aimed at transforming customer touchpoints through omnichannel integration, personalization engines, and self-service platforms. Target: 40% improvement in NPS score." },
+];
+
+const boardSuggestions = [
+  { name: "Strategic Investment Review Board", description: "Governance body responsible for reviewing and approving strategic investments, monitoring portfolio performance, and ensuring alignment with organizational objectives. Meets bi-weekly to assess progress and make funding decisions." },
+  { name: "Risk & Compliance Committee", description: "Board focused on identifying, assessing, and mitigating strategic risks across all portfolios. Reviews compliance status, audit findings, and regulatory changes on a monthly basis." },
+  { name: "Innovation Advisory Panel", description: "Advisory board that evaluates emerging technologies and innovation proposals. Provides guidance on R&D investments and partnership opportunities. Meets quarterly." },
+];
+
+const stakeholderSuggestions = [
+  { name: "Sarah Johnson", email: "sarah.johnson@example.com", role: "executive_sponsor", organization: "Technology Division", interest_level: "high", influence_level: "high" },
+  { name: "Mark de Vries", email: "mark.devries@example.com", role: "senior_responsible_owner", organization: "Operations", interest_level: "high", influence_level: "medium" },
+  { name: "Lisa van der Berg", email: "lisa.vdberg@example.com", role: "business_change_manager", organization: "HR & Change Management", interest_level: "medium", influence_level: "high" },
+];
+
 const AISmartHelper: React.FC<AISmartHelperProps> = ({ type, onSuggestion, context }) => {
   const [generating, setGenerating] = useState(false);
+  const [suggestionIndex, setSuggestionIndex] = useState(0);
   const { toast } = useToast();
   const { pt } = usePageTranslations();
 
@@ -20,48 +39,33 @@ const AISmartHelper: React.FC<AISmartHelperProps> = ({ type, onSuggestion, conte
     setGenerating(true);
 
     try {
-      // Simulate AI generation
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       let suggestion: any = {};
 
       switch (type) {
         case "portfolio":
-          suggestion = {
-            name: "Digital Transformation Initiative 2025",
-            description: "Strategic portfolio focused on modernizing legacy systems, implementing cloud infrastructure, and enhancing digital customer experiences. Includes data analytics platform, mobile app development, and AI/ML capabilities. Expected ROI: 25% within 18 months.",
-          };
+          suggestion = portfolioSuggestions[suggestionIndex % portfolioSuggestions.length];
           break;
-
         case "board":
-          suggestion = {
-            name: "Strategic Investment Review Board",
-            description: "Governance body responsible for reviewing and approving strategic investments, monitoring portfolio performance, and ensuring alignment with organizational objectives. Meets bi-weekly to assess progress and make funding decisions.",
-          };
+          suggestion = boardSuggestions[suggestionIndex % boardSuggestions.length];
           break;
-
         case "stakeholder":
-          suggestion = {
-            name: "Sarah Johnson",
-            email: "sarah.johnson@example.com",
-            role: "Chief Digital Officer",
-            organization: "Technology Division",
-            interest_level: "high",
-            influence_level: "high",
-          };
+          suggestion = stakeholderSuggestions[suggestionIndex % stakeholderSuggestions.length];
           break;
       }
 
-      onSuggestion(suggestion);
+      setSuggestionIndex(prev => prev + 1);
+      onSuggestion({ ...suggestion });
 
       toast({
-        title: "✨ AI Suggestions Generated",
-        description: "Smart fields have been populated. Review and adjust as needed.",
+        title: pt("AI Suggestions Generated"),
+        description: pt("Smart fields have been populated. Review and adjust as needed."),
       });
     } catch (error) {
       toast({
-        title: "❌ Error",
-        description: "Failed to generate AI suggestions.",
+        title: pt("Error"),
+        description: pt("Failed to generate AI suggestions."),
         variant: "destructive",
       });
     } finally {
@@ -73,21 +77,21 @@ const AISmartHelper: React.FC<AISmartHelperProps> = ({ type, onSuggestion, conte
     switch (type) {
       case "portfolio":
         return [
-          "Create a digital transformation portfolio",
-          "Build a sustainability initiative",
-          "Setup innovation program",
+          pt("Create a digital transformation portfolio"),
+          pt("Build a sustainability initiative"),
+          pt("Setup innovation program"),
         ];
       case "board":
         return [
-          "Investment review board",
-          "Risk oversight committee",
-          "Strategic planning board",
+          pt("Investment review board"),
+          pt("Risk oversight committee"),
+          pt("Strategic planning board"),
         ];
       case "stakeholder":
         return [
-          "Add executive sponsor",
-          "Include technical lead",
-          "Add business owner",
+          pt("Add executive sponsor"),
+          pt("Include technical lead"),
+          pt("Add business owner"),
         ];
     }
   };
@@ -103,14 +107,14 @@ const AISmartHelper: React.FC<AISmartHelperProps> = ({ type, onSuggestion, conte
           <div className="flex-1">
             <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-purple-600" />
-              AI Smart Creation
+              {pt("AI Smart Creation")}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               {pt("Let AI help you get started with intelligent suggestions")}
             </p>
 
             <div className="space-y-2 mb-4">
-              <p className="text-xs font-semibold text-gray-500 uppercase">Quick Prompts:</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase">{pt("Quick Prompts")}:</p>
               <div className="flex flex-wrap gap-2">
                 {getPromptExamples().map((example, idx) => (
                   <Button

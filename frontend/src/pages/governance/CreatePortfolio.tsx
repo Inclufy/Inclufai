@@ -105,17 +105,17 @@ const CreatePortfolio: React.FC = () => {
         <div className="text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
             <Sparkles className="h-4 w-4" />
-            <span>📊 Create Portfolio</span>
+            <span>📊 {pt("Create Portfolio")}</span>
           </div>
 
           <h1 className="text-4xl font-bold mb-4 leading-tight">
             <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
-              New Strategic Portfolio
+              {pt("New Strategic Portfolio")}
             </span>
           </h1>
 
           <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
-            Create a portfolio to manage strategic initiatives and governance
+            {pt("Create a portfolio to manage strategic initiatives and governance")}
           </p>
         </div>
 
@@ -146,7 +146,7 @@ const CreatePortfolio: React.FC = () => {
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Digital Transformation Portfolio"
+                  placeholder={pt("e.g., Digital Transformation Portfolio")}
                   required
                   className="h-12 text-base"
                 />
@@ -160,7 +160,7 @@ const CreatePortfolio: React.FC = () => {
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Describe the strategic objectives and scope of this portfolio..."
+                  placeholder={pt("Describe the strategic objectives and scope of this portfolio...")}
                   rows={6}
                   className="text-base"
                 />

@@ -389,13 +389,13 @@ export default function Team() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const tt = t.team || {
-    title: "Team Management",
-    createNewMember: "Create A New Member",
-    addNewMember: "Add New Member",
-    active: "Active",
-    inactive: "Inactive",
-    joined: "Joined",
+  const tt = {
+    title: pt("Team Management"),
+    createNewMember: pt("Create A New Member"),
+    addNewMember: pt("Add New Member"),
+    active: pt("Active"),
+    inactive: pt("Inactive"),
+    joined: pt("Joined"),
   };
 
   // Fetch data from API
@@ -801,7 +801,7 @@ if (!sendInviteEmail) {
         ? `${API_BASE_URL}/projects/${selectedItemId}/team/add/`
         : `${API_BASE_URL}/programs/${selectedItemId}/team/add/`;
       
-      await fetch(endpoint, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -809,8 +809,15 @@ if (!sendInviteEmail) {
         },
         body: JSON.stringify({
           user_id: parseInt(selectedMember.id, 10),
+          role: selectedRole,
         }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Assignment failed:', response.status, errorData);
+        throw new Error('Assignment failed');
+      }
 
       queryClient.invalidateQueries({ queryKey: ['team-members'] });
       setSelectedItemId("");

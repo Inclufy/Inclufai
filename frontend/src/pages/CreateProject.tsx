@@ -514,7 +514,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <Textarea
-                    placeholder="Example: Build a new customer portal with user authentication, dashboard, and reporting features. The team has 5 developers and we need to deliver in 3 months."
+                    placeholder={pt("Example: Build a new customer portal with user authentication, dashboard, and reporting features. The team has 5 developers and we need to deliver in 3 months.")}
                     value={generatePrompt}
                     onChange={(e) => setGeneratePrompt(e.target.value)}
                     rows={5}
@@ -620,7 +620,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       </DialogHeader>
                       <div className="space-y-4 py-4">
                         <Textarea
-                          placeholder="Example: We're building a mobile app for internal use. Team of 4 developers, 2 month timeline, requirements may change based on user feedback..."
+                          placeholder={pt("Example: We're building a mobile app for internal use. Team of 4 developers, 2 month timeline, requirements may change based on user feedback...")}
                           value={aiPrompt}
                           onChange={(e) => setAiPrompt(e.target.value)}
                           rows={4}
@@ -745,7 +745,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                     <Label htmlFor="name">{pt("Project Name")} *</Label>
                     <Input
                       id="name"
-                      placeholder="e.g., Customer Portal v2.0"
+                      placeholder={pt("e.g., Customer Portal v2.0")}
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     />
@@ -800,7 +800,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                     </div>
                     <Textarea
                       id="description"
-                      placeholder="Describe the project scope and deliverables..."
+                      placeholder={pt("Describe the project scope and deliverables...")}
                       value={formData.description}
                       onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                       rows={3}
@@ -827,7 +827,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                     </div>
                     <Textarea
                       id="objectives"
-                      placeholder="What are the key objectives and success criteria?"
+                      placeholder={pt("What are the key objectives and success criteria?")}
                       value={formData.objectives}
                       onChange={(e) => setFormData(prev => ({ ...prev, objectives: e.target.value }))}
                       rows={3}
@@ -861,7 +861,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       <Input
                         id="budget"
                         type="number"
-                        placeholder="e.g., 50000"
+                        placeholder={pt("e.g., 50000")}
                         value={formData.budget}
                         onChange={(e) => setFormData(prev => ({ ...prev, budget: e.target.value }))}
                       />

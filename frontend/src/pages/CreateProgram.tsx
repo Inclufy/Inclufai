@@ -205,7 +205,7 @@ const CreateProgram = () => {
     { id: 1, title: pt('Methodology'), description: pt('Select framework') },
     { id: 2, title: pt('Details'), description: pt('Program information') },
     { id: 3, title: pt('Projects'), description: pt('Link projects') },
-    { id: 4, title: 'Review', description: pt('Confirm & create') },
+    { id: 4, title: pt('Review'), description: pt('Confirm & create') },
   ];
 
   const navigate = useNavigate();
@@ -593,7 +593,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <Textarea
-                    placeholder="Example: We need to modernize our customer service platform, integrating AI chatbots, improving response times, and training staff on new tools. The initiative will span our support, IT, and training departments."
+                    placeholder={pt("Example: We need to modernize our customer service platform, integrating AI chatbots, improving response times, and training staff on new tools.")}
                     value={generatePrompt}
                     onChange={(e) => setGeneratePrompt(e.target.value)}
                     rows={5}
@@ -702,7 +702,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       </DialogHeader>
                       <div className="space-y-4 py-4">
                         <Textarea
-                          placeholder="Example: We're a software company planning to implement a new ERP system across 5 departments. We have 8 agile teams and need to coordinate delivery over 18 months while managing organizational change..."
+                          placeholder={pt("Example: We're a software company planning to implement a new ERP system across 5 departments. We have 8 agile teams and need to coordinate delivery over 18 months.")}
                           value={aiPrompt}
                           onChange={(e) => setAiPrompt(e.target.value)}
                           rows={4}
@@ -876,7 +876,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                     <Label htmlFor="name">{pt("Program Name")} *</Label>
                     <Input
                       id="name"
-                      placeholder="e.g., Digital Transformation 2025"
+                      placeholder={pt("e.g., Digital Transformation 2025")}
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     />
@@ -1028,7 +1028,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       <Input
                         id="budget"
                         type="number"
-                        placeholder="e.g., 1000000"
+                        placeholder={pt("e.g., 1000000")}
                         value={formData.totalBudget}
                         onChange={(e) => setFormData(prev => ({ ...prev, totalBudget: e.target.value }))}
                       />

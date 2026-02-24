@@ -119,17 +119,17 @@ const CreateStakeholder: React.FC = () => {
         <div className="text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
             <Sparkles className="h-4 w-4" />
-            <span>👥 Add Stakeholder</span>
+            <span>👥 {pt("Add Stakeholder")}</span>
           </div>
 
           <h1 className="text-4xl font-bold mb-4 leading-tight">
             <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
-              New Stakeholder
+              {pt("New Stakeholder")}
             </span>
           </h1>
 
           <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
-            Add a stakeholder to your governance portfolio
+            {pt("Add a stakeholder to your governance portfolio")}
           </p>
         </div>
 
@@ -197,7 +197,7 @@ const CreateStakeholder: React.FC = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="john@example.com"
+                    placeholder={pt("john@example.com")}
                     required
                     className="h-12 text-base"
                   />
@@ -214,7 +214,7 @@ const CreateStakeholder: React.FC = () => {
                     onValueChange={(value) => setFormData({ ...formData, role: value })}
                   >
                     <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Select role" />
+                      <SelectValue placeholder={pt("Select role")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="executive_sponsor">{pt("Executive Sponsor")}</SelectItem>
@@ -234,7 +234,7 @@ const CreateStakeholder: React.FC = () => {
                     id="organization"
                     value={formData.organization}
                     onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
-                    placeholder="Company name"
+                    placeholder={pt("Company name")}
                     className="h-12 text-base"
                   />
                 </div>

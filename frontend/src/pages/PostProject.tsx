@@ -237,12 +237,12 @@ const callAI = async (prompt: string): Promise<string> => {
 };
 
 // Question type icons and labels - only types supported by backend
-const questionTypeConfig: Record<string, { icon: any; label: string; color: string }> = {
-  rating: { icon: Star, label: "Rating (1-5)", color: "text-amber-500" },
-  text: { icon: MessageSquare, label: "Open Text", color: "text-blue-500" },
-  multiple_choice: { icon: ListChecks, label: "Multiple Choice", color: "text-green-500" },
-  yes_no: { icon: ThumbsUp, label: "Yes/No", color: "text-purple-500" },
-  scale: { icon: BarChart3, label: "Scale (1-10)", color: "text-pink-500" },
+const questionTypeConfig: Record<string, { icon: any; labelKey: string; color: string }> = {
+  rating: { icon: Star, labelKey: "Rating (1-5)", color: "text-amber-500" },
+  text: { icon: MessageSquare, labelKey: "Open Text", color: "text-blue-500" },
+  multiple_choice: { icon: ListChecks, labelKey: "Multiple Choice", color: "text-green-500" },
+  yes_no: { icon: ThumbsUp, labelKey: "Yes/No", color: "text-purple-500" },
+  scale: { icon: BarChart3, labelKey: "Scale (1-10)", color: "text-pink-500" },
 };
 
 export default function PostProject() {
@@ -897,10 +897,10 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">
-              Post-Project Management
+              {pt("Post-Project Management")}
             </h1>
             <p className="text-muted-foreground">
-              Document completed projects, capture lessons learned, and gather feedback through surveys.
+              {pt("Document completed projects, capture lessons learned, and gather feedback through surveys.")}
             </p>
           </div>
 
@@ -910,11 +910,11 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
               <TabsList className="grid w-[400px] grid-cols-2">
                 <TabsTrigger value="projects" className="gap-2">
                   <FileText className="h-4 w-4" />
-                  Projects ({postProjects.length})
+                  {pt("Projects")} ({postProjects.length})
                 </TabsTrigger>
                 <TabsTrigger value="surveys" className="gap-2">
                   <ClipboardList className="h-4 w-4" />
-                  Surveys ({surveys.length})
+                  {pt("Surveys")} ({surveys.length})
                 </TabsTrigger>
               </TabsList>
 
@@ -926,7 +926,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                     className="gap-2 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                   >
                     <Sparkles className="h-4 w-4" />
-                    Generate with AI
+                    {pt("Generate with AI")}
                   </Button>
                 )}
                 <Button
@@ -934,7 +934,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                   className="gap-2"
                 >
                   <Plus className="h-4 w-4" />
-                  {activeTab === "projects" ? "Add Project" : "Create Survey"}
+                  {activeTab === "projects" ? pt("Add Project") : pt("Create Survey")}
                 </Button>
               </div>
             </div>
@@ -945,13 +945,13 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                 <Card className="p-12">
                   <div className="text-center">
                     <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No post projects yet</h3>
+                    <h3 className="text-lg font-medium mb-2">{pt("No post projects yet")}</h3>
                     <p className="text-muted-foreground mb-4">
-                      Add your first completed project to get started.
+                      {pt("Add your first completed project to get started.")}
                     </p>
                     <Button onClick={handleAddNewProject}>
                       <Plus className="h-4 w-4 mr-2" />
-                      Add Post Project
+                      {pt("Add Post Project")}
                     </Button>
                   </div>
                 </Card>
@@ -971,25 +971,25 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                           </h3>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Building2 className="h-4 w-4" />
-                            <span>Company: <span className="font-medium">{project.company}</span></span>
+                            <span>{pt("Company")}: <span className="font-medium">{project.company}</span></span>
                           </div>
                         </div>
 
                         <div className="mb-4">
                           <h4 className="text-sm font-semibold text-foreground mb-1">
-                            Lessons Learned:
+                            {pt("Lessons Learned")}:
                           </h4>
                           <p className="text-sm text-muted-foreground line-clamp-2">
-                            {project.lessonsLearned || 'Not documented'}
+                            {project.lessonsLearned || pt('Not documented')}
                           </p>
                         </div>
 
                         <div className="mb-4">
                           <h4 className="text-sm font-semibold text-foreground mb-1">
-                            Achieved Results:
+                            {pt("Achieved Results")}:
                           </h4>
                           <p className="text-sm text-muted-foreground line-clamp-2">
-                            {project.achievedResults || 'Not documented'}
+                            {project.achievedResults || pt('Not documented')}
                           </p>
                         </div>
 
@@ -997,7 +997,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                           <div>
                             <div className="flex items-center gap-1.5 mb-1">
                               <TrendingUp className="h-3.5 w-3.5 text-success" />
-                              <span className="text-xs font-medium text-muted-foreground">ROI:</span>
+                              <span className="text-xs font-medium text-muted-foreground">{pt("ROI")}:</span>
                             </div>
                             <p className="text-lg font-bold text-success">
                               {project.roi || '-'}
@@ -1006,7 +1006,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                           <div>
                             <div className="flex items-center gap-1.5 mb-1">
                               <DollarSign className="h-3.5 w-3.5 text-success" />
-                              <span className="text-xs font-medium text-muted-foreground">Savings:</span>
+                              <span className="text-xs font-medium text-muted-foreground">{pt("Savings")}:</span>
                             </div>
                             <p className="text-lg font-bold text-success">
                               {project.savings || '-'}
@@ -1054,7 +1054,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                       </div>
                       <div>
                         <p className="text-2xl font-bold">{surveys.length}</p>
-                        <p className="text-xs text-muted-foreground">Total Surveys</p>
+                        <p className="text-xs text-muted-foreground">{pt("Total Surveys")}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -1080,7 +1080,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                       </div>
                       <div>
                         <p className="text-2xl font-bold">{surveys.filter(s => s.status === 'draft').length}</p>
-                        <p className="text-xs text-muted-foreground">Drafts</p>
+                        <p className="text-xs text-muted-foreground">{pt("Drafts")}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -1093,7 +1093,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                       </div>
                       <div>
                         <p className="text-2xl font-bold">{surveys.reduce((sum, s) => sum + s.responses, 0)}</p>
-                        <p className="text-xs text-muted-foreground">Total Responses</p>
+                        <p className="text-xs text-muted-foreground">{pt("Total Responses")}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -1105,9 +1105,9 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                 <Card className="p-12">
                   <div className="text-center">
                     <ClipboardList className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No surveys yet</h3>
+                    <h3 className="text-lg font-medium mb-2">{pt("No surveys yet")}</h3>
                     <p className="text-muted-foreground mb-4">
-                      Create your first survey to gather feedback.
+                      {pt("Create your first survey to gather feedback.")}
                     </p>
                     <div className="flex gap-2 justify-center">
                       <Button
@@ -1116,11 +1116,11 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                         className="gap-2"
                       >
                         <Sparkles className="h-4 w-4" />
-                        Generate with AI
+                        {pt("Generate with AI")}
                       </Button>
                       <Button onClick={handleAddNewSurvey}>
                         <Plus className="h-4 w-4 mr-2" />
-                        Create Survey
+                        {pt("Create Survey")}
                       </Button>
                     </div>
                   </div>
@@ -1144,11 +1144,11 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <div className="flex items-center gap-1">
                                 <ListChecks className="h-4 w-4" />
-                                <span>{survey.questions.length} questions</span>
+                                <span>{survey.questions.length} {pt("questions")}</span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <Users className="h-4 w-4" />
-                                <span>{survey.responses} responses</span>
+                                <span>{survey.responses} {pt("responses")}</span>
                               </div>
                               {survey.projectName && (
                                 <div className="flex items-center gap-1">
@@ -1173,7 +1173,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                                   className="gap-1"
                                 >
                                   <Share2 className="h-4 w-4" />
-                                  Share
+                                  {pt("Share")}
                                 </Button>
                                 <Button
                                   variant="outline"
@@ -1181,7 +1181,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                                   onClick={() => copySurveyLink(survey.id)}
                                 >
                                   <Copy className="h-4 w-4 mr-1" />
-                                  Copy Link
+                                  {pt("Copy Link")}
                                 </Button>
                               </>
                             )}
@@ -1197,7 +1197,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                                     onClick={() => updateSurveyStatusMutation.mutate({ id: survey.id, status: 'active' })}
                                   >
                                     <Send className="h-4 w-4 mr-2" />
-                                    Activate Survey
+                                    {pt("Activate Survey")}
                                   </DropdownMenuItem>
                                 )}
                                 {survey.status === 'active' && (
@@ -1205,7 +1205,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                                     onClick={() => updateSurveyStatusMutation.mutate({ id: survey.id, status: 'closed' })}
                                   >
                                     <AlertCircle className="h-4 w-4 mr-2" />
-                                    Close Survey
+                                    {pt("Close Survey")}
                                   </DropdownMenuItem>
                                 )}
                                 <DropdownMenuItem onClick={() => {
@@ -1213,15 +1213,15 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                                   setIsViewResponsesOpen(true);
                                 }}>
                                   <Eye className="h-4 w-4 mr-2" />
-                                  View Responses
+                                  {pt("View Responses")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => openShareDialog(survey)}>
                                   <Share2 className="h-4 w-4 mr-2" />
-                                  Share with Team
+                                  {pt("Share with Team")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => copySurveyLink(survey.id)}>
                                   <Copy className="h-4 w-4 mr-2" />
-                                  Copy Link
+                                  {pt("Copy Link")}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
@@ -1250,29 +1250,29 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>
-              {editingProject ? "Edit Post Project" : "Add New Post Project"}
+              {editingProject ? pt("Edit Post Project") : pt("Add New Post Project")}
             </DialogTitle>
             <DialogDescription>
-              Fill in the details about the completed project.
+              {pt("Fill in the details about the completed project.")}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Project Name</Label>
+              <Label htmlFor="name">{pt("Project Name")}</Label>
               <Input
                 id="name"
                 value={projectFormData.name}
                 onChange={(e) => setProjectFormData({ ...projectFormData, name: e.target.value })}
-                placeholder="Enter project name"
+                placeholder={pt("Enter project name")}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="company">Company</Label>
+              <Label htmlFor="company">{pt("Company")}</Label>
               <Input
                 id="company"
                 value={projectFormData.company}
                 onChange={(e) => setProjectFormData({ ...projectFormData, company: e.target.value })}
-                placeholder="Enter company name"
+                placeholder={pt("Enter company name")}
               />
             </div>
             <div className="grid gap-2">
@@ -1281,37 +1281,37 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                 id="lessonsLearned"
                 value={projectFormData.lessonsLearned}
                 onChange={(e) => setProjectFormData({ ...projectFormData, lessonsLearned: e.target.value })}
-                placeholder="What did you learn from this project?"
+                placeholder={pt("What did you learn from this project?")}
                 rows={3}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="achievedResults">Achieved Results</Label>
+              <Label htmlFor="achievedResults">{pt("Achieved Results")}</Label>
               <Textarea
                 id="achievedResults"
                 value={projectFormData.achievedResults}
                 onChange={(e) => setProjectFormData({ ...projectFormData, achievedResults: e.target.value })}
-                placeholder="What results were achieved?"
+                placeholder={pt("What results were achieved?")}
                 rows={3}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="roi">ROI</Label>
+                <Label htmlFor="roi">{pt("ROI")}</Label>
                 <Input
                   id="roi"
                   value={projectFormData.roi}
                   onChange={(e) => setProjectFormData({ ...projectFormData, roi: e.target.value })}
-                  placeholder="e.g., 53%"
+                  placeholder={pt("e.g., 53%")}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="savings">Savings</Label>
+                <Label htmlFor="savings">{pt("Savings")}</Label>
                 <Input
                   id="savings"
                   value={projectFormData.savings}
                   onChange={(e) => setProjectFormData({ ...projectFormData, savings: e.target.value })}
-                  placeholder="e.g., €97,000"
+                  placeholder={pt("e.g., €97,000")}
                 />
               </div>
             </div>
@@ -1327,10 +1327,10 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
               {(createProjectMutation.isPending || updateProjectMutation.isPending) ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
+                  {pt("Saving...")}
                 </>
               ) : (
-                `${editingProject ? "Update" : "Add"} Project`
+                `${editingProject ? pt("Update") : pt("Add")} ${pt("Project")}`
               )}
             </Button>
           </DialogFooter>
@@ -1342,10 +1342,10 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
         <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingSurvey ? "Edit Survey" : "Create New Survey"}
+              {editingSurvey ? pt("Edit Survey") : pt("Create New Survey")}
             </DialogTitle>
             <DialogDescription>
-              Design your survey with different question types.
+              {pt("Design your survey with different question types.")}
             </DialogDescription>
           </DialogHeader>
           
@@ -1353,12 +1353,12 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
             {/* Basic Info */}
             <div className="space-y-4">
               <div className="grid gap-2">
-                <Label htmlFor="surveyTitle">Survey Title *</Label>
+                <Label htmlFor="surveyTitle">{pt("Survey Title")} *</Label>
                 <Input
                   id="surveyTitle"
                   value={surveyFormData.title}
                   onChange={(e) => setSurveyFormData({ ...surveyFormData, title: e.target.value })}
-                  placeholder="Enter survey title"
+                  placeholder={pt("Enter survey title")}
                 />
               </div>
               <div className="grid gap-2">
@@ -1367,21 +1367,21 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                   id="surveyDescription"
                   value={surveyFormData.description}
                   onChange={(e) => setSurveyFormData({ ...surveyFormData, description: e.target.value })}
-                  placeholder="Describe the purpose of this survey"
+                  placeholder={pt("Describe the purpose of this survey")}
                   rows={2}
                 />
               </div>
               <div className="grid gap-2">
-                <Label>Link to Project (Optional)</Label>
+                <Label>{pt("Link to Project (Optional)")}</Label>
                 <Select
                   value={surveyFormData.projectId}
                   onValueChange={(value) => setSurveyFormData({ ...surveyFormData, projectId: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a project..." />
+                    <SelectValue placeholder={pt("Select a project...")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No project</SelectItem>
+                    <SelectItem value="none">{pt("No project")}</SelectItem>
                     {projects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.name}
@@ -1397,12 +1397,12 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
             {/* Questions */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">Questions</Label>
+                <Label className="text-base font-semibold">{pt("Questions")}</Label>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm">
                       <Plus className="h-4 w-4 mr-1" />
-                      Add Question
+                      {pt("Add Question")}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -1414,7 +1414,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                           onClick={() => addQuestion(type as SurveyQuestion["type"])}
                         >
                           <Icon className={cn("h-4 w-4 mr-2", config.color)} />
-                          {config.label}
+                          {pt(config.labelKey)}
                         </DropdownMenuItem>
                       );
                     })}
@@ -1425,8 +1425,8 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
               {surveyFormData.questions.length === 0 ? (
                 <div className="text-center py-8 border-2 border-dashed rounded-lg">
                   <ListChecks className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-muted-foreground">No questions added yet</p>
-                  <p className="text-sm text-muted-foreground">Click "Add Question" to get started</p>
+                  <p className="text-muted-foreground">{pt("No questions added yet")}</p>
+                  <p className="text-sm text-muted-foreground">{pt("Click 'Add Question' to get started")}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -1442,7 +1442,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                               <span className="text-sm font-medium text-muted-foreground">Q{idx + 1}</span>
                               <Badge variant="outline" className="gap-1">
                                 <Icon className={cn("h-3 w-3", typeConfig.color)} />
-                                {typeConfig.label}
+                                {pt(typeConfig.labelKey)}
                               </Badge>
                             </div>
                             <Button
@@ -1458,12 +1458,12 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                           <Input
                             value={question.question}
                             onChange={(e) => updateQuestion(question.id, { question: e.target.value })}
-                            placeholder="Enter your question"
+                            placeholder={pt("Enter your question")}
                           />
 
                           {question.type === "multiple_choice" && (
                             <div className="space-y-2 pl-4">
-                              <Label className="text-xs text-muted-foreground">Options</Label>
+                              <Label className="text-xs text-muted-foreground">{pt("Options")}</Label>
                               {question.options?.map((option, optIdx) => (
                                 <div key={optIdx} className="flex items-center gap-2">
                                   <Input
@@ -1490,7 +1490,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                                 onClick={() => addOption(question.id)}
                               >
                                 <Plus className="h-3 w-3 mr-1" />
-                                Add Option
+                                {pt("Add Option")}
                               </Button>
                             </div>
                           )}
@@ -1500,7 +1500,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                               checked={question.required}
                               onCheckedChange={(checked) => updateQuestion(question.id, { required: checked })}
                             />
-                            <Label className="text-sm">Required</Label>
+                            <Label className="text-sm">{pt("Required")}</Label>
                           </div>
                         </div>
                       </Card>
@@ -1522,10 +1522,10 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
               {createSurveyMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creating...
+                  {pt("Creating...")}
                 </>
               ) : (
-                "Create Survey"
+                pt("Create Survey")
               )}
             </Button>
           </DialogFooter>
@@ -1538,10 +1538,10 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-purple-500" />
-              Generate Survey with AI
+              {pt("Generate Survey with AI")}
             </DialogTitle>
             <DialogDescription>
-              Let AI create a professional survey based on your requirements.
+              {pt("Let AI create a professional survey based on your requirements.")}
             </DialogDescription>
           </DialogHeader>
 
@@ -1549,7 +1549,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
             {!aiGeneratedSurvey ? (
               <>
                 <div className="space-y-2">
-                  <Label>Survey Type</Label>
+                  <Label>{pt("Survey Type")}</Label>
                   <Select value={aiSurveyType} onValueChange={setAiSurveyType}>
                     <SelectTrigger>
                       <SelectValue />
@@ -1558,13 +1558,13 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                       <SelectItem value="project_feedback">
                         <div className="flex items-center gap-2">
                           <MessageSquare className="h-4 w-4 text-blue-500" />
-                          <span>Project Feedback</span>
+                          <span>{pt("Project Feedback")}</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="stakeholder_satisfaction">
                         <div className="flex items-center gap-2">
                           <ThumbsUp className="h-4 w-4 text-green-500" />
-                          <span>Stakeholder Satisfaction</span>
+                          <span>{pt("Stakeholder Satisfaction")}</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="lessons_learned">
@@ -1576,19 +1576,19 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                       <SelectItem value="team_retrospective">
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4 text-amber-500" />
-                          <span>Team Retrospective</span>
+                          <span>{pt("Team Retrospective")}</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="client_feedback">
                         <div className="flex items-center gap-2">
                           <Star className="h-4 w-4 text-yellow-500" />
-                          <span>Client Feedback</span>
+                          <span>{pt("Client Feedback")}</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="process_improvement">
                         <div className="flex items-center gap-2">
                           <TrendingUp className="h-4 w-4 text-pink-500" />
-                          <span>Process Improvement</span>
+                          <span>{pt("Process Improvement")}</span>
                         </div>
                       </SelectItem>
                     </SelectContent>
@@ -1596,13 +1596,13 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Link to Project (Optional)</Label>
+                  <Label>{pt("Link to Project (Optional)")}</Label>
                   <Select value={aiProjectId} onValueChange={setAiProjectId}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a project for context..." />
+                      <SelectValue placeholder={pt("Select a project for context...")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">No specific project</SelectItem>
+                      <SelectItem value="none">{pt("No specific project")}</SelectItem>
                       {projects.map((project) => (
                         <SelectItem key={project.id} value={project.id}>
                           {project.name}
@@ -1611,16 +1611,16 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    Linking a project helps AI create more relevant questions.
+                    {pt("Linking a project helps AI create more relevant questions.")}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Additional Requirements (Optional)</Label>
+                  <Label>{pt("Additional Requirements (Optional)")}</Label>
                   <Textarea
                     value={aiCustomPrompt}
                     onChange={(e) => setAiCustomPrompt(e.target.value)}
-                    placeholder="E.g., Focus on communication aspects, include questions about timeline adherence, ask about budget management..."
+                    placeholder={pt("E.g., Focus on communication aspects, include questions about timeline adherence, ask about budget management...")}
                     rows={3}
                   />
                 </div>
@@ -1629,12 +1629,12 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                   <div className="flex items-start gap-3">
                     <Brain className="h-5 w-5 text-purple-500 mt-0.5" />
                     <div>
-                      <p className="font-medium text-purple-900 dark:text-purple-100">AI will generate:</p>
+                      <p className="font-medium text-purple-900 dark:text-purple-100">{pt("AI will generate:")}</p>
                       <ul className="text-sm text-purple-700 dark:text-purple-300 mt-1 space-y-1">
-                        <li>• 6-10 professional questions</li>
-                        <li>• Mix of rating, text, and choice questions</li>
-                        <li>• Tailored to your selected survey type</li>
-                        {aiProjectId !== "none" && <li>• Contextualized for your project</li>}
+                        <li>• {pt("6-10 professional questions")}</li>
+                        <li>• {pt("Mix of rating, text, and choice questions")}</li>
+                        <li>• {pt("Tailored to your selected survey type")}</li>
+                        {aiProjectId !== "none" && <li>• {pt("Contextualized for your project")}</li>}
                       </ul>
                     </div>
                   </div>
@@ -1645,7 +1645,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                 <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
                   <div className="flex items-center gap-2 text-green-700 dark:text-green-400 mb-2">
                     <CheckCircle2 className="h-5 w-5" />
-                    <span className="font-medium">Survey Generated Successfully!</span>
+                    <span className="font-medium">{pt("Survey Generated Successfully!")}</span>
                   </div>
                 </div>
 
@@ -1656,7 +1656,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <p className="text-sm font-medium">{aiGeneratedSurvey.questions.length} Questions:</p>
+                      <p className="text-sm font-medium">{aiGeneratedSurvey.questions.length} {pt("Questions")}:</p>
                       {aiGeneratedSurvey.questions.map((q, idx) => {
                         const typeConfig = questionTypeConfig[q.type] || questionTypeConfig.text;
                         const Icon = typeConfig.icon;
@@ -1689,12 +1689,12 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                   {aiLoading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Generating...
+                      {pt("Generating...")}
                     </>
                   ) : (
                     <>
                       <Wand2 className="h-4 w-4" />
-                      Generate Survey
+                      {pt("Generate Survey")}
                     </>
                   )}
                 </Button>
@@ -1708,11 +1708,11 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                   }}
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Regenerate
+                  {pt("Regenerate")}
                 </Button>
                 <Button onClick={applyAIGeneratedSurvey}>
                   <ChevronRight className="h-4 w-4 mr-2" />
-                  Continue to Edit
+                  {pt("Continue to Edit")}
                 </Button>
               </>
             )}
@@ -1724,9 +1724,9 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
       <Dialog open={isViewResponsesOpen} onOpenChange={setIsViewResponsesOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Survey Responses</DialogTitle>
+            <DialogTitle>{pt("Survey Responses")}</DialogTitle>
             <DialogDescription>
-              {viewingSurvey?.title} - {viewingSurvey?.responses} responses
+              {viewingSurvey?.title} - {viewingSurvey?.responses} {pt("responses")}
             </DialogDescription>
           </DialogHeader>
           
@@ -1734,9 +1734,9 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
             {viewingSurvey?.responses === 0 ? (
               <div className="text-center py-8">
                 <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No responses yet</h3>
+                <h3 className="text-lg font-medium mb-2">{pt("No responses yet")}</h3>
                 <p className="text-muted-foreground">
-                  Share your survey link to start collecting responses.
+                  {pt("Share your survey link to start collecting responses.")}
                 </p>
                 <Button
                   variant="outline"
@@ -1744,7 +1744,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                   onClick={() => viewingSurvey && copySurveyLink(viewingSurvey.id)}
                 >
                   <Copy className="h-4 w-4 mr-2" />
-                  Copy Survey Link
+                  {pt("Copy Survey Link")}
                 </Button>
               </div>
             ) : (
@@ -1774,21 +1774,21 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Share2 className="h-5 w-5 text-primary" />
-              Share Survey
+              {pt("Share Survey")}
             </DialogTitle>
             <DialogDescription>
-              {sharingSurvey?.title} - Select team members or enter email addresses to share this survey.
+              {sharingSurvey?.title} - {pt("Select team members or enter email addresses to share this survey.")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
             {/* Team Members Selection */}
             <div className="space-y-3">
-              <Label className="text-base font-medium">Team Members</Label>
+              <Label className="text-base font-medium">{pt("Team Members")}</Label>
               {teamMembers.length === 0 ? (
                 <div className="text-center py-4 border rounded-lg bg-muted/30">
                   <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">No team members available</p>
+                  <p className="text-sm text-muted-foreground">{pt("No team members available")}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto border rounded-lg p-3">
@@ -1838,7 +1838,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
             {/* Manual Email Entry */}
             <div className="space-y-2">
               <Label htmlFor="manualEmails" className="text-base font-medium">
-                Additional Email Addresses
+                {pt("Additional Email Addresses")}
               </Label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
@@ -1847,13 +1847,13 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                     id="manualEmails"
                     value={manualEmail}
                     onChange={(e) => setManualEmail(e.target.value)}
-                    placeholder="Enter emails (comma separated)"
+                    placeholder={pt("Enter emails (comma separated)")}
                     className="pl-9"
                   />
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                Add external recipients who are not team members. Separate multiple emails with commas.
+                {pt("Add external recipients who are not team members. Separate multiple emails with commas.")}
               </p>
             </div>
 
@@ -1862,13 +1862,13 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
             {/* Custom Message */}
             <div className="space-y-2">
               <Label htmlFor="shareMessage" className="text-base font-medium">
-                Personal Message (Optional)
+                {pt("Personal Message (Optional)")}
               </Label>
               <Textarea
                 id="shareMessage"
                 value={shareMessage}
                 onChange={(e) => setShareMessage(e.target.value)}
-                placeholder="Add a personal message to your invitation..."
+                placeholder={pt("Add a personal message to your invitation...")}
                 rows={3}
               />
             </div>
@@ -1878,12 +1878,12 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
               <div className="flex items-start gap-3">
                 <Mail className="h-5 w-5 text-primary mt-0.5" />
                 <div className="flex-1">
-                  <p className="font-medium text-sm mb-1">Survey Link Preview</p>
+                  <p className="font-medium text-sm mb-1">{pt("Survey Link Preview")}</p>
                   <code className="text-xs bg-background px-2 py-1 rounded border">
                     {typeof window !== 'undefined' ? `${window.location.origin}/survey/${sharingSurvey?.id}` : ''}
                   </code>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Recipients will receive this link to complete the survey.
+                    {pt("Recipients will receive this link to complete the survey.")}
                   </p>
                 </div>
               </div>
@@ -1902,12 +1902,12 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
               {isSending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Sending...
+                  {pt("Sending...")}
                 </>
               ) : (
                 <>
                   <Send className="h-4 w-4" />
-                  Share Survey
+                  {pt("Share Survey")}
                 </>
               )}
             </Button>

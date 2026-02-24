@@ -88,12 +88,16 @@ export default function Stakeholders() {
         headers,
         body: JSON.stringify(editForm),
       });
-      if (!res.ok) throw new Error("Failed to update");
-      toast({ title: "Updated", description: "Stakeholder updated successfully." });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        console.error("Stakeholder update failed:", res.status, errorData);
+        throw new Error(errorData?.detail || "Failed to update");
+      }
+      toast({ title: pt("Updated"), description: pt("Stakeholder updated successfully.") });
       setEditModalOpen(false);
       fetchStakeholders();
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to update.", variant: "destructive" });
+    } catch (error: any) {
+      toast({ title: pt("Error"), description: error?.message || pt("Failed to update."), variant: "destructive" });
     }
   };
 
