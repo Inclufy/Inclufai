@@ -2,41 +2,44 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { 
-  Crown, FileText, CheckCircle2, Clock, AlertCircle, 
+import {
+  Crown, FileText, CheckCircle2, Clock, AlertCircle,
   Users, Calendar, ArrowRight, Shield, FileCheck
 } from 'lucide-react';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 interface Prince2DashboardProps {
   project: any;
 }
 
 const Prince2Dashboard = ({ project }: Prince2DashboardProps) => {
+  const { pt } = usePageTranslations();
+
   const stages = [
-    { name: 'Starting Up', status: 'completed', progress: 100 },
-    { name: 'Initiating', status: 'completed', progress: 100 },
-    { name: 'Stage 1: Analysis', status: 'completed', progress: 100 },
-    { name: 'Stage 2: Design', status: 'current', progress: 65 },
-    { name: 'Stage 3: Build', status: 'upcoming', progress: 0 },
-    { name: 'Closing', status: 'upcoming', progress: 0 },
+    { name: pt('Starting Up'), status: 'completed', progress: 100 },
+    { name: pt('Initiating'), status: 'completed', progress: 100 },
+    { name: `${pt('Stage')} 1: ${pt('Analyze')}`, status: 'completed', progress: 100 },
+    { name: `${pt('Stage')} 2: ${pt('Design')}`, status: 'current', progress: 65 },
+    { name: `${pt('Stage')} 3: Build`, status: 'upcoming', progress: 0 },
+    { name: pt('Closing'), status: 'upcoming', progress: 0 },
   ];
 
   const documents = [
-    { name: 'Project Brief', status: 'approved', date: '2025-10-15' },
-    { name: 'Business Case', status: 'approved', date: '2025-10-20' },
+    { name: pt('Project Brief'), status: 'approved', date: '2025-10-15' },
+    { name: pt('Business Case'), status: 'approved', date: '2025-10-20' },
     { name: 'Project Initiation Document', status: 'approved', date: '2025-11-01' },
-    { name: 'Stage 2 Plan', status: 'pending', date: null },
-    { name: 'Highlight Report (Week 8)', status: 'draft', date: null },
+    { name: `${pt('Stage')} 2 ${pt('Stage Plan')}`, status: 'pending', date: null },
+    { name: `${pt('Highlight Report')} (Week 8)`, status: 'draft', date: null },
   ];
 
   const exceptions = [
-    { id: 1, title: 'Budget variance exceeds tolerance', severity: 'high', raised: '2025-12-05' },
+    { id: 1, title: pt('tolerances exceeded'), severity: 'high', raised: '2025-12-05' },
   ];
 
   const projectBoard = [
-    { role: 'Executive', name: 'Sarah Johnson', status: 'active' },
-    { role: 'Senior User', name: 'Mike Chen', status: 'active' },
-    { role: 'Senior Supplier', name: 'David Williams', status: 'active' },
+    { role: pt('Executive'), name: 'Sarah Johnson', status: 'active' },
+    { role: pt('Senior User'), name: 'Mike Chen', status: 'active' },
+    { role: pt('Senior Supplier'), name: 'David Williams', status: 'active' },
   ];
 
   const getStatusIcon = (status: string) => {
@@ -67,12 +70,12 @@ const Prince2Dashboard = ({ project }: Prince2DashboardProps) => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Crown className="h-6 w-6" />
-              <h2 className="text-2xl font-bold">PRINCE2 Project</h2>
+              <h2 className="text-2xl font-bold">{pt("PRINCE2 Project")}</h2>
             </div>
-            <p className="text-purple-200">Controlled Environments Management</p>
+            <p className="text-purple-200">{pt("Controlled Environments Management")}</p>
           </div>
           <div className="text-right">
-            <div className="text-lg font-semibold">Current Stage</div>
+            <div className="text-lg font-semibold">{pt("Current Stage")}</div>
             <div className="text-2xl font-bold">{currentStage?.name}</div>
           </div>
         </div>
@@ -83,7 +86,7 @@ const Prince2Dashboard = ({ project }: Prince2DashboardProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Stage Gate Progress
+            {pt("Stage Gate Progress")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -127,7 +130,7 @@ const Prince2Dashboard = ({ project }: Prince2DashboardProps) => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Project Board
+              {pt("Project Board")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -139,14 +142,14 @@ const Prince2Dashboard = ({ project }: Prince2DashboardProps) => {
                     <p className="text-sm text-muted-foreground">{member.role}</p>
                   </div>
                   <Badge variant="outline" className="bg-green-50 text-green-700">
-                    Active
+                    {pt("Active")}
                   </Badge>
                 </div>
               ))}
               <div className="pt-2 border-t">
                 <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg">
                   <div>
-                    <p className="font-medium">Project Manager</p>
+                    <p className="font-medium">{pt("Project Manager")}</p>
                     <p className="text-sm text-muted-foreground">Sami Loukile</p>
                   </div>
                   <Badge className="bg-primary">You</Badge>
@@ -161,7 +164,7 @@ const Prince2Dashboard = ({ project }: Prince2DashboardProps) => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Management Products
+              {pt("Management Products")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -193,7 +196,7 @@ const Prince2Dashboard = ({ project }: Prince2DashboardProps) => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-red-700">
               <AlertCircle className="h-5 w-5" />
-              Exception Report
+              {pt("Exception Report")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -205,9 +208,9 @@ const Prince2Dashboard = ({ project }: Prince2DashboardProps) => {
                     <p className="text-sm text-muted-foreground">Raised: {exception.raised}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="destructive">High Priority</Badge>
+                    <Badge variant="destructive">{pt("High")} {pt("Priority")}</Badge>
                     <Button size="sm" variant="outline">
-                      View Details
+                      {pt("View Details")}
                     </Button>
                   </div>
                 </div>
@@ -220,7 +223,7 @@ const Prince2Dashboard = ({ project }: Prince2DashboardProps) => {
       {/* Tolerances */}
       <Card>
         <CardHeader>
-          <CardTitle>Stage Tolerances</CardTitle>
+          <CardTitle>{pt("Stage Tolerances")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

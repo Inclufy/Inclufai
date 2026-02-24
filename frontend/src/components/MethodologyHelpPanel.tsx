@@ -1,6 +1,7 @@
 // src/components/MethodologyHelpPanel.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 import {
   HelpCircle,
   X,
@@ -637,6 +638,7 @@ export const MethodologyHelpPanel = ({
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'tips' | 'practices' | 'resources'>('tips');
   const navigate = useNavigate();
+  const { pt } = usePageTranslations();
 
   const config = getHelpConfig(methodology);
   const Icon = config.icon;
@@ -669,8 +671,8 @@ export const MethodologyHelpPanel = ({
               <Icon className={cn("h-5 w-5", config.color)} />
             </div>
             <div>
-              <CardTitle className="text-lg">{config.name} Help</CardTitle>
-              <p className="text-xs text-muted-foreground">Contextual guidance</p>
+              <CardTitle className="text-lg">{config.name} {pt("Help")}</CardTitle>
+              <p className="text-xs text-muted-foreground">{pt("Contextual guidance")}</p>
             </div>
           </div>
           <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
@@ -720,7 +722,7 @@ export const MethodologyHelpPanel = ({
             <div>
               <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
                 <Target className={cn("h-4 w-4", config.color)} />
-                Key Principles
+                {pt("Key Principles")}
               </h4>
               <ul className="space-y-1">
                 {config.keyPrinciples.map((principle, i) => (
@@ -734,7 +736,7 @@ export const MethodologyHelpPanel = ({
             <div>
               <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
                 <CheckCircle2 className={cn("h-4 w-4", config.color)} />
-                Best Practices
+                {pt("Best Practices")}
               </h4>
               <ul className="space-y-1">
                 {config.bestPractices.map((practice, i) => (
@@ -758,7 +760,7 @@ export const MethodologyHelpPanel = ({
                 <div className="flex items-center gap-2">
                   <GraduationCap className={cn("h-5 w-5", config.color)} />
                   <div>
-                    <p className="font-medium text-sm">Recommended Track</p>
+                    <p className="font-medium text-sm">{pt("Recommended Track")}</p>
                     <p className="text-xs text-muted-foreground">{config.academyTrack}</p>
                   </div>
                   <ExternalLink className="h-4 w-4 ml-auto" />
@@ -797,7 +799,7 @@ export const MethodologyHelpPanel = ({
           onClick={() => navigate('/academy/marketplace')}
         >
           <GraduationCap className="h-4 w-4" />
-          Explore Full Academy
+          {pt("Explore Full Academy")}
         </Button>
       </div>
     </Card>

@@ -63,125 +63,7 @@ interface MethodologyOption {
   bestFor: string[];
 }
 
-const METHODOLOGIES: MethodologyOption[] = [
-  {
-    id: 'safe',
-    name: 'Scaled Agile Framework (SAFe)',
-    shortName: 'SAFe',
-    description: 'Enterprise-scale agile development with Program Increments, Agile Release Trains, and coordinated planning across teams.',
-    icon: <Zap className="h-6 w-6" />,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-500',
-    features: [
-      'Program Increments (PI) - 8-12 week planning cycles',
-      'Agile Release Trains (ART) - cross-functional teams',
-      'PI Planning events for alignment',
-      'System demos and Inspect & Adapt',
-      'Continuous delivery pipeline',
-    ],
-    bestFor: [
-      'Large organizations with multiple agile teams',
-      'Software development programs',
-      'Digital transformation initiatives',
-      'Organizations adopting agile at scale',
-    ],
-  },
-  {
-    id: 'msp',
-    name: 'Managing Successful Programmes (MSP)',
-    shortName: 'MSP',
-    description: 'UK government standard focusing on benefits realization, stakeholder engagement, and organizational change management.',
-    icon: <Target className="h-6 w-6" />,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-500',
-    features: [
-      'Benefits Management - track and realize value',
-      'Blueprint Design - define future state',
-      'Stakeholder Engagement - manage relationships',
-      'Tranches & Transitions - phased delivery',
-      'Programme Governance - oversight structure',
-    ],
-    bestFor: [
-      'Government and public sector programs',
-      'Organizational transformation',
-      'Programs with significant change impact',
-      'Benefits-driven initiatives',
-    ],
-  },
-  {
-    id: 'pmi',
-    name: 'PMI Standard for Program Management',
-    shortName: 'PMI',
-    description: "PMI's framework for managing multiple related projects to achieve strategic objectives and benefits not available from managing them individually.",
-    icon: <BarChart3 className="h-6 w-6" />,
-    color: 'text-green-600',
-    bgColor: 'bg-green-500',
-    features: [
-      'Program Lifecycle Management',
-      'Benefits Identification & Realization',
-      'Stakeholder Engagement Strategy',
-      'Program Governance Framework',
-      'Resource Optimization across projects',
-    ],
-    bestFor: [
-      'Organizations following PMI standards',
-      'Programs requiring formal governance',
-      'Multi-project coordination',
-      'Strategic initiative management',
-    ],
-  },
-  {
-    id: 'prince2_programme',
-    name: 'PRINCE2 for Programmes',
-    shortName: 'P2 Programme',
-    description: 'Extended PRINCE2 principles for coordinating multiple projects within a programme, with strong governance and stage-gate approach.',
-    icon: <Crown className="h-6 w-6" />,
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-500',
-    features: [
-      'Programme Board governance',
-      'Tranche-based planning and delivery',
-      'Business Case driven decisions',
-      'Stage Gates and exception management',
-      'Structured roles and responsibilities',
-    ],
-    bestFor: [
-      'Organizations using PRINCE2 for projects',
-      'Programs requiring formal controls',
-      'Government and regulated industries',
-      'Programs with strict governance needs',
-    ],
-  },
-  {
-    id: 'hybrid',
-    name: 'Hybrid Programme Management',
-    shortName: 'Hybrid',
-    description: 'Flexible approach combining elements from multiple methodologies based on organizational needs and program characteristics.',
-    icon: <GitMerge className="h-6 w-6" />,
-    color: 'text-pink-600',
-    bgColor: 'bg-pink-500',
-    features: [
-      'Customizable governance structure',
-      'Mix of agile and traditional approaches',
-      'Adaptive planning cycles',
-      'Flexible reporting frameworks',
-      'Best-of-breed practices selection',
-    ],
-    bestFor: [
-      'Organizations with diverse project types',
-      'Programs spanning multiple departments',
-      'Situations requiring flexibility',
-      'Transitioning organizations',
-    ],
-  },
-];
-
-const STEPS = [
-  { id: 1, title: 'Methodology', description: 'Select framework' },
-  { id: 2, title: 'Details', description: 'Program information' },
-  { id: 3, title: 'Projects', description: 'Link projects' },
-  { id: 4, title: 'Review', description: 'Confirm & create' },
-];
+// METHODOLOGIES and STEPS are defined inside the component to use pt() translations
 
 // AI Helper function
 const callAI = async (prompt: string): Promise<string> => {
@@ -206,6 +88,127 @@ const callAI = async (prompt: string): Promise<string> => {
 
 const CreateProgram = () => {
   const { pt } = usePageTranslations();
+
+  const METHODOLOGIES: MethodologyOption[] = [
+    {
+      id: 'safe',
+      name: 'Scaled Agile Framework (SAFe)',
+      shortName: 'SAFe',
+      description: pt('SAFe desc'),
+      icon: <Zap className="h-6 w-6" />,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-500',
+      features: [
+        pt('Program Increments (PI) - 8-12 week planning cycles'),
+        pt('Agile Release Trains (ART) - cross-functional teams'),
+        pt('PI Planning events for alignment'),
+        pt('System demos and Inspect & Adapt'),
+        pt('Continuous delivery pipeline'),
+      ],
+      bestFor: [
+        pt('Large organizations with multiple agile teams'),
+        pt('Software development programs'),
+        pt('Digital transformation initiatives'),
+        pt('Organizations adopting agile at scale'),
+      ],
+    },
+    {
+      id: 'msp',
+      name: 'Managing Successful Programmes (MSP)',
+      shortName: 'MSP',
+      description: pt('MSP desc'),
+      icon: <Target className="h-6 w-6" />,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-500',
+      features: [
+        pt('Benefits Management - track and realize value'),
+        pt('Blueprint Design - define future state'),
+        pt('Stakeholder Engagement - manage relationships'),
+        pt('Tranches & Transitions - phased delivery'),
+        pt('Programme Governance - oversight structure'),
+      ],
+      bestFor: [
+        pt('Government and public sector programs'),
+        pt('Organizational transformation'),
+        pt('Programs with significant change impact'),
+        pt('Benefits-driven initiatives'),
+      ],
+    },
+    {
+      id: 'pmi',
+      name: 'PMI Standard for Program Management',
+      shortName: 'PMI',
+      description: pt('PMI desc'),
+      icon: <BarChart3 className="h-6 w-6" />,
+      color: 'text-green-600',
+      bgColor: 'bg-green-500',
+      features: [
+        pt('Program Lifecycle Management'),
+        pt('Benefits Identification & Realization'),
+        pt('Stakeholder Engagement Strategy'),
+        pt('Program Governance Framework'),
+        pt('Resource Optimization across projects'),
+      ],
+      bestFor: [
+        pt('Organizations following PMI standards'),
+        pt('Programs requiring formal governance'),
+        pt('Multi-project coordination'),
+        pt('Strategic initiative management'),
+      ],
+    },
+    {
+      id: 'prince2_programme',
+      name: 'PRINCE2 for Programmes',
+      shortName: 'P2 Programme',
+      description: pt('PRINCE2 Programme desc'),
+      icon: <Crown className="h-6 w-6" />,
+      color: 'text-amber-600',
+      bgColor: 'bg-amber-500',
+      features: [
+        pt('Programme Board governance'),
+        pt('Tranche-based planning and delivery'),
+        pt('Business Case driven decisions'),
+        pt('Stage Gates and exception management'),
+        pt('Structured roles and responsibilities'),
+      ],
+      bestFor: [
+        pt('Organizations using PRINCE2 for projects'),
+        pt('Programs requiring formal controls'),
+        pt('Government and regulated industries'),
+        pt('Programs with strict governance needs'),
+      ],
+    },
+    {
+      id: 'hybrid',
+      name: 'Hybrid Programme Management',
+      shortName: 'Hybrid',
+      description: pt('Hybrid Programme desc'),
+      icon: <GitMerge className="h-6 w-6" />,
+      color: 'text-pink-600',
+      bgColor: 'bg-pink-500',
+      features: [
+        pt('Customizable governance structure'),
+        pt('Mix of agile and traditional approaches'),
+        pt('Adaptive planning cycles'),
+        pt('Flexible reporting frameworks'),
+        pt('Best-of-breed practices selection'),
+      ],
+      bestFor: [
+        pt('Organizations with diverse project types'),
+        pt('Programs spanning multiple departments'),
+        pt('Situations requiring flexibility'),
+        pt('Transitioning organizations'),
+      ],
+    },
+  ];
+
+  const STEPS = [
+    { id: 1, title: pt('Methodology'), description: pt('Select framework') },
+    { id: 2, title: pt('Details'), description: pt('Program information') },
+    { id: 3, title: pt('Projects'), description: pt('Link projects') },
+    { id: 4, title: pt('Review'), description: pt('Confirm & create') },
+  ];
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
@@ -253,12 +256,12 @@ const CreateProgram = () => {
     mutationFn: (data: any) => programsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["programs"] });
-      toast.success("Program created successfully!");
+      toast.success(pt("Program created successfully!"));
       navigate("/programs");
     },
     onError: (error: any) => {
       console.error("Create program error:", error);
-      toast.error(error?.message || "Failed to create program");
+      toast.error(error?.message || pt("Failed to create program"));
     },
   });
 
@@ -282,7 +285,7 @@ const CreateProgram = () => {
   // AI Methodology Advisor
   const handleAIAdvisor = async () => {
     if (!aiPrompt.trim()) {
-      toast.error("Please describe your program first");
+      toast.error(pt("Please describe your program first"));
       return;
     }
 
@@ -328,7 +331,7 @@ Consider:
         });
       }
     } catch (error) {
-      toast.error("AI advisor temporarily unavailable. Please select manually.");
+      toast.error(pt("AI advisor temporarily unavailable. Please select manually."));
     } finally {
       setAiLoading(false);
     }
@@ -338,14 +341,14 @@ Consider:
     if (aiRecommendation) {
       setFormData(prev => ({ ...prev, methodology: aiRecommendation.methodology }));
       setAiAdvisorOpen(false);
-      toast.success(`Applied ${METHODOLOGIES.find(m => m.id === aiRecommendation.methodology)?.shortName} methodology`);
+      toast.success(pt("Applied methodology"));
     }
   };
 
   // AI Generate Program Details
   const handleAIGenerate = async () => {
     if (!generatePrompt.trim()) {
-      toast.error("Please describe what you want to create");
+      toast.error(pt("Please describe what you want to create"));
       return;
     }
 
@@ -390,10 +393,10 @@ Be specific and professional. Use the context to determine appropriate methodolo
         }));
         
         setAiGenerateOpen(false);
-        toast.success("Program details generated! Review and adjust as needed.");
+        toast.success(pt("Program details generated! Review and adjust as needed."));
       }
     } catch (error) {
-      toast.error("AI generation temporarily unavailable");
+      toast.error(pt("AI generation temporarily unavailable"));
     } finally {
       setAiLoading(false);
     }
@@ -402,7 +405,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
   // Generate description with AI
   const handleGenerateDescription = async () => {
     if (!formData.name) {
-      toast.error("Please enter a program name first");
+      toast.error(pt("Please enter a program name first"));
       return;
     }
 
@@ -414,9 +417,9 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
       const response = await callAI(prompt);
       setFormData(prev => ({ ...prev, description: response.trim() }));
-      toast.success("Description generated!");
+      toast.success(pt("Description generated!"));
     } catch (error) {
-      toast.error("Could not generate description");
+      toast.error(pt("Could not generate description"));
     } finally {
       setAiLoading(false);
     }
@@ -425,7 +428,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
   // Generate strategic objective with AI
   const handleGenerateObjective = async () => {
     if (!formData.name && !formData.description) {
-      toast.error("Please enter a program name or description first");
+      toast.error(pt("Please enter a program name or description first"));
       return;
     }
 
@@ -439,9 +442,9 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
       const response = await callAI(prompt);
       setFormData(prev => ({ ...prev, strategicObjective: response.trim() }));
-      toast.success("Strategic objective generated!");
+      toast.success(pt("Strategic objective generated!"));
     } catch (error) {
-      toast.error("Could not generate objective");
+      toast.error(pt("Could not generate objective"));
     } finally {
       setAiLoading(false);
     }
@@ -526,16 +529,16 @@ Be specific and professional. Use the context to determine appropriate methodolo
         <div className="mb-8">
           <Button variant="ghost" onClick={() => navigate('/programs')} className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Programs
+            {pt("Back to Programs")}
           </Button>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold flex items-center gap-3">
                 <Layers className="h-8 w-8 text-primary" />
-                Create New Program
+                {pt("Create New Program")}
               </h1>
               <p className="text-muted-foreground mt-1">
-                Set up a strategic program to coordinate multiple projects
+                {pt("Set up a strategic program to coordinate multiple projects")}
               </p>
             </div>
             
@@ -544,17 +547,17 @@ Be specific and professional. Use the context to determine appropriate methodolo
               <DialogTrigger asChild>
                 <Button variant="outline" className="gap-2">
                   <Sparkles className="h-4 w-4 text-purple-500" />
-                  Generate with AI
+                  {pt("Generate with AI")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-purple-500" />
-                    Generate Program with AI
+                    {pt("Generate Program with AI")}
                   </DialogTitle>
                   <DialogDescription>
-                    Describe what you want to achieve and AI will generate program details for you.
+                    {pt("Describe what you want to achieve and AI will generate program details for you.")}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
@@ -566,7 +569,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                   />
                   <div className="flex items-start gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
                     <Lightbulb className="h-4 w-4 mt-0.5 text-amber-500" />
-                    <p>Tip: Include details about scope, teams involved, goals, and any constraints for better results.</p>
+                    <p>{pt("Tip: Include details about scope, teams involved, goals, and any constraints for better results.")}</p>
                   </div>
                 </div>
                 <DialogFooter>
@@ -577,12 +580,12 @@ Be specific and professional. Use the context to determine appropriate methodolo
                     {aiLoading ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Generating...
+                        {pt("Generating...")}
                       </>
                     ) : (
                       <>
                         <Wand2 className="h-4 w-4 mr-2" />
-                        Generate
+                        {pt("Generate")}
                       </>
                     )}
                   </Button>
@@ -642,9 +645,9 @@ Be specific and professional. Use the context to determine appropriate methodolo
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-semibold mb-2">Choose Your Programme Methodology</h2>
+                    <h2 className="text-xl font-semibold mb-2">{pt("Choose Your Programme Methodology")}</h2>
                     <p className="text-muted-foreground">
-                      Select the programme management framework that best fits your organization's needs
+                      {pt("Select the programme management framework that best fits your organization's needs")}
                     </p>
                   </div>
                   
@@ -653,17 +656,17 @@ Be specific and professional. Use the context to determine appropriate methodolo
                     <DialogTrigger asChild>
                       <Button variant="secondary" className="gap-2">
                         <MessageSquare className="h-4 w-4 text-purple-500" />
-                        AI Advisor
+                        {pt("AI Advisor")}
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-lg">
                       <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                           <Sparkles className="h-5 w-5 text-purple-500" />
-                          AI Methodology Advisor
+                          {pt("AI Methodology Advisor")}
                         </DialogTitle>
                         <DialogDescription>
-                          Describe your program and AI will recommend the best methodology.
+                          {pt("Describe your program and AI will recommend the best methodology.")}
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4 py-4">
@@ -690,7 +693,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                                       {METHODOLOGIES.find(m => m.id === aiRecommendation.methodology)?.name}
                                     </span>
                                     <Badge variant="secondary" className="text-xs">
-                                      {aiRecommendation.confidence}% match
+                                      {aiRecommendation.confidence}% {pt("match")}
                                     </Badge>
                                   </div>
                                   <p className="text-sm text-muted-foreground">
@@ -710,11 +713,11 @@ Be specific and professional. Use the context to determine appropriate methodolo
                               setAiPrompt("");
                             }}>
                               <RefreshCw className="h-4 w-4 mr-2" />
-                              Try Again
+                              {pt("Try Again")}
                             </Button>
                             <Button onClick={applyAIRecommendation}>
                               <Check className="h-4 w-4 mr-2" />
-                              Apply Recommendation
+                              {pt("Apply Recommendation")}
                             </Button>
                           </>
                         ) : (
@@ -722,12 +725,12 @@ Be specific and professional. Use the context to determine appropriate methodolo
                             {aiLoading ? (
                               <>
                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Analyzing...
+                                {pt("Analyzing...")}
                               </>
                             ) : (
                               <>
                                 <Sparkles className="h-4 w-4 mr-2" />
-                                Get Recommendation
+                                {pt("Get Recommendation")}
                               </>
                             )}
                           </Button>
@@ -799,7 +802,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                     <CardContent>
                       <div className="grid md:grid-cols-2 gap-6">
                         <div>
-                          <h4 className="font-medium mb-2">Key Features</h4>
+                          <h4 className="font-medium mb-2">{pt("Key Features")}</h4>
                           <ul className="space-y-2">
                             {selectedMethodology.features.map((feature, idx) => (
                               <li key={idx} className="text-sm flex items-start gap-2">
@@ -810,7 +813,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                           </ul>
                         </div>
                         <div>
-                          <h4 className="font-medium mb-2">Best For</h4>
+                          <h4 className="font-medium mb-2">{pt("Best For")}</h4>
                           <ul className="space-y-2">
                             {selectedMethodology.bestFor.map((item, idx) => (
                               <li key={idx} className="text-sm flex items-start gap-2">
@@ -831,15 +834,15 @@ Be specific and professional. Use the context to determine appropriate methodolo
             {currentStep === 2 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold mb-2">Program Details</h2>
+                  <h2 className="text-xl font-semibold mb-2">{pt("Program Details")}</h2>
                   <p className="text-muted-foreground">
-                    Enter the basic information about your program
+                    {pt("Enter the basic information about your program")}
                   </p>
                 </div>
 
                 <div className="grid gap-6">
                   <div className="grid gap-2">
-                    <Label htmlFor="name">Program Name *</Label>
+                    <Label htmlFor="name">{pt("Program Name *")}</Label>
                     <Input
                       id="name"
                       placeholder="e.g., Digital Transformation 2025"
@@ -863,7 +866,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                         ) : (
                           <Sparkles className="h-3 w-3 text-purple-500" />
                         )}
-                        Generate with AI
+                        {pt("Generate with AI")}
                       </Button>
                     </div>
                     <Textarea
@@ -890,7 +893,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                         ) : (
                           <Sparkles className="h-3 w-3 text-purple-500" />
                         )}
-                        Generate with AI
+                        {pt("Generate with AI")}
                       </Button>
                     </div>
                     <Textarea
@@ -904,7 +907,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="startDate">Start Date *</Label>
+                      <Label htmlFor="startDate">{pt("Start Date *")}</Label>
                       <Input
                         id="startDate"
                         type="date"
@@ -913,7 +916,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="endDate">Target End Date *</Label>
+                      <Label htmlFor="endDate">{pt("Target End Date *")}</Label>
                       <Input
                         id="endDate"
                         type="date"
@@ -931,7 +934,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                         onValueChange={(value) => setFormData(prev => ({ ...prev, programManagerId: value }))}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select program manager (optional)" />
+                          <SelectValue placeholder={pt("Select program manager (optional)")} />
                         </SelectTrigger>
                         <SelectContent>
                           {teamMembers.length > 0 ? (
@@ -942,20 +945,20 @@ Be specific and professional. Use the context to determine appropriate methodolo
                             ))
                           ) : (
                             <SelectItem value="none" disabled>
-                              No team members available
+                              {pt("No team members available")}
                             </SelectItem>
                           )}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="sponsor">Executive Sponsor</Label>
+                      <Label htmlFor="sponsor">{pt("Executive Sponsor")}</Label>
                       <Select 
                         value={formData.sponsorId}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, sponsorId: value }))}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select sponsor (optional)" />
+                          <SelectValue placeholder={pt("Select sponsor (optional)")} />
                         </SelectTrigger>
                         <SelectContent>
                           {teamMembers.length > 0 ? (
@@ -966,7 +969,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                             ))
                           ) : (
                             <SelectItem value="none" disabled>
-                              No team members available
+                              {pt("No team members available")}
                             </SelectItem>
                           )}
                         </SelectContent>
@@ -986,7 +989,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="currency">Currency</Label>
+                      <Label htmlFor="currency">{pt("Currency")}</Label>
                       <Select 
                         value={formData.currency}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}
@@ -1010,9 +1013,9 @@ Be specific and professional. Use the context to determine appropriate methodolo
             {currentStep === 3 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold mb-2">Link Projects</h2>
+                  <h2 className="text-xl font-semibold mb-2">{pt("Link Projects")}</h2>
                   <p className="text-muted-foreground">
-                    Select existing projects to include in this program (you can add more later)
+                    {pt("Select existing projects to include in this program (you can add more later)")}
                   </p>
                 </div>
 
@@ -1066,15 +1069,15 @@ Be specific and professional. Use the context to determine appropriate methodolo
                 ) : (
                   <Card className="p-8 text-center">
                     <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No projects available to link</p>
+                    <p className="text-muted-foreground">{pt("No projects available to link")}</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      You can create projects later and link them to this program
+                      {pt("You can create projects later and link them to this program")}
                     </p>
                   </Card>
                 )}
 
                 <p className="text-sm text-muted-foreground">
-                  {formData.selectedProjectIds.length} project(s) selected
+                  {formData.selectedProjectIds.length} {pt("project(s) selected")}
                 </p>
               </div>
             )}
@@ -1083,9 +1086,9 @@ Be specific and professional. Use the context to determine appropriate methodolo
             {currentStep === 4 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold mb-2">Review & Create</h2>
+                  <h2 className="text-xl font-semibold mb-2">{pt("Review & Create")}</h2>
                   <p className="text-muted-foreground">
-                    Review your program details before creating
+                    {pt("Review your program details before creating")}
                   </p>
                 </div>
 
@@ -1093,7 +1096,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                   {/* Methodology */}
                   <Card>
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-sm text-muted-foreground">Methodology</CardTitle>
+                      <CardTitle className="text-sm text-muted-foreground">{pt("Methodology")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       {selectedMethodology && (
@@ -1115,7 +1118,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                   {/* Program Details */}
                   <Card>
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-sm text-muted-foreground">Program Details</CardTitle>
+                      <CardTitle className="text-sm text-muted-foreground">{pt("Program Details")}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
@@ -1140,7 +1143,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                           <p className="font-medium">{formData.startDate || '-'}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Target End Date</p>
+                          <p className="text-sm text-muted-foreground">{pt("Target End Date")}</p>
                           <p className="font-medium">{formData.targetEndDate || '-'}</p>
                         </div>
                       </div>
@@ -1148,9 +1151,9 @@ Be specific and professional. Use the context to determine appropriate methodolo
                         <div>
                           <p className="text-sm text-muted-foreground">{pt("Program Manager")}</p>
                           <p className="font-medium">
-                            {formData.programManagerId 
-                              ? teamMembers.find((m: any) => m.id.toString() === formData.programManagerId)?.first_name || 'Selected'
-                              : 'Not assigned'}
+                            {formData.programManagerId
+                              ? teamMembers.find((m: any) => m.id.toString() === formData.programManagerId)?.first_name || pt('Selected')
+                              : pt('Not assigned')}
                           </p>
                         </div>
                         <div>
@@ -1170,7 +1173,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                   <Card>
                     <CardHeader className="pb-3">
                       <CardTitle className="text-sm text-muted-foreground">
-                        Linked Projects ({formData.selectedProjectIds.length})
+                        {pt("Linked Projects")} ({formData.selectedProjectIds.length})
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -1187,7 +1190,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                           })}
                         </div>
                       ) : (
-                        <p className="text-muted-foreground text-sm">No projects linked yet</p>
+                        <p className="text-muted-foreground text-sm">{pt("No projects linked yet")}</p>
                       )}
                     </CardContent>
                   </Card>
@@ -1218,12 +1221,12 @@ Be specific and professional. Use the context to determine appropriate methodolo
               {createMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creating...
+                  {pt("Creating...")}
                 </>
               ) : (
                 <>
                   <Check className="h-4 w-4 mr-2" />
-                  Create Program
+                  {pt("Create Program")}
                 </>
               )}
             </Button>

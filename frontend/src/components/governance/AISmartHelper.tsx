@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, Wand2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 interface AISmartHelperProps {
   type: "portfolio" | "board" | "stakeholder";
@@ -13,6 +14,7 @@ interface AISmartHelperProps {
 const AISmartHelper: React.FC<AISmartHelperProps> = ({ type, onSuggestion, context }) => {
   const [generating, setGenerating] = useState(false);
   const { toast } = useToast();
+  const { pt } = usePageTranslations();
 
   const generateSmartSuggestions = async () => {
     setGenerating(true);
@@ -104,7 +106,7 @@ const AISmartHelper: React.FC<AISmartHelperProps> = ({ type, onSuggestion, conte
               AI Smart Creation
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Let AI help you get started with intelligent suggestions and auto-populated fields
+              {pt("Let AI help you get started with intelligent suggestions")}
             </p>
 
             <div className="space-y-2 mb-4">
@@ -133,12 +135,12 @@ const AISmartHelper: React.FC<AISmartHelperProps> = ({ type, onSuggestion, conte
               {generating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Generating Smart Suggestions...
+                  {pt("Generating...")}
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 mr-2" />
-                  Generate AI Suggestions
+                  {pt("Generate with AI")}
                 </>
               )}
             </Button>
