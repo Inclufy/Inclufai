@@ -12,5 +12,5 @@ jobs:
           fetch-depth: 0
           ref: master
       - run: |
-          git remote add gitlab https://sloukile:${{ secrets.GITLAB_TOKEN }}@gitlab.com/inclufy/projectpal.git
+          git remote add gitlab https://sloukile:${{ secrets.GITLAB_TOKEN }}@gitlab.com/inclufy/projextpal.git
           git push gitlab master --force
