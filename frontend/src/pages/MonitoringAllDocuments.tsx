@@ -3,8 +3,10 @@ import { ProjectHeader } from "@/components/ProjectHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Upload, Tag } from "lucide-react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const MonitoringAllDocuments = () => {
+  const { pt } = usePageTranslations();
   const documents = [
     {
       title: "Inclufy Sales Pitch Deck Structure",
@@ -21,20 +23,20 @@ const MonitoringAllDocuments = () => {
       <ProjectHeader />
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Document Library</h1>
+          <h1 className="text-2xl font-bold text-foreground">{pt("Document Library")}</h1>
           <Button className="bg-primary hover:bg-primary/90">
             <Upload className="h-4 w-4 mr-2" />
-            Upload Document
+            {pt("Upload Document")}
           </Button>
         </div>
 
         <Card>
           <div className="p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-6">Documents</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-6">{pt("Documents")}</h2>
             
             <div className="mb-4">
               <h3 className="text-base font-semibold text-foreground mb-4">
-                Current Project (1 document)
+                {pt("Current Project")} (1 {pt("document")})
               </h3>
               <div className="space-y-3">
                 {documents.map((doc, index) => (
@@ -61,7 +63,7 @@ const MonitoringAllDocuments = () => {
                         </div>
                       </div>
                       <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">
-                        {doc.status}
+                        {pt(doc.status)}
                       </Badge>
                     </div>
                   </Card>

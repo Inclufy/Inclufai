@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -9,12 +10,13 @@ export default function EmailVerified() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
+  const { pt } = usePageTranslations();
 
   useEffect(() => {
     const verifyEmail = async () => {
       if (!token) {
         setStatus('error');
-        setMessage('Invalid verification link');
+        setMessage(pt('Invalid verification link'));
         return;
       }
 
@@ -23,19 +25,19 @@ export default function EmailVerified() {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok) {
           setStatus('success');
-          setMessage(data.message || 'Your email has been verified successfully!');
+          setMessage(data.message || pt('Your email has been verified successfully!'));
         } else {
           setStatus('error');
-          setMessage(data.error || 'Verification failed. Link may be expired or invalid.');
+          setMessage(data.error || pt('Verification failed. Link may be expired or invalid.'));
         }
       } catch (error: any) {
         setStatus('error');
-        setMessage('Verification failed. Please try again.');
+        setMessage(pt('Verification failed. Please try again.'));
       }
     };
 
@@ -77,9 +79,9 @@ export default function EmailVerified() {
         {/* Message */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-2">
-            {status === 'loading' && 'Verifying Email...'}
-            {status === 'success' && 'Email Verified!'}
-            {status === 'error' && 'Verification Failed'}
+            {status === 'loading' && pt('Verifying Email...')}
+            {status === 'success' && pt('Email Verified!')}
+            {status === 'error' && pt('Verification Failed')}
           </h1>
           <p className="text-slate-600">{message}</p>
         </div>
@@ -92,7 +94,7 @@ export default function EmailVerified() {
                 onClick={handleContinue}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl"
               >
-                Continue to Login
+                {pt("Continue to Login")}
               </button>
             )}
             {status === 'error' && (
@@ -100,7 +102,7 @@ export default function EmailVerified() {
                 onClick={() => navigate('/signup')}
                 className="w-full bg-slate-700 text-white py-3 px-4 rounded-lg font-semibold hover:bg-slate-800 transition-all duration-200"
               >
-                Back to Signup
+                {pt("Back to Signup")}
               </button>
             )}
           </div>
@@ -108,7 +110,7 @@ export default function EmailVerified() {
 
         {/* Footer */}
         <div className="mt-8 text-center text-sm text-slate-500">
-          <p>Need help? Contact <a href="mailto:support@projextpal.com" className="text-purple-600 hover:underline">support@projextpal.com</a></p>
+          <p>{pt("Need help? Contact")} <a href="mailto:support@projextpal.com" className="text-purple-600 hover:underline">support@projextpal.com</a></p>
         </div>
       </div>
     </div>
