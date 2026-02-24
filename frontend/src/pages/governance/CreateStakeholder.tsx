@@ -45,7 +45,6 @@ const CreateStakeholder: React.FC = () => {
   };
 
   const handleAISuggestion = (suggestion: any) => {
-  const { pt } = usePageTranslations();
     setFormData({
       ...formData,
       ...suggestion,
@@ -113,7 +112,7 @@ const CreateStakeholder: React.FC = () => {
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Stakeholders
+            {pt("Back to Stakeholders")}
           </Button>
         </div>
 
@@ -140,7 +139,7 @@ const CreateStakeholder: React.FC = () => {
               <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
                 <Users className="h-5 w-5 text-white" />
               </div>
-              Stakeholder Details
+              {pt("Stakeholder Details")}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8">
@@ -154,7 +153,7 @@ const CreateStakeholder: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="portfolio" className="text-base font-semibold">
-                  Portfolio <span className="text-red-500">*</span>
+                  {pt("Portfolio")} <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={formData.portfolio}
@@ -162,7 +161,7 @@ const CreateStakeholder: React.FC = () => {
                   required
                 >
                   <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Select a portfolio" />
+                    <SelectValue placeholder={pt("Select a portfolio")} />
                   </SelectTrigger>
                   <SelectContent>
                     {portfolios.map((portfolio) => (
@@ -177,7 +176,7 @@ const CreateStakeholder: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-base font-semibold">
-                    Name <span className="text-red-500">*</span>
+                    {pt("Name")} <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="name"
@@ -191,7 +190,7 @@ const CreateStakeholder: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-base font-semibold">
-                    Email <span className="text-red-500">*</span>
+                    {pt("Email")} <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="email"
@@ -208,7 +207,7 @@ const CreateStakeholder: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="role" className="text-base font-semibold">
-                    Role <span className="text-red-500">*</span>
+                    {pt("Role")} <span className="text-red-500">*</span>
                   </Label>
                   <Select
                     value={formData.role}
@@ -218,18 +217,18 @@ const CreateStakeholder: React.FC = () => {
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="executive_sponsor">Executive Sponsor</SelectItem>
-                      <SelectItem value="senior_responsible_owner">Senior Responsible Owner</SelectItem>
-                      <SelectItem value="business_change_manager">Business Change Manager</SelectItem>
-                      <SelectItem value="project_executive">Project Executive</SelectItem>
-                      <SelectItem value="key_stakeholder">Key Stakeholder</SelectItem>
+                      <SelectItem value="executive_sponsor">{pt("Executive Sponsor")}</SelectItem>
+                      <SelectItem value="senior_responsible_owner">{pt("Senior Responsible Owner")}</SelectItem>
+                      <SelectItem value="business_change_manager">{pt("Business Change Manager")}</SelectItem>
+                      <SelectItem value="project_executive">{pt("Project Executive")}</SelectItem>
+                      <SelectItem value="key_stakeholder">{pt("Key Stakeholder")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="organization" className="text-base font-semibold">
-                    Organization
+                    {pt("Organization")}
                   </Label>
                   <Input
                     id="organization"
@@ -244,7 +243,7 @@ const CreateStakeholder: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="interest" className="text-base font-semibold">
-                    Interest Level
+                    {pt("Interest Level")}
                   </Label>
                   <Select
                     value={formData.interest_level}
@@ -263,7 +262,7 @@ const CreateStakeholder: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="influence" className="text-base font-semibold">
-                    Influence Level
+                    {pt("Influence Level")}
                   </Label>
                   <Select
                     value={formData.influence_level}
@@ -299,12 +298,12 @@ const CreateStakeholder: React.FC = () => {
                   {loading ? (
                     <>
                       <Sparkles className="h-4 w-4 mr-2 animate-spin" />
-                      Adding...
+                      {pt("Adding...")}
                     </>
                   ) : (
                     <>
                       <Users className="h-4 w-4 mr-2" />
-                      Add Stakeholder
+                      {pt("Add Stakeholder")}
                     </>
                   )}
                 </Button>
