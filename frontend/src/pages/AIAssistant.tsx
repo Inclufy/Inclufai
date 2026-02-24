@@ -79,12 +79,20 @@ interface SendMessageResponse {
 }
 
 // Quick action suggestions
-const quickActions = [
-  { icon: FolderKanban, label: "Create a new project", prompt: "Create a new project" },
-  { icon: Building2, label: "Analyze my portfolio", prompt: "Analyze my current portfolio and provide insights" },
-  { icon: ListChecks, label: "List all projects", prompt: "List all my projects with their status" },
-  { icon: BarChart3, label: "Generate report", prompt: "Generate an executive summary of my programs" },
-];
+const quickActionsData = {
+  en: [
+    { icon: FolderKanban, label: "Create a new project", prompt: "Create a new project" },
+    { icon: Building2, label: "Analyze my portfolio", prompt: "Analyze my current portfolio and provide insights" },
+    { icon: ListChecks, label: "List all projects", prompt: "List all my projects with their status" },
+    { icon: BarChart3, label: "Generate report", prompt: "Generate an executive summary of my programs" },
+  ],
+  nl: [
+    { icon: FolderKanban, label: "Nieuw project aanmaken", prompt: "Maak een nieuw project aan" },
+    { icon: Building2, label: "Analyseer mijn portfolio", prompt: "Analyseer mijn huidige portfolio en geef inzichten" },
+    { icon: ListChecks, label: "Toon alle projecten", prompt: "Toon al mijn projecten met hun status" },
+    { icon: BarChart3, label: "Genereer rapport", prompt: "Genereer een samenvatting van mijn programma's" },
+  ],
+};
 
 export default function AIAssistant() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -100,6 +108,7 @@ export default function AIAssistant() {
   
   // Get current language from context
   const { language } = useLanguage();
+  const quickActions = language === 'nl' ? quickActionsData.nl : quickActionsData.en;
 
   useEffect(() => {
     fetchConversations();
