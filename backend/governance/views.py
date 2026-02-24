@@ -119,66 +119,32 @@ def generate_ai_report(request):
 @permission_classes([IsAuthenticated])
 def ai_generate_text(request):
     """Simple AI text generation endpoint."""
+    import logging
     from langchain_openai import ChatOpenAI
     from django.conf import settings
-    
+
+    logger = logging.getLogger(__name__)
+
     prompt = request.data.get('prompt', '')
     if not prompt:
         return Response({"error": "prompt is required"}, status=http_status.HTTP_400_BAD_REQUEST)
-    
+
+    api_key = getattr(settings, 'OPENAI_API_KEY', None)
+    if not api_key:
+        logger.error("OPENAI_API_KEY is not configured in settings")
+        return Response(
+            {"error": "AI service is not configured. Please set OPENAI_API_KEY."},
+            status=http_status.HTTP_503_SERVICE_UNAVAILABLE
+        )
+
     try:
         llm = ChatOpenAI(
             temperature=0.7,
             model_name="gpt-4o",
-            openai_api_key=settings.OPENAI_API_KEY,
+            openai_api_key=api_key,
         )
         response = llm.invoke(prompt)
         return Response({"response": response.content.strip()})
     except Exception as e:
-        return Response({"error": str(e)}, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def ai_generate_text(request):
-    """Simple AI text generation endpoint."""
-    from langchain_openai import ChatOpenAI
-    from django.conf import settings
-    
-    prompt = request.data.get('prompt', '')
-    if not prompt:
-        return Response({"error": "prompt is required"}, status=http_status.HTTP_400_BAD_REQUEST)
-    
-    try:
-        llm = ChatOpenAI(
-            temperature=0.7,
-            model_name="gpt-4o",
-            openai_api_key=settings.OPENAI_API_KEY,
-        )
-        response = llm.invoke(prompt)
-        return Response({"response": response.content.strip()})
-    except Exception as e:
-        return Response({"error": str(e)}, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def ai_generate_text(request):
-    """Simple AI text generation endpoint."""
-    from langchain_openai import ChatOpenAI
-    from django.conf import settings
-    
-    prompt = request.data.get('prompt', '')
-    if not prompt:
-        return Response({"error": "prompt is required"}, status=http_status.HTTP_400_BAD_REQUEST)
-    
-    try:
-        llm = ChatOpenAI(
-            temperature=0.7,
-            model_name="gpt-4o",
-            openai_api_key=settings.OPENAI_API_KEY,
-        )
-        response = llm.invoke(prompt)
-        return Response({"response": response.content.strip()})
-    except Exception as e:
+        logger.error(f"AI generate failed: {type(e).__name__}: {e}")
         return Response({"error": str(e)}, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
