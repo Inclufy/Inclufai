@@ -211,7 +211,7 @@ const Login = () => {
                     <button
                       type="button"
                       onClick={handleForgotPassword}
-                      className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-bold transition-colors"
+                      className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-bold transition-colors py-2 px-1 -my-2 min-h-[44px] flex items-center"
                     >
                       {txt.forgotPassword}
                     </button>
