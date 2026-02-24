@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Shield, ArrowLeft, Eye, EyeOff, Mail, Lock, KeyRound } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -20,6 +21,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language } = useLanguage();
+  const { login: authLogin } = useAuth();
 
   const isNL = language === 'nl';
   const txt = {
@@ -60,60 +62,74 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login-2fa/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email, 
-          password,
-          totp_code: requires2FA ? totpCode : undefined 
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
-      }
-
-      if (data.requires_2fa) {
-        setRequires2FA(true);
-        toast({
-          title: txt.twoFARequired,
-          description: txt.enterAuthCodeMsg,
+      if (requires2FA) {
+        // 2FA step: use login-2fa endpoint with TOTP code
+        const response = await fetch(`${API_BASE_URL}/auth/login-2fa/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, totp_code: totpCode }),
         });
-        setIsLoading(false);
-        return;
-      }
 
-      localStorage.setItem('access_token', data.access);
-      localStorage.setItem('refresh_token', data.refresh);
-      localStorage.setItem('user_data', JSON.stringify(data.user));
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Login failed');
+        }
+
+        // Store tokens from 2FA login
+        localStorage.setItem('access_token', data.access);
+        localStorage.setItem('refresh_token', data.refresh);
+      } else {
+        // Step 1: Check if 2FA is needed via login-2fa endpoint (without TOTP code)
+        const checkResponse = await fetch(`${API_BASE_URL}/auth/login-2fa/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const checkData = await checkResponse.json();
+
+        if (!checkResponse.ok) {
+          throw new Error(checkData.error || checkData.detail || 'Login failed');
+        }
+
+        if (checkData.requires_2fa) {
+          setRequires2FA(true);
+          toast({
+            title: txt.twoFARequired,
+            description: txt.enterAuthCodeMsg,
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        // No 2FA needed - use AuthContext login for consistent token handling
+        await authLogin(email, password);
+      }
 
       toast({
         title: txt.welcomeBackMsg,
         description: txt.authSuccess,
       });
 
-      // ✅ CHECK FOR CHECKOUT REDIRECT
+      // Check for checkout redirect
       const searchParams = new URLSearchParams(window.location.search);
       const redirect = searchParams.get('redirect');
       const plan = searchParams.get('plan');
       const billing = searchParams.get('billing');
-      
+
       if (redirect === 'checkout' && plan) {
-        // User came from pricing page - redirect back to pricing with auto-checkout
         toast({
-          title: `🚀 ${txt.redirecting}`,
+          title: txt.redirecting,
           description: `${txt.settingUpPlan} ${plan.charAt(0).toUpperCase() + plan.slice(1)} ${txt.plan}`,
         });
-        
-        // Small delay to show toast
+
         setTimeout(() => {
+          // Full reload so AuthContext picks up new tokens
           window.location.href = `/pricing?auto_checkout=${plan}&billing=${billing || 'monthly'}`;
         }, 800);
       } else {
-        // Normal login - go to dashboard
+        // Full reload so AuthContext picks up new tokens (needed for 2FA case)
         window.location.href = '/dashboard';
       }
     } catch (error: any) {
