@@ -102,17 +102,17 @@ export default function GovernanceBoards() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2"><Users className="h-8 w-8" /> Governance Boards</h1>
-          <p className="text-muted-foreground mt-1">Steering committees, program boards, and advisory panels</p>
+          <h1 className="text-3xl font-bold flex items-center gap-2"><Users className="h-8 w-8" /> {pt("Governance Boards")}</h1>
+          <p className="text-muted-foreground mt-1">{pt("Steering committees, program boards, and advisory panels")}</p>
         </div>
-        <Button onClick={() => navigate("/governance/boards/new")}><Plus className="h-4 w-4 mr-2" /> New Board</Button>
+        <Button onClick={() => navigate("/governance/boards/new")}><Plus className="h-4 w-4 mr-2" /> {pt("New Board")}</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Total Boards</p><p className="text-2xl font-bold mt-1">{boards.length}</p></div><Users className="h-8 w-8 text-blue-600" /></div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Active Boards</p><p className="text-2xl font-bold mt-1">{activeBoards.length}</p></div><CheckCircle className="h-8 w-8 text-green-600" /></div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Total Members</p><p className="text-2xl font-bold mt-1">{boards.reduce((sum, b) => sum + b.member_count, 0)}</p></div><Users className="h-8 w-8 text-purple-600" /></div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Steering Committees</p><p className="text-2xl font-bold mt-1">{boardsByType.steering_committee || 0}</p></div><Calendar className="h-8 w-8 text-orange-600" /></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Total Boards")}</p><p className="text-2xl font-bold mt-1">{boards.length}</p></div><Users className="h-8 w-8 text-blue-600" /></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Active Boards")}</p><p className="text-2xl font-bold mt-1">{activeBoards.length}</p></div><CheckCircle className="h-8 w-8 text-green-600" /></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Total Members")}</p><p className="text-2xl font-bold mt-1">{boards.reduce((sum, b) => sum + b.member_count, 0)}</p></div><Users className="h-8 w-8 text-purple-600" /></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Steering Committees")}</p><p className="text-2xl font-bold mt-1">{boardsByType.steering_committee || 0}</p></div><Calendar className="h-8 w-8 text-orange-600" /></div></CardContent></Card>
       </div>
 
       <div className="space-y-4">
@@ -136,9 +136,9 @@ export default function GovernanceBoards() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div><span className="text-muted-foreground">Chair</span><p className="font-medium mt-1">{board.chair_name || board.chair_email || "Not assigned"}</p></div>
+                <div><span className="text-muted-foreground">{pt("Chair")}</span><p className="font-medium mt-1">{board.chair_name || board.chair_email || pt("Not assigned")}</p></div>
                 <div><span className="text-muted-foreground">{pt("Members")}</span><p className="font-medium mt-1 flex items-center gap-1"><Users className="h-4 w-4" />{board.member_count}</p></div>
-                <div><span className="text-muted-foreground">Meeting Frequency</span><p className="font-medium mt-1">{board.meeting_frequency || "Not set"}</p></div>
+                <div><span className="text-muted-foreground">{pt("Meeting Frequency")}</span><p className="font-medium mt-1">{board.meeting_frequency || pt("Not set")}</p></div>
               </div>
             </CardContent>
           </Card>
@@ -146,27 +146,27 @@ export default function GovernanceBoards() {
       </div>
 
       {boards.length === 0 && (
-        <Card><CardContent className="p-12 text-center"><Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold mb-2">No Governance Boards Yet</h3><p className="text-muted-foreground mb-4">Create your first governance board to establish oversight</p><Button onClick={() => navigate("/governance/boards/new")}><Plus className="h-4 w-4 mr-2" /> Create Board</Button></CardContent></Card>
+        <Card><CardContent className="p-12 text-center"><Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold mb-2">{pt("No Governance Boards Yet")}</h3><p className="text-muted-foreground mb-4">{pt("Create your first governance board to establish oversight")}</p><Button onClick={() => navigate("/governance/boards/new")}><Plus className="h-4 w-4 mr-2" /> {pt("Create Board")}</Button></CardContent></Card>
       )}
 
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Edit Board: {editingBoard?.name}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{pt("Edit Board")}: {editingBoard?.name}</DialogTitle></DialogHeader>
           <div className="space-y-4 mt-4">
             <div className="grid gap-2"><Label>{pt("Name")}</Label><Input value={editForm.name} onChange={(e) => setEditForm(p => ({ ...p, name: e.target.value }))} /></div>
             <div className="grid gap-2"><Label>{pt("Description")}</Label><Textarea value={editForm.description} onChange={(e) => setEditForm(p => ({ ...p, description: e.target.value }))} /></div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label>Board Type</Label>
+                <Label>{pt("Board Type")}</Label>
                 <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={editForm.board_type} onChange={(e) => setEditForm(p => ({ ...p, board_type: e.target.value }))}>
-                  <option value="steering_committee">Steering Committee</option>
-                  <option value="program_board">Program Board</option>
+                  <option value="steering_committee">{pt("Steering Committee")}</option>
+                  <option value="program_board">{pt("Program Board")}</option>
                   <option value="project_board">{pt("Project Board")}</option>
-                  <option value="advisory_board">Advisory Board</option>
-                  <option value="executive_board">Executive Board</option>
+                  <option value="advisory_board">{pt("Advisory Board")}</option>
+                  <option value="executive_board">{pt("Executive Board")}</option>
                 </select>
               </div>
-              <div className="grid gap-2"><Label>Meeting Frequency</Label><Input value={editForm.meeting_frequency} onChange={(e) => setEditForm(p => ({ ...p, meeting_frequency: e.target.value }))} placeholder="e.g. Weekly, Monthly" /></div>
+              <div className="grid gap-2"><Label>{pt("Meeting Frequency")}</Label><Input value={editForm.meeting_frequency} onChange={(e) => setEditForm(p => ({ ...p, meeting_frequency: e.target.value }))} placeholder={pt("e.g. Weekly, Monthly")} /></div>
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" checked={editForm.is_active} onChange={(e) => setEditForm(p => ({ ...p, is_active: e.target.checked }))} className="rounded" />

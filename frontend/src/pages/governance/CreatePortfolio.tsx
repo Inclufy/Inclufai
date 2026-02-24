@@ -98,7 +98,7 @@ const CreatePortfolio: React.FC = () => {
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Portfolios
+            {pt("Back to Portfolios")}
           </Button>
         </div>
 
@@ -126,7 +126,7 @@ const CreatePortfolio: React.FC = () => {
               <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
                 <Briefcase className="h-5 w-5 text-white" />
               </div>
-              Portfolio Details
+              {pt("Portfolio Details")}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8">
@@ -140,7 +140,7 @@ const CreatePortfolio: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-base font-semibold">
-                  Portfolio Name <span className="text-red-500">*</span>
+                  {pt("Portfolio Name")} <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="name"
@@ -184,12 +184,12 @@ const CreatePortfolio: React.FC = () => {
                   {loading ? (
                     <>
                       <Sparkles className="h-4 w-4 mr-2 animate-spin" />
-                      Creating...
+                      {pt("Creating...")}
                     </>
                   ) : (
                     <>
                       <Briefcase className="h-4 w-4 mr-2" />
-                      Create Portfolio
+                      {pt("Create Portfolio")}
                     </>
                   )}
                 </Button>

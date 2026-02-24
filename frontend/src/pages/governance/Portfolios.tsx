@@ -94,17 +94,17 @@ export default function Portfolios() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2"><Briefcase className="h-8 w-8" /> Strategic Portfolios</h1>
-          <p className="text-muted-foreground mt-1">Manage strategic initiatives and governance</p>
+          <h1 className="text-3xl font-bold flex items-center gap-2"><Briefcase className="h-8 w-8" /> {pt("Strategic Portfolios")}</h1>
+          <p className="text-muted-foreground mt-1">{pt("Manage strategic initiatives and governance")}</p>
         </div>
-        <Button onClick={() => navigate("/governance/portfolios/new")}><Plus className="h-4 w-4 mr-2" /> New Portfolio</Button>
+        <Button onClick={() => navigate("/governance/portfolios/new")}><Plus className="h-4 w-4 mr-2" /> {pt("New Portfolio")}</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Total Portfolios</p><p className="text-2xl font-bold mt-1">{portfolios.length}</p></div><Briefcase className="h-8 w-8 text-purple-600" /></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Total Portfolios")}</p><p className="text-2xl font-bold mt-1">{portfolios.length}</p></div><Briefcase className="h-8 w-8 text-purple-600" /></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Active")}</p><p className="text-2xl font-bold mt-1">{portfolios.filter(p => p.status === "active").length}</p></div><TrendingUp className="h-8 w-8 text-green-600" /></div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Total Boards</p><p className="text-2xl font-bold mt-1">{portfolios.reduce((sum, p) => sum + p.total_boards, 0)}</p></div><Users className="h-8 w-8 text-blue-600" /></div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Total Budget")}</p><p className="text-2xl font-bold mt-1">\u20ac{portfolios.reduce((sum, p) => sum + (p.budget_allocated || 0), 0).toLocaleString()}</p></div><DollarSign className="h-8 w-8 text-orange-600" /></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Total Boards")}</p><p className="text-2xl font-bold mt-1">{portfolios.reduce((sum, p) => sum + p.total_boards, 0)}</p></div><Users className="h-8 w-8 text-blue-600" /></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Total Budget")}</p><p className="text-2xl font-bold mt-1">€{portfolios.reduce((sum, p) => sum + (p.budget_allocated || 0), 0).toLocaleString()}</p></div><DollarSign className="h-8 w-8 text-orange-600" /></div></CardContent></Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -124,8 +124,8 @@ export default function Portfolios() {
               <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{portfolio.description || "No description"}</p>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between"><span className="text-muted-foreground">{pt("Owner")}</span><span className="font-medium">{portfolio.owner_name || portfolio.owner_email}</span></div>
-                <div className="flex items-center justify-between"><span className="text-muted-foreground">Governance Boards</span><span className="font-medium">{portfolio.total_boards}</span></div>
-                {portfolio.budget_allocated > 0 && <div className="flex items-center justify-between"><span className="text-muted-foreground">{pt("Budget")}</span><span className="font-medium">\u20ac{portfolio.budget_allocated.toLocaleString()}</span></div>}
+                <div className="flex items-center justify-between"><span className="text-muted-foreground">{pt("Governance Boards")}</span><span className="font-medium">{portfolio.total_boards}</span></div>
+                {portfolio.budget_allocated > 0 && <div className="flex items-center justify-between"><span className="text-muted-foreground">{pt("Budget")}</span><span className="font-medium">€{portfolio.budget_allocated.toLocaleString()}</span></div>}
               </div>
             </CardContent>
           </Card>
@@ -133,12 +133,12 @@ export default function Portfolios() {
       </div>
 
       {portfolios.length === 0 && (
-        <Card><CardContent className="p-12 text-center"><Briefcase className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold mb-2">No Portfolios Yet</h3><p className="text-muted-foreground mb-4">Create your first strategic portfolio to get started</p><Button onClick={() => navigate("/governance/portfolios/new")}><Plus className="h-4 w-4 mr-2" /> Create Portfolio</Button></CardContent></Card>
+        <Card><CardContent className="p-12 text-center"><Briefcase className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold mb-2">{pt("No Portfolios Yet")}</h3><p className="text-muted-foreground mb-4">{pt("Create your first strategic portfolio to get started")}</p><Button onClick={() => navigate("/governance/portfolios/new")}><Plus className="h-4 w-4 mr-2" /> {pt("Create Portfolio")}</Button></CardContent></Card>
       )}
 
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Edit Portfolio: {editingPortfolio?.name}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{pt("Edit Portfolio")}: {editingPortfolio?.name}</DialogTitle></DialogHeader>
           <div className="space-y-4 mt-4">
             <div className="grid gap-2"><Label>{pt("Name")}</Label><Input value={editForm.name} onChange={(e) => setEditForm(p => ({ ...p, name: e.target.value }))} /></div>
             <div className="grid gap-2"><Label>{pt("Description")}</Label><Textarea value={editForm.description} onChange={(e) => setEditForm(p => ({ ...p, description: e.target.value }))} /></div>
@@ -146,15 +146,15 @@ export default function Portfolios() {
               <div className="grid gap-2">
                 <Label>{pt("Status")}</Label>
                 <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={editForm.status} onChange={(e) => setEditForm(p => ({ ...p, status: e.target.value }))}>
-                  <option value="planning">Planning</option>
+                  <option value="planning">{pt("Planning")}</option>
                   <option value="active">{pt("Active")}</option>
                   <option value="on_hold">{pt("On Hold")}</option>
                   <option value="closed">{pt("Closed")}</option>
                 </select>
               </div>
-              <div className="grid gap-2"><Label>Budget (\u20ac)</Label><Input type="number" value={editForm.budget_allocated} onChange={(e) => setEditForm(p => ({ ...p, budget_allocated: parseFloat(e.target.value) || 0 }))} /></div>
+              <div className="grid gap-2"><Label>{pt("Budget")} (€)</Label><Input type="number" value={editForm.budget_allocated} onChange={(e) => setEditForm(p => ({ ...p, budget_allocated: parseFloat(e.target.value) || 0 }))} /></div>
             </div>
-            <div className="grid gap-2"><Label>Strategic Objectives</Label><Textarea value={editForm.strategic_objectives} onChange={(e) => setEditForm(p => ({ ...p, strategic_objectives: e.target.value }))} /></div>
+            <div className="grid gap-2"><Label>{pt("Strategic Objectives")}</Label><Textarea value={editForm.strategic_objectives} onChange={(e) => setEditForm(p => ({ ...p, strategic_objectives: e.target.value }))} /></div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setEditModalOpen(false)}>{pt("Cancel")}</Button>
               <Button onClick={handleSaveEdit} className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">{pt("Save Changes")}</Button>

@@ -102,7 +102,7 @@ const CreateBoard: React.FC = () => {
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Boards
+            {pt("Back to Boards")}
           </Button>
         </div>
 
@@ -129,7 +129,7 @@ const CreateBoard: React.FC = () => {
               <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
                 <Shield className="h-5 w-5 text-white" />
               </div>
-              Board Details
+              {pt("Board Details")}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8">
@@ -143,7 +143,7 @@ const CreateBoard: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="portfolio" className="text-base font-semibold">
-                  Portfolio <span className="text-red-500">*</span>
+                  {pt("Portfolio")} <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={formData.portfolio}
@@ -151,7 +151,7 @@ const CreateBoard: React.FC = () => {
                   required
                 >
                   <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Select a portfolio" />
+                    <SelectValue placeholder={pt("Select a portfolio")} />
                   </SelectTrigger>
                   <SelectContent>
                     {portfolios.map((portfolio) => (
@@ -165,7 +165,7 @@ const CreateBoard: React.FC = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-base font-semibold">
-                  Board Name <span className="text-red-500">*</span>
+                  {pt("Board Name")} <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="name"
@@ -209,12 +209,12 @@ const CreateBoard: React.FC = () => {
                   {loading ? (
                     <>
                       <Sparkles className="h-4 w-4 mr-2 animate-spin" />
-                      Creating...
+                      {pt("Creating...")}
                     </>
                   ) : (
                     <>
                       <Shield className="h-4 w-4 mr-2" />
-                      Create Board
+                      {pt("Create Board")}
                     </>
                   )}
                 </Button>
