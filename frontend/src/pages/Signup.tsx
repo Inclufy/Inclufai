@@ -16,6 +16,44 @@ const Signup = () => {
   const trialDays = searchParams.get('trial') || '0';
   const hasTrial = parseInt(trialDays) > 0;
   const { language } = useLanguage();
+  const isNL = language === 'nl';
+
+  const txt = {
+    backToHome: isNL ? 'Terug naar home' : 'Back to Home',
+    createAccount: isNL ? 'Account aanmaken' : 'Create Account',
+    fillDetails: isNL ? 'Vul je gegevens in om te beginnen' : 'Fill in your details to get started',
+    freeTrial: isNL ? 'dagen gratis proefperiode!' : 'days free trial!',
+    firstName: isNL ? 'Voornaam' : 'First Name',
+    firstNamePlaceholder: isNL ? 'Jan' : 'John',
+    lastName: isNL ? 'Achternaam' : 'Last Name',
+    lastNamePlaceholder: isNL ? 'Jansen' : 'Smith',
+    email: isNL ? 'E-mail' : 'Email',
+    emailPlaceholder: isNL ? 'jan@bedrijf.nl' : 'john@company.com',
+    company: isNL ? 'Bedrijfsnaam' : 'Company Name',
+    companyPlaceholder: isNL ? 'Mijn Bedrijf BV' : 'My Company Ltd',
+    password: isNL ? 'Wachtwoord' : 'Password',
+    minChars: isNL ? 'Minimaal 8 tekens' : 'Minimum 8 characters',
+    confirmPassword: isNL ? 'Bevestig wachtwoord' : 'Confirm Password',
+    repeatPassword: isNL ? 'Herhaal wachtwoord' : 'Repeat password',
+    acceptTermsText: isNL ? 'Ik accepteer de' : 'I accept the',
+    termsLink: isNL ? 'algemene voorwaarden' : 'terms and conditions',
+    andText: isNL ? 'en' : 'and',
+    privacyLink: isNL ? 'privacybeleid' : 'privacy policy',
+    newsletter: isNL ? 'Ja, houd mij op de hoogte van nieuwe functies, tips en aanbiedingen (optioneel)' : 'Yes, keep me updated on new features, tips and offers (optional)',
+    freeAccess: isNL ? 'dagen gratis toegang' : 'days free access',
+    fullAccess: isNL ? 'Volledige toegang tot alle functies. Geen creditcard vereist. Automatisch annuleren na proefperiode.' : 'Full access to all features. No credit card required. Automatically cancels after trial.',
+    creating: isNL ? 'Account aanmaken...' : 'Creating account...',
+    alreadyHaveAccount: isNL ? 'Heb je al een account?' : 'Already have an account?',
+    logIn: isNL ? 'Log in' : 'Log in',
+    termsRequired: isNL ? 'Algemene voorwaarden vereist' : 'Terms required',
+    termsRequiredDesc: isNL ? 'Je moet de algemene voorwaarden accepteren om door te gaan' : 'You must accept the terms and conditions to continue',
+    passwordsMismatch: isNL ? 'Wachtwoorden komen niet overeen' : 'Passwords do not match',
+    passwordsMismatchDesc: isNL ? 'Zorg ervoor dat beide wachtwoorden hetzelfde zijn' : 'Make sure both passwords are the same',
+    passwordTooShort: isNL ? 'Wachtwoord te kort' : 'Password too short',
+    passwordTooShortDesc: isNL ? 'Wachtwoord moet minimaal 8 tekens zijn' : 'Password must be at least 8 characters',
+    registrationFailed: isNL ? 'Registratie mislukt' : 'Registration failed',
+    somethingWentWrong: isNL ? 'Er ging iets mis. Probeer het opnieuw.' : 'Something went wrong. Please try again.',
+  };
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -42,11 +80,11 @@ const Signup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!acceptTerms) {
       toast({
-        title: 'Algemene voorwaarden vereist',
-        description: 'Je moet de algemene voorwaarden accepteren om door te gaan',
+        title: txt.termsRequired,
+        description: txt.termsRequiredDesc,
         variant: 'destructive',
       });
       return;
@@ -54,8 +92,8 @@ const Signup = () => {
 
     if (formData.password !== formData.confirmPassword) {
       toast({
-        title: 'Wachtwoorden komen niet overeen',
-        description: 'Zorg ervoor dat beide wachtwoorden hetzelfde zijn',
+        title: txt.passwordsMismatch,
+        description: txt.passwordsMismatchDesc,
         variant: 'destructive',
       });
       return;
@@ -63,8 +101,8 @@ const Signup = () => {
 
     if (formData.password.length < 8) {
       toast({
-        title: 'Wachtwoord te kort',
-        description: 'Wachtwoord moet minimaal 8 tekens zijn',
+        title: txt.passwordTooShort,
+        description: txt.passwordTooShortDesc,
         variant: 'destructive',
       });
       return;
@@ -91,26 +129,25 @@ const Signup = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Registratie mislukt');
+        throw new Error(data.error || txt.registrationFailed);
       }
 
-      // Navigate to intent selection with user data
-navigate('/intent-selection', {
-  state: {
-    userData: {
-      email: formData.email,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      company: formData.company,
-    },
-    language: language, // from useLanguage() hook
-  },
-});
+      navigate('/intent-selection', {
+        state: {
+          userData: {
+            email: formData.email,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            company: formData.company,
+          },
+          language: language,
+        },
+      });
 
     } catch (error: any) {
       toast({
-        title: 'Registratie mislukt',
-        description: error.message || 'Er ging iets mis. Probeer het opnieuw.',
+        title: txt.registrationFailed,
+        description: error.message || txt.somethingWentWrong,
         variant: 'destructive',
       });
     } finally {
@@ -129,17 +166,17 @@ navigate('/intent-selection', {
             onClick={() => navigate('/')}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Terug naar home
+            {txt.backToHome}
           </Button>
-          <CardTitle className="text-2xl font-bold">Account aanmaken</CardTitle>
+          <CardTitle className="text-2xl font-bold">{txt.createAccount}</CardTitle>
           <CardDescription>
             {hasTrial ? (
               <div className="flex items-center gap-2 text-green-600 dark:text-green-400 font-semibold">
                 <Gift className="w-4 h-4" />
-                {trialDays} dagen gratis proefperiode!
+                {trialDays} {txt.freeTrial}
               </div>
             ) : (
-              'Vul je gegevens in om te beginnen'
+              txt.fillDetails
             )}
           </CardDescription>
         </CardHeader>
@@ -147,14 +184,14 @@ navigate('/intent-selection', {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">Voornaam</Label>
+                <Label htmlFor="firstName">{txt.firstName}</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
                     id="firstName"
                     name="firstName"
                     type="text"
-                    placeholder="Jan"
+                    placeholder={txt.firstNamePlaceholder}
                     value={formData.firstName}
                     onChange={handleChange}
                     className="pl-10"
@@ -163,14 +200,14 @@ navigate('/intent-selection', {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">Achternaam</Label>
+                <Label htmlFor="lastName">{txt.lastName}</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
                     id="lastName"
                     name="lastName"
                     type="text"
-                    placeholder="Jansen"
+                    placeholder={txt.lastNamePlaceholder}
                     value={formData.lastName}
                     onChange={handleChange}
                     className="pl-10"
@@ -181,14 +218,14 @@ navigate('/intent-selection', {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
+              <Label htmlFor="email">{txt.email}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="jan@bedrijf.nl"
+                  placeholder={txt.emailPlaceholder}
                   value={formData.email}
                   onChange={handleChange}
                   className="pl-10"
@@ -198,14 +235,14 @@ navigate('/intent-selection', {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="company">Bedrijfsnaam</Label>
+              <Label htmlFor="company">{txt.company}</Label>
               <div className="relative">
                 <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   id="company"
                   name="company"
                   type="text"
-                  placeholder="Mijn Bedrijf BV"
+                  placeholder={txt.companyPlaceholder}
                   value={formData.company}
                   onChange={handleChange}
                   className="pl-10"
@@ -215,14 +252,14 @@ navigate('/intent-selection', {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Wachtwoord</Label>
+              <Label htmlFor="password">{txt.password}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Minimaal 8 tekens"
+                  placeholder={txt.minChars}
                   value={formData.password}
                   onChange={handleChange}
                   className="pl-10 pr-10"
@@ -239,14 +276,14 @@ navigate('/intent-selection', {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Bevestig wachtwoord</Label>
+              <Label htmlFor="confirmPassword">{txt.confirmPassword}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   id="confirmPassword"
                   name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Herhaal wachtwoord"
+                  placeholder={txt.repeatPassword}
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   className="pl-10 pr-10"
@@ -271,7 +308,7 @@ navigate('/intent-selection', {
                   className="mt-1"
                 />
                 <label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer select-none">
-                  Ik accepteer de <a href="/terms" target="_blank" className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 underline font-medium" onClick={(e) => e.stopPropagation()}>algemene voorwaarden</a> en <a href="/privacy" target="_blank" className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 underline font-medium" onClick={(e) => e.stopPropagation()}>privacybeleid</a> *
+                  {txt.acceptTermsText} <a href="/terms" target="_blank" className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 underline font-medium" onClick={(e) => e.stopPropagation()}>{txt.termsLink}</a> {txt.andText} <a href="/privacy" target="_blank" className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 underline font-medium" onClick={(e) => e.stopPropagation()}>{txt.privacyLink}</a> *
                 </label>
               </div>
 
@@ -283,7 +320,7 @@ navigate('/intent-selection', {
                   className="mt-1"
                 />
                 <label htmlFor="newsletter" className="text-sm leading-relaxed cursor-pointer select-none text-muted-foreground">
-                  Ja, houd mij op de hoogte van nieuwe functies, tips en aanbiedingen (optioneel)
+                  {txt.newsletter}
                 </label>
               </div>
             </div>
@@ -294,10 +331,10 @@ navigate('/intent-selection', {
                   <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5" />
                   <div>
                     <p className="font-semibold text-green-900 dark:text-green-100">
-                      {trialDays} dagen gratis toegang
+                      {trialDays} {txt.freeAccess}
                     </p>
                     <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                      Volledige toegang tot alle functies. Geen creditcard vereist. Automatisch annuleren na proefperiode.
+                      {txt.fullAccess}
                     </p>
                   </div>
                 </div>
@@ -308,21 +345,21 @@ navigate('/intent-selection', {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Account aanmaken...
+                  {txt.creating}
                 </>
               ) : (
-                <>Account aanmaken</>
+                <>{txt.createAccount}</>
               )}
             </Button>
 
             <p className="text-sm text-center text-gray-600 dark:text-gray-400">
-              Heb je al een account?{' '}
+              {txt.alreadyHaveAccount}{' '}
               <button
                 type="button"
                 onClick={() => navigate('/login')}
                 className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-medium"
               >
-                Log in
+                {txt.logIn}
               </button>
             </p>
           </form>

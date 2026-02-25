@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Shield, ArrowLeft, Eye, EyeOff, Mail, Lock, KeyRound } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -18,6 +19,41 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { language } = useLanguage();
+
+  const isNL = language === 'nl';
+  const txt = {
+    welcomeBack: isNL ? 'Welkom Terug' : 'Welcome Back',
+    twoFA: isNL ? 'Twee-Factor Authenticatie' : 'Two-Factor Authentication',
+    enterCode: isNL ? 'Voer je authenticatiecode in om door te gaan' : 'Enter your authenticator code to continue',
+    signInTo: isNL ? 'Log in op je ProjeXtPal account' : 'Sign in to your ProjeXtPal account',
+    emailLabel: isNL ? 'E-mailadres' : 'Email Address',
+    emailPlaceholder: isNL ? 'jij@bedrijf.nl' : 'you@company.com',
+    passwordLabel: isNL ? 'Wachtwoord' : 'Password',
+    passwordPlaceholder: isNL ? 'Voer je wachtwoord in' : 'Enter your password',
+    forgotPassword: isNL ? 'Wachtwoord vergeten?' : 'Forgot password?',
+    rememberMe: isNL ? 'Onthoud mij voor 30 dagen' : 'Remember me for 30 days',
+    signIn: isNL ? 'Inloggen' : 'Sign In',
+    signingIn: isNL ? 'Bezig met inloggen...' : 'Signing in...',
+    verifying: isNL ? 'Verifiëren...' : 'Verifying...',
+    verifyContinue: isNL ? 'Verifieer & Ga Door' : 'Verify & Continue',
+    noAccount: isNL ? 'Nog geen account?' : "Don't have an account?",
+    createAccount: isNL ? 'Account aanmaken' : 'Create account',
+    backToHome: isNL ? 'Terug naar home' : 'Back to Home',
+    backToLogin: isNL ? 'Terug naar inloggen' : 'Back to login',
+    sixDigitCode: isNL ? '6-cijferige authenticatiecode' : '6-Digit Authentication Code',
+    enterAuthCode: isNL ? 'Voer de code in van je authenticator app' : 'Enter the code from your authenticator app',
+    twoFARequired: isNL ? '2FA Vereist' : '2FA Required',
+    enterAuthCodeMsg: isNL ? 'Voer je authenticatiecode in' : 'Please enter your authenticator code',
+    authFailed: isNL ? 'Authenticatie mislukt' : 'Authentication failed',
+    invalidCreds: isNL ? 'Ongeldige inloggegevens' : 'Invalid credentials',
+    welcomeBackMsg: isNL ? 'Welkom terug' : 'Welcome back',
+    authSuccess: isNL ? 'Authenticatie geslaagd' : 'Authentication successful',
+    redirecting: isNL ? 'Doorsturen naar checkout...' : 'Redirecting to checkout...',
+    settingUpPlan: isNL ? 'Instellen van' : 'Setting up',
+    plan: isNL ? 'plan' : 'plan',
+    copyright: isNL ? 'Enterprise Projectmanagement Platform.' : 'Enterprise Project Management Platform.',
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,8 +79,8 @@ const Login = () => {
       if (data.requires_2fa) {
         setRequires2FA(true);
         toast({
-          title: '2FA Required',
-          description: 'Please enter your authenticator code',
+          title: txt.twoFARequired,
+          description: txt.enterAuthCodeMsg,
         });
         setIsLoading(false);
         return;
@@ -55,8 +91,8 @@ const Login = () => {
       localStorage.setItem('user_data', JSON.stringify(data.user));
 
       toast({
-        title: 'Welcome back',
-        description: 'Authentication successful',
+        title: txt.welcomeBackMsg,
+        description: txt.authSuccess,
       });
 
       // ✅ CHECK FOR CHECKOUT REDIRECT
@@ -68,8 +104,8 @@ const Login = () => {
       if (redirect === 'checkout' && plan) {
         // User came from pricing page - redirect back to pricing with auto-checkout
         toast({
-          title: '🚀 Redirecting to checkout...',
-          description: `Setting up ${plan.charAt(0).toUpperCase() + plan.slice(1)} plan`,
+          title: `🚀 ${txt.redirecting}`,
+          description: `${txt.settingUpPlan} ${plan.charAt(0).toUpperCase() + plan.slice(1)} ${txt.plan}`,
         });
         
         // Small delay to show toast
@@ -82,8 +118,8 @@ const Login = () => {
       }
     } catch (error: any) {
       toast({
-        title: 'Authentication failed',
-        description: error.message || 'Invalid credentials',
+        title: txt.authFailed,
+        description: error.message || txt.invalidCreds,
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -116,7 +152,7 @@ const Login = () => {
         onClick={() => navigate('/')}
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Home
+        {txt.backToHome}
       </Button>
 
       {/* Login Card */}
@@ -132,12 +168,12 @@ const Login = () => {
           </div>
           <div className="space-y-3">
             <CardTitle className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight">
-              {requires2FA ? 'Two-Factor Authentication' : 'Welcome Back'}
+              {requires2FA ? txt.twoFA : txt.welcomeBack}
             </CardTitle>
             <CardDescription className="text-base text-gray-600 dark:text-gray-400 font-medium">
-              {requires2FA 
-                ? 'Enter your authenticator code to continue' 
-                : 'Sign in to your ProjectPal account'}
+              {requires2FA
+                ? txt.enterCode
+                : txt.signInTo}
             </CardDescription>
           </div>
         </CardHeader>
@@ -149,14 +185,14 @@ const Login = () => {
                 {/* Email Field */}
                 <div className="space-y-2.5">
                   <Label htmlFor="email" className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                    Email Address
+                    {txt.emailLabel}
                   </Label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-purple-400" />
                     <Input
                       id="email"
                       type="email"
-                      placeholder="you@company.com"
+                      placeholder={txt.emailPlaceholder}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
@@ -170,14 +206,14 @@ const Login = () => {
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password" className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                      Password
+                      {txt.passwordLabel}
                     </Label>
                     <button
                       type="button"
                       onClick={handleForgotPassword}
-                      className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-bold transition-colors"
+                      className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-bold transition-colors py-2 px-1 -my-2 min-h-[44px] flex items-center"
                     >
-                      Forgot password?
+                      {txt.forgotPassword}
                     </button>
                   </div>
                   <div className="relative">
@@ -185,7 +221,7 @@ const Login = () => {
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Enter your password"
+                      placeholder={txt.passwordPlaceholder}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -214,7 +250,7 @@ const Login = () => {
                     className="w-4 h-4 rounded-md border-purple-300 dark:border-purple-700 text-purple-600 focus:ring-purple-500 focus:ring-offset-0"
                   />
                   <label htmlFor="remember" className="ml-2.5 text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Remember me for 30 days
+                    {txt.rememberMe}
                   </label>
                 </div>
               </>
@@ -231,7 +267,7 @@ const Login = () => {
                 </div>
                 <div className="space-y-3">
                   <Label htmlFor="totp" className="text-sm font-bold text-gray-700 dark:text-gray-300 text-center block">
-                    6-Digit Authentication Code
+                    {txt.sixDigitCode}
                   </Label>
                   <Input
                     id="totp"
@@ -246,7 +282,7 @@ const Login = () => {
                     autoFocus
                   />
                   <p className="text-xs text-center text-gray-500 dark:text-gray-400 font-medium pt-2">
-                    Enter the code from your authenticator app
+                    {txt.enterAuthCode}
                   </p>
                 </div>
                 <Button 
@@ -257,7 +293,7 @@ const Login = () => {
                   disabled={isLoading}
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to login
+                  {txt.backToLogin}
                 </Button>
               </div>
             )}
@@ -271,12 +307,12 @@ const Login = () => {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2.5 h-5 w-5 animate-spin" />
-                  {requires2FA ? 'Verifying...' : 'Signing in...'}
+                  {requires2FA ? txt.verifying : txt.signingIn}
                 </>
               ) : (
                 <>
                   <KeyRound className="mr-2.5 h-5 w-5 group-hover:scale-110 transition-transform" />
-                  {requires2FA ? 'Verify & Continue' : 'Sign In'}
+                  {requires2FA ? txt.verifyContinue : txt.signIn}
                 </>
               )}
             </Button>
@@ -285,13 +321,13 @@ const Login = () => {
             {!requires2FA && (
               <div className="text-center pt-6 border-t border-purple-100 dark:border-purple-900/50">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Don't have an account?{' '}
+                  {txt.noAccount}{' '}
                   <button
                     type="button"
                     onClick={() => navigate('/signup')}
                     className="text-purple-600 dark:text-purple-400 font-bold hover:underline transition-colors"
                   >
-                    Create account
+                    {txt.createAccount}
                   </button>
                 </p>
               </div>
@@ -303,7 +339,7 @@ const Login = () => {
       {/* Footer */}
       <div className="absolute bottom-8 left-0 right-0 text-center">
         <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-          © 2026 ProjectPal. Enterprise Project Management Platform.
+          © 2026 ProjeXtPal. {txt.copyright}
         </p>
       </div>
     </div>

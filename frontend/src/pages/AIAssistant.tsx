@@ -34,6 +34,7 @@ import DynamicForm from "@/components/chat/DynamicForm";
 import { AIMessageRenderer } from "@/components/AIMessageRenderer";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // Brand colors
 const BRAND = {
@@ -79,12 +80,20 @@ interface SendMessageResponse {
 }
 
 // Quick action suggestions
-const quickActions = [
-  { icon: FolderKanban, label: "Create a new project", prompt: "Create a new project" },
-  { icon: Building2, label: "Analyze my portfolio", prompt: "Analyze my current portfolio and provide insights" },
-  { icon: ListChecks, label: "List all projects", prompt: "List all my projects with their status" },
-  { icon: BarChart3, label: "Generate report", prompt: "Generate an executive summary of my programs" },
-];
+const quickActionsData = {
+  en: [
+    { icon: FolderKanban, label: "Create a new project", prompt: "Create a new project" },
+    { icon: Building2, label: "Analyze my portfolio", prompt: "Analyze my current portfolio and provide insights" },
+    { icon: ListChecks, label: "List all projects", prompt: "List all my projects with their status" },
+    { icon: BarChart3, label: "Generate report", prompt: "Generate an executive summary of my programs" },
+  ],
+  nl: [
+    { icon: FolderKanban, label: "Nieuw project aanmaken", prompt: "Maak een nieuw project aan" },
+    { icon: Building2, label: "Analyseer mijn portfolio", prompt: "Analyseer mijn huidige portfolio en geef inzichten" },
+    { icon: ListChecks, label: "Toon alle projecten", prompt: "Toon al mijn projecten met hun status" },
+    { icon: BarChart3, label: "Genereer rapport", prompt: "Genereer een samenvatting van mijn programma's" },
+  ],
+};
 
 export default function AIAssistant() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -97,9 +106,11 @@ export default function AIAssistant() {
   const [searchQuery, setSearchQuery] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  
+
   // Get current language from context
   const { language } = useLanguage();
+  const { pt } = usePageTranslations();
+  const quickActions = language === 'nl' ? quickActionsData.nl : quickActionsData.en;
 
   useEffect(() => {
     fetchConversations();
@@ -355,7 +366,7 @@ export default function AIAssistant() {
         {/* Sidebar Header */}
         <div className="p-4 border-b border-border space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">Conversations</h2>
+            <h2 className="text-lg font-semibold text-foreground">{pt("Conversations")}</h2>
             <Button
               size="sm"
               onClick={handleNewChat}
@@ -363,7 +374,7 @@ export default function AIAssistant() {
               className="text-white"
             >
               <Plus className="h-4 w-4 mr-1" />
-              New Chat
+              {pt("New Chat")}
             </Button>
           </div>
           
@@ -373,7 +384,7 @@ export default function AIAssistant() {
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search conversations..."
+              placeholder={pt("Search conversations...")}
               className="pl-9 h-9"
             />
           </div>
@@ -390,7 +401,7 @@ export default function AIAssistant() {
               <div className="text-center p-8">
                 <MessageSquare className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
                 <p className="text-sm text-muted-foreground">
-                  {searchQuery ? "No matching conversations" : "No conversations yet"}
+                  {searchQuery ? pt("No matching conversations") : pt("No conversations yet")}
                 </p>
                 <Button
                   variant="outline"
@@ -398,7 +409,7 @@ export default function AIAssistant() {
                   className="mt-3"
                   onClick={handleNewChat}
                 >
-                  Start a new chat
+                  {pt("Start a new chat")}
                 </Button>
               </div>
             ) : (
@@ -460,7 +471,7 @@ export default function AIAssistant() {
               <h1 className="text-lg font-semibold text-foreground">
                 ProjeXtPal Assistant
               </h1>
-              <p className="text-xs text-muted-foreground">AI-powered project management</p>
+              <p className="text-xs text-muted-foreground">{pt("AI-powered project management")}</p>
             </div>
           </div>
           <Badge 
@@ -468,7 +479,7 @@ export default function AIAssistant() {
             className="text-xs"
             style={{ backgroundColor: `${BRAND.green}20`, color: BRAND.green }}
           >
-            Online
+            {pt("Online")}
           </Badge>
         </div>
 
@@ -485,10 +496,9 @@ export default function AIAssistant() {
                   >
                     <Sparkles className="h-10 w-10 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold mb-2">Welcome to ProjeXtPal AI</h2>
+                  <h2 className="text-2xl font-bold mb-2">{pt("Welcome to ProjeXtPal AI")}</h2>
                   <p className="text-muted-foreground max-w-md mx-auto mb-8">
-                    I'm your intelligent project management assistant. Ask me anything about your 
-                    projects, programs, or portfolio.
+                    {pt("I'm your intelligent project management assistant. Ask me anything about your projects, programs, or portfolio.")}
                   </p>
                   
                   {/* Quick Actions */}
@@ -508,7 +518,7 @@ export default function AIAssistant() {
                   
                   <div className="flex items-center justify-center gap-2 mt-8 text-xs text-muted-foreground">
                     <Lightbulb className="h-4 w-4" />
-                    <span>Tip: You can ask me to create projects, analyze data, or generate reports</span>
+                    <span>{pt("Tip: You can ask me to create projects, analyze data, or generate reports")}</span>
                   </div>
                 </div>
               ) : (
@@ -565,7 +575,7 @@ export default function AIAssistant() {
                             <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
                             <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
                           </div>
-                          <span className="text-sm text-muted-foreground ml-2">Thinking...</span>
+                          <span className="text-sm text-muted-foreground ml-2">{pt("Thinking...")}</span>
                         </div>
                       </CardContent>
                     </Card>
@@ -588,7 +598,7 @@ export default function AIAssistant() {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && !isSending && !activeForm && handleSendMessage()}
-                  placeholder="Ask about your projects, programs, or portfolio..."
+                  placeholder={pt("Ask about your projects, programs, or portfolio...")}
                   disabled={isSending || !!activeForm}
                   className="h-12 pr-4 text-base bg-background border-border focus:border-primary focus:ring-primary/20"
                 />
@@ -607,7 +617,7 @@ export default function AIAssistant() {
               </Button>
             </div>
             <p className="text-xs text-center text-muted-foreground mt-2">
-              AI responses may not always be accurate. Verify important information.
+              {pt("AI responses may not always be accurate. Verify important information.")}
             </p>
           </div>
         </div>

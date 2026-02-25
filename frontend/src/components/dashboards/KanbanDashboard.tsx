@@ -1,19 +1,22 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
+import {
   Columns, Clock, TrendingUp, AlertTriangle, CheckCircle2,
   Timer, BarChart3, ArrowRight
 } from 'lucide-react';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 interface KanbanDashboardProps {
   project: any;
 }
 
 const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
+  const { pt } = usePageTranslations();
+
   const columns = [
     { 
-      name: 'Backlog', 
+      name: pt('Backlog'),
       color: 'bg-gray-100',
       textColor: 'text-gray-700',
       wipLimit: null,
@@ -23,8 +26,8 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
         { id: 3, title: 'API documentation', priority: 'low', daysInColumn: 7 },
       ]
     },
-    { 
-      name: 'Ready', 
+    {
+      name: pt('Ready'),
       color: 'bg-blue-50',
       textColor: 'text-blue-700',
       wipLimit: 5,
@@ -33,8 +36,8 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
         { id: 5, title: 'Notification system', priority: 'medium', daysInColumn: 1 },
       ]
     },
-    { 
-      name: 'In Progress', 
+    {
+      name: pt('In Progress'),
       color: 'bg-yellow-50',
       textColor: 'text-yellow-700',
       wipLimit: 3,
@@ -43,8 +46,8 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
         { id: 7, title: 'Payment integration', priority: 'high', daysInColumn: 4, assignee: 'SM', blocked: true },
       ]
     },
-    { 
-      name: 'Review', 
+    {
+      name: pt('Review'),
       color: 'bg-purple-50',
       textColor: 'text-purple-700',
       wipLimit: 3,
@@ -52,8 +55,8 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
         { id: 8, title: 'Email templates', priority: 'medium', daysInColumn: 1, assignee: 'AK' },
       ]
     },
-    { 
-      name: 'Done', 
+    {
+      name: pt('Done'),
       color: 'bg-green-50',
       textColor: 'text-green-700',
       wipLimit: null,
@@ -93,18 +96,18 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Columns className="h-6 w-6" />
-              <h2 className="text-2xl font-bold">Kanban Board</h2>
+              <h2 className="text-2xl font-bold">{pt('Kanban Board')}</h2>
             </div>
-            <p className="text-blue-100">Continuous flow with WIP limits</p>
+            <p className="text-blue-100">{pt('Continuous flow with WIP limits')}</p>
           </div>
           <div className="flex gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold">{metrics.throughput}</div>
-              <div className="text-blue-100 text-sm">Items/Week</div>
+              <div className="text-blue-100 text-sm">{pt('Items/Week')}</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold">{metrics.avgCycleTime}d</div>
-              <div className="text-blue-100 text-sm">Avg Cycle Time</div>
+              <div className="text-blue-100 text-sm">{pt('Avg Cycle Time')}</div>
             </div>
           </div>
         </div>
@@ -120,7 +123,7 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
               </div>
               <div>
                 <p className="text-2xl font-bold">{metrics.avgLeadTime}d</p>
-                <p className="text-sm text-muted-foreground">Lead Time</p>
+                <p className="text-sm text-muted-foreground">{pt('Lead Time')}</p>
               </div>
             </div>
           </CardContent>
@@ -133,7 +136,7 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
               </div>
               <div>
                 <p className="text-2xl font-bold">{metrics.avgCycleTime}d</p>
-                <p className="text-sm text-muted-foreground">Cycle Time</p>
+                <p className="text-sm text-muted-foreground">{pt('Cycle Time')}</p>
               </div>
             </div>
           </CardContent>
@@ -146,7 +149,7 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
               </div>
               <div>
                 <p className="text-2xl font-bold">{metrics.throughput}</p>
-                <p className="text-sm text-muted-foreground">Throughput/Week</p>
+                <p className="text-sm text-muted-foreground">{pt('Throughput/Week')}</p>
               </div>
             </div>
           </CardContent>
@@ -159,7 +162,7 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
               </div>
               <div>
                 <p className="text-2xl font-bold">{metrics.blockedItems}</p>
-                <p className="text-sm text-muted-foreground">Blocked Items</p>
+                <p className="text-sm text-muted-foreground">{pt('Blocked Items')}</p>
               </div>
             </div>
           </CardContent>
@@ -171,7 +174,7 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Columns className="h-5 w-5" />
-            Work Items
+            {pt('Work Items')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -194,7 +197,7 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
                 {isOverWip(column) && (
                   <div className="bg-red-100 text-red-700 text-xs p-2 rounded mb-3 flex items-center gap-1">
                     <AlertTriangle className="h-3 w-3" />
-                    WIP limit exceeded!
+                    {pt('WIP limit exceeded!')}
                   </div>
                 )}
 
@@ -207,13 +210,13 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
                       {item.blocked && (
                         <div className="flex items-center gap-1 text-red-600 text-xs mb-2">
                           <AlertTriangle className="h-3 w-3" />
-                          Blocked
+                          {pt('Blocked')}
                         </div>
                       )}
                       <p className="text-sm font-medium">{item.title}</p>
                       <div className="flex items-center justify-between mt-2">
                         <Badge className={`text-xs ${getPriorityColor(item.priority)}`}>
-                          {item.priority}
+                          {pt(item.priority)}
                         </Badge>
                         <div className="flex items-center gap-2">
                           {item.daysInColumn > 0 && (
@@ -242,7 +245,7 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5" />
-            Cumulative Flow Diagram
+            {pt('Cumulative Flow Diagram')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -258,11 +261,11 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
             ))}
           </div>
           <div className="flex justify-center gap-4 mt-4 text-sm flex-wrap">
-            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-gray-400 rounded" /><span>Backlog</span></div>
-            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-blue-400 rounded" /><span>Ready</span></div>
-            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-yellow-400 rounded" /><span>In Progress</span></div>
-            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-purple-400 rounded" /><span>Review</span></div>
-            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-green-400 rounded" /><span>Done</span></div>
+            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-gray-400 rounded" /><span>{pt('Backlog')}</span></div>
+            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-blue-400 rounded" /><span>{pt('Ready')}</span></div>
+            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-yellow-400 rounded" /><span>{pt('In Progress')}</span></div>
+            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-purple-400 rounded" /><span>{pt('Review')}</span></div>
+            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-green-400 rounded" /><span>{pt('Done')}</span></div>
           </div>
         </CardContent>
       </Card>

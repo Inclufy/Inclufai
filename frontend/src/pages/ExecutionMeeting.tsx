@@ -5,16 +5,18 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Clock } from "lucide-react";
 import { useState } from "react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const ExecutionMeeting = () => {
+  const { pt } = usePageTranslations();
   const [currentDate, setCurrentDate] = useState(new Date(2025, 9, 1)); // October 2025
   
   const meetingTypes = ["Weekly Status", "Program Board", "Steering Committee"];
   const sessionOrganization = [
-    { id: "workshops", label: "Workshops", checked: true },
-    { id: "agenda", label: "Agenda", checked: true },
-    { id: "preread", label: "Pre-read files", checked: true },
-    { id: "attendee", label: "Attendee list", checked: false },
+    { id: "workshops", label: pt("Workshops"), checked: true },
+    { id: "agenda", label: pt("Agenda"), checked: true },
+    { id: "preread", label: pt("Pre-read files"), checked: true },
+    { id: "attendee", label: pt("Attendee list"), checked: false },
   ];
 
   const upcomingMeetings = [
@@ -36,11 +38,11 @@ const ExecutionMeeting = () => {
       <div className="p-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="p-6">
-            <h2 className="text-xl font-bold text-foreground mb-2">Meeting Scheduling</h2>
-            <p className="text-sm text-muted-foreground mb-6">Setup recurring and ad-hoc meetings</p>
+            <h2 className="text-xl font-bold text-foreground mb-2">{pt("Meeting Scheduling")}</h2>
+            <p className="text-sm text-muted-foreground mb-6">{pt("Setup recurring and ad-hoc meetings")}</p>
             
             <div className="mb-6">
-              <h3 className="font-semibold text-foreground mb-3">Types</h3>
+              <h3 className="font-semibold text-foreground mb-3">{pt("Types")}</h3>
               <div className="flex flex-wrap gap-2 mb-4">
                 {meetingTypes.map((type) => (
                   <Badge key={type} variant="outline" className="text-sm">
@@ -50,12 +52,12 @@ const ExecutionMeeting = () => {
               </div>
               <Button className="w-full bg-primary hover:bg-primary/90">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Meeting
+                {pt("Add Meeting")}
               </Button>
             </div>
 
             <div>
-              <h3 className="font-semibold text-foreground mb-3">Session Organization</h3>
+              <h3 className="font-semibold text-foreground mb-3">{pt("Session Organization")}</h3>
               <div className="space-y-3">
                 {sessionOrganization.map((item) => (
                   <div key={item.id} className="flex items-center gap-2">
@@ -109,7 +111,7 @@ const ExecutionMeeting = () => {
             </div>
 
             <div className="border-t border-border pt-6">
-              <h3 className="font-semibold text-foreground mb-4">Upcoming Meetings</h3>
+              <h3 className="font-semibold text-foreground mb-4">{pt("Upcoming Meetings")}</h3>
               <div className="space-y-3 mb-6">
                 {upcomingMeetings.map((meeting, index) => (
                   <div key={index} className="flex items-start gap-3 text-sm">
@@ -132,11 +134,11 @@ const ExecutionMeeting = () => {
                 <div className="inline-flex flex-col items-center gap-4 p-6">
                   <CalendarIcon className="h-12 w-12 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">
-                    Select a meeting from the calendar to view details
+                    {pt("Select a meeting from the calendar to view details")}
                   </p>
                   <Button className="bg-primary hover:bg-primary/90">
                     <Plus className="h-4 w-4 mr-2" />
-                    Schedule New Meeting
+                    {pt("Schedule New Meeting")}
                   </Button>
                 </div>
               </div>

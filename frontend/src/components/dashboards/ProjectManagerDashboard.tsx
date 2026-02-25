@@ -9,7 +9,8 @@ import { useQuery } from "@tanstack/react-query";
 import { AISummaryModal } from "@/components/AISummaryModal";
 import AICommander from "@/components/AICommander";
 import { formatBudget, getCurrencyFromLanguage } from "@/lib/currencies";
-import { 
+import { usePageTranslations } from '@/hooks/usePageTranslations';
+import {
   FolderKanban, 
   TrendingUp, 
   AlertTriangle, 
@@ -195,6 +196,7 @@ const StatCard = ({
 const ProjectManagerDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { pt } = usePageTranslations();
   const currencyCode = getCurrencyFromLanguage(language);
   const [aiSummaryOpen, setAiSummaryOpen] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
@@ -275,18 +277,18 @@ const ProjectManagerDashboard: React.FC = () => {
         <div className="text-center mb-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
             <Sparkles className="h-4 w-4" />
-            <span>📊 Project Manager Dashboard</span>
+            <span>📊 {pt("Project Manager Dashboard")}</span>
             <Badge className="ml-1 bg-green-500 text-white text-xs">AI-Powered</Badge>
           </div>
 
           <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
             <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
-              My Projects
+              {pt("My Projects")}
             </span>
           </h1>
           
           <p className="text-gray-600 dark:text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
-            Track and manage your project deliverables
+            {pt("Track and manage your project deliverables")}
           </p>
 
           <AICommander 
@@ -313,12 +315,12 @@ const ProjectManagerDashboard: React.FC = () => {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
-          <StatCard title="My Projects" value={totalProjects} subtitle="Total projects" icon={FolderKanban} color="blue" />
-          <StatCard title="Active" value={activeProjects} subtitle="In progress" icon={Activity} color="emerald" />
-          <StatCard title="Completed" value={completedProjects} subtitle="Delivered" icon={CheckCircle2} color="purple" />
-          <StatCard title="At Risk" value={atRiskProjects} subtitle="Need attention" icon={AlertTriangle} color="red" />
-          <StatCard title="Budget" value={formatBudget(totalBudget, currencyCode)} subtitle="Total allocated" icon={DollarSign} color="amber" />
-          <StatCard title="Progress" value={`${avgProgress}%`} subtitle="Average completion" icon={Target} color="emerald" />
+          <StatCard title={pt("My Projects")} value={totalProjects} subtitle={pt("Total projects")} icon={FolderKanban} color="blue" />
+          <StatCard title={pt("Active")} value={activeProjects} subtitle={pt("In progress")} icon={Activity} color="emerald" />
+          <StatCard title={pt("Completed")} value={completedProjects} subtitle={pt("Delivered")} icon={CheckCircle2} color="purple" />
+          <StatCard title={pt("At Risk")} value={atRiskProjects} subtitle={pt("Need attention")} icon={AlertTriangle} color="red" />
+          <StatCard title={pt("Budget")} value={formatBudget(totalBudget, currencyCode)} subtitle={pt("Total allocated")} icon={DollarSign} color="amber" />
+          <StatCard title={pt("Progress")} value={`${avgProgress}%`} subtitle={pt("Average completion")} icon={Target} color="emerald" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -329,10 +331,10 @@ const ProjectManagerDashboard: React.FC = () => {
                   <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
                     <FolderKanban className="h-5 w-5 text-white" />
                   </div>
-                  Project Status
+                  {pt("Project Status")}
                 </CardTitle>
                 <Badge className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 ring-1 ring-inset ring-blue-600/20 font-mono text-sm font-semibold px-3 py-1">
-                  {totalProjects} Total
+                  {totalProjects} {pt("Total")}
                 </Badge>
               </div>
             </CardHeader>
@@ -340,7 +342,7 @@ const ProjectManagerDashboard: React.FC = () => {
               <DonutChart 
                 total={totalProjects} 
                 segments={projectSegments.length > 0 ? projectSegments : [{ label: 'Pending', value: 1, color: '#f59e0b' }]} 
-                centerLabel="Projects" 
+                centerLabel={pt("Projects")} 
               />
             </CardContent>
           </Card>
@@ -351,23 +353,23 @@ const ProjectManagerDashboard: React.FC = () => {
                 <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
                   <DollarSign className="h-5 w-5 text-white" />
                 </div>
-                Budget Overview
+                {pt("Budget Overview")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-7 space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Budget</p>
+                  <p className="text-sm text-muted-foreground">{pt("Total Budget")}</p>
                   <p className="text-3xl font-bold">{formatBudget(totalBudget, currencyCode)}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Spent</p>
+                  <p className="text-sm text-muted-foreground">{pt("Spent")}</p>
                   <p className="text-3xl font-bold text-amber-600">{formatBudget(totalSpent, currencyCode)}</p>
                 </div>
               </div>
               <Progress value={totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0} className="h-3" />
               <p className="text-sm text-muted-foreground text-center">
-                {totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0}% of budget utilized
+                {totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0}% {pt("of budget utilized")}
               </p>
             </CardContent>
           </Card>
@@ -376,14 +378,14 @@ const ProjectManagerDashboard: React.FC = () => {
         <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl">
           <CardHeader className="border-b border-purple-100 dark:border-purple-900/30">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">My Projects</CardTitle>
+              <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">{pt("My Projects")}</CardTitle>
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={() => navigate('/projects')}
                 className="font-bold ring-2 ring-inset ring-purple-200 hover:ring-purple-300 hover:bg-purple-50 dark:ring-purple-800 dark:hover:ring-purple-700 dark:hover:bg-purple-900/20 border-0 rounded-xl"
               >
-                View All <ArrowRight className="h-4 w-4 ml-2" />
+                {pt("View All")} <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
           </CardHeader>
@@ -392,13 +394,13 @@ const ProjectManagerDashboard: React.FC = () => {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-b border-purple-100 dark:border-purple-900/50">
-                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Project Name</th>
-                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">End Date</th>
-                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Team</th>
-                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Budget</th>
-                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Progress</th>
-                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Status</th>
-                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Health</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Project Name")}</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("End Date")}</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Team")}</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Budget")}</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Progress")}</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Status")}</th>
+                    <th className="text-left py-4 px-6 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-widest">{pt("Health")}</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-900 divide-y divide-purple-50 dark:divide-purple-900/20">
@@ -448,7 +450,7 @@ const ProjectManagerDashboard: React.FC = () => {
                           <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center ring-4 ring-purple-50 dark:ring-purple-900/20">
                             <FolderKanban className="h-8 w-8 text-purple-400" />
                           </div>
-                          <p className="text-gray-500 dark:text-gray-400 font-medium">No projects assigned</p>
+                          <p className="text-gray-500 dark:text-gray-400 font-medium">{pt("No projects assigned")}</p>
                         </div>
                       </td>
                     </tr>

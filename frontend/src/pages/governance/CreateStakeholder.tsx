@@ -15,6 +15,7 @@ const CreateStakeholder: React.FC = () => {
   const { pt } = usePageTranslations();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { pt } = usePageTranslations();
   const [loading, setLoading] = useState(false);
   const [portfolios, setPortfolios] = useState<any[]>([]);
   const [formData, setFormData] = useState({
@@ -112,24 +113,24 @@ const CreateStakeholder: React.FC = () => {
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Stakeholders
+            {pt("Back to Stakeholders")}
           </Button>
         </div>
 
         <div className="text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
             <Sparkles className="h-4 w-4" />
-            <span>👥 Add Stakeholder</span>
+            <span>👥 {pt("Add Stakeholder")}</span>
           </div>
 
           <h1 className="text-4xl font-bold mb-4 leading-tight">
             <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
-              New Stakeholder
+              {pt("New Stakeholder")}
             </span>
           </h1>
 
           <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
-            Add a stakeholder to your governance portfolio
+            {pt("Add a stakeholder to your governance portfolio")}
           </p>
         </div>
 
@@ -139,7 +140,7 @@ const CreateStakeholder: React.FC = () => {
               <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
                 <Users className="h-5 w-5 text-white" />
               </div>
-              Stakeholder Details
+              {pt("Stakeholder Details")}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8">
@@ -153,7 +154,7 @@ const CreateStakeholder: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="portfolio" className="text-base font-semibold">
-                  Portfolio <span className="text-red-500">*</span>
+                  {pt("Portfolio")} <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={formData.portfolio}
@@ -161,7 +162,7 @@ const CreateStakeholder: React.FC = () => {
                   required
                 >
                   <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Select a portfolio" />
+                    <SelectValue placeholder={pt("Select a portfolio")} />
                   </SelectTrigger>
                   <SelectContent>
                     {portfolios.map((portfolio) => (
@@ -176,7 +177,7 @@ const CreateStakeholder: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-base font-semibold">
-                    Name <span className="text-red-500">*</span>
+                    {pt("Name")} <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="name"
@@ -190,14 +191,14 @@ const CreateStakeholder: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-base font-semibold">
-                    Email <span className="text-red-500">*</span>
+                    {pt("Email")} <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="john@example.com"
+                    placeholder={pt("john@example.com")}
                     required
                     className="h-12 text-base"
                   />
@@ -207,34 +208,34 @@ const CreateStakeholder: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="role" className="text-base font-semibold">
-                    Role <span className="text-red-500">*</span>
+                    {pt("Role")} <span className="text-red-500">*</span>
                   </Label>
                   <Select
                     value={formData.role}
                     onValueChange={(value) => setFormData({ ...formData, role: value })}
                   >
                     <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Select role" />
+                      <SelectValue placeholder={pt("Select role")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="executive_sponsor">Executive Sponsor</SelectItem>
-                      <SelectItem value="senior_responsible_owner">Senior Responsible Owner</SelectItem>
-                      <SelectItem value="business_change_manager">Business Change Manager</SelectItem>
-                      <SelectItem value="project_executive">Project Executive</SelectItem>
-                      <SelectItem value="key_stakeholder">Key Stakeholder</SelectItem>
+                      <SelectItem value="executive_sponsor">{pt("Executive Sponsor")}</SelectItem>
+                      <SelectItem value="senior_responsible_owner">{pt("Senior Responsible Owner")}</SelectItem>
+                      <SelectItem value="business_change_manager">{pt("Business Change Manager")}</SelectItem>
+                      <SelectItem value="project_executive">{pt("Project Executive")}</SelectItem>
+                      <SelectItem value="key_stakeholder">{pt("Key Stakeholder")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="organization" className="text-base font-semibold">
-                    Organization
+                    {pt("Organization")}
                   </Label>
                   <Input
                     id="organization"
                     value={formData.organization}
                     onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
-                    placeholder="Company name"
+                    placeholder={pt("Company name")}
                     className="h-12 text-base"
                   />
                 </div>
@@ -243,7 +244,7 @@ const CreateStakeholder: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="interest" className="text-base font-semibold">
-                    Interest Level
+                    {pt("Interest Level")}
                   </Label>
                   <Select
                     value={formData.interest_level}
@@ -262,7 +263,7 @@ const CreateStakeholder: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="influence" className="text-base font-semibold">
-                    Influence Level
+                    {pt("Influence Level")}
                   </Label>
                   <Select
                     value={formData.influence_level}
@@ -298,12 +299,12 @@ const CreateStakeholder: React.FC = () => {
                   {loading ? (
                     <>
                       <Sparkles className="h-4 w-4 mr-2 animate-spin" />
-                      Adding...
+                      {pt("Adding...")}
                     </>
                   ) : (
                     <>
                       <Users className="h-4 w-4 mr-2" />
-                      Add Stakeholder
+                      {pt("Add Stakeholder")}
                     </>
                   )}
                 </Button>

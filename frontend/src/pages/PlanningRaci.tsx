@@ -3,8 +3,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const PlanningRaci = () => {
+  const { pt } = usePageTranslations();
+
   const teamMembers = [
     "Ramak Noor (Project Manager)",
     "Sami (Project Manager)",
@@ -15,10 +18,10 @@ const PlanningRaci = () => {
   const tasks = ["test1", "Design sign off"];
 
   const raciLegend = [
-    { letter: "R", label: "Responsible", color: "bg-primary text-primary-foreground" },
-    { letter: "A", label: "Accountable", color: "bg-primary text-primary-foreground" },
-    { letter: "C", label: "Consulted", color: "bg-warning text-warning-foreground" },
-    { letter: "I", label: "Informed", color: "bg-pink-500 text-white" },
+    { letter: "R", label: pt("Responsible"), color: "bg-primary text-primary-foreground" },
+    { letter: "A", label: pt("Accountable"), color: "bg-primary text-primary-foreground" },
+    { letter: "C", label: pt("Consulted"), color: "bg-warning text-warning-foreground" },
+    { letter: "I", label: pt("Informed"), color: "bg-pink-500 text-white" },
   ];
 
   return (
@@ -26,9 +29,9 @@ const PlanningRaci = () => {
       <ProjectHeader />
       <div className="p-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground mb-2">RACI Matrix for RACI Matrix</h1>
-          <p className="text-muted-foreground mb-4">Responsibility Assignment Matrix for Project Tasks</p>
-          <Input placeholder="Search tasks..." className="max-w-xs" />
+          <h1 className="text-2xl font-bold text-foreground mb-2">{pt("RACI Matrix")}</h1>
+          <p className="text-muted-foreground mb-4">{pt("Responsibility Assignment Matrix for Project Tasks")}</p>
+          <Input placeholder={pt("Search tasks...")} className="max-w-xs" />
         </div>
 
         <div className="bg-card rounded-lg border border-border overflow-hidden mb-6">
@@ -37,9 +40,7 @@ const PlanningRaci = () => {
               <thead>
                 <tr>
                   <th className="bg-primary text-primary-foreground py-4 px-6 text-left font-semibold border-r border-primary/20">
-                    TASK/
-                    <br />
-                    ACTIVITIES
+                    {pt("TASK/ACTIVITIES")}
                   </th>
                   {teamMembers.map((member) => (
                     <th

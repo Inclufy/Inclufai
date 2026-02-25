@@ -730,7 +730,8 @@ const ProjeXtPalLogo = ({ collapsed }: { collapsed: boolean }) => (
 
 export function AppSidebar() {
   const { state } = useSidebar();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isNL = language === 'nl';
   const { user } = useAuth();
   const { data: userFeatures, isLoading: featuresLoading } = useUserFeatures();
   const { toast } = useToast();
@@ -895,28 +896,23 @@ export function AppSidebar() {
   const projectPhases = projectId ? getMethodologyPhases(projectId, methodology) : [];
   const programPhases = programId ? getProgramPhases(programId, programMethodology) : [];
 
-  // Color mapping for menu icons - use URL-based matching to work with any language
-  const iconColorsByUrl: Record<string, string> = {
-    "/dashboard": "text-violet-500",
-    "/ai-assistant": "text-fuchsia-500",
-    "/governance/portfolios": "text-indigo-500",
-    "/programs": "text-orange-500",
-    "/reports": "text-emerald-500",
-    "/projects": "text-sky-500",
-    "/team": "text-pink-500",
-    "/time-tracking": "text-amber-500",
-    "/post-project": "text-teal-500",
-    "/profile": "text-blue-500",
-    "/settings": "text-gray-500",
-    "/admin": "text-purple-600",
+  // Color mapping for menu icons
+  const iconColors: Record<string, string> = {
+    "Dashboard": "text-violet-500",
+    "AI Chat": "text-fuchsia-500",
+    "Governance": "text-indigo-500",
+    "Programs": "text-orange-500",
+    "Reports": "text-emerald-500",
+    "Projects": "text-sky-500",
+    "Team": "text-pink-500",
+    "Time Tracking": "text-amber-500",
+    "Post Project": "text-teal-500",
+    "Profile": "text-blue-500",
+    "Settings": "text-gray-500",
+    "Admin Portal": "text-purple-600",
   };
 
-  const getIconColor = (_title: string, url?: string) => {
-    if (url) {
-      return iconColorsByUrl[url] || "text-gray-500";
-    }
-    return "text-gray-500";
-  };
+  const getIconColor = (title: string) => iconColors[title] || "text-gray-500";
 
   return (
     <Sidebar collapsible="icon">
@@ -987,7 +983,7 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton 
                       asChild
-                      tooltip={isLocked ? `🔒 ${ts.upgradeRequired}` : item.title}
+                      tooltip={isLocked ? "🔒 Upgrade Required" : item.title}
                       className={cn(
                         "rounded-lg transition-all duration-200",
                         isLocked && "opacity-60 hover:opacity-80"
@@ -1000,15 +996,15 @@ export function AppSidebar() {
                           if (isLocked) {
                             e.preventDefault();
                             toast({
-                              title: `🔒 ${ts.upgradeRequired}`,
-                              description: `${item.title} ${ts.upgradeDescription}`,
+                              title: "🔒 Upgrade Required",
+                              description: `${item.title} is available with a paid subscription.`,
                               action: (
-                                <Button
-                                  variant="outline"
+                                <Button 
+                                  variant="outline" 
                                   size="sm"
                                   onClick={() => navigate('/profile?tab=subscription')}
                                 >
-                                  {ts.viewPlans}
+                                  View Plans
                                 </Button>
                               ),
                             });
@@ -1208,185 +1204,51 @@ export function AppSidebar() {
                   <div className={cn("flex items-center justify-center w-7 h-7 rounded-lg", location.pathname.startsWith('/academy') ? "bg-white dark:bg-gray-800 shadow-sm" : "bg-gray-100/80 dark:bg-gray-800")}>
                     <GraduationCap className="h-4 w-4 text-purple-600" />
                   </div>
-                  <span className="text-sm">{ts.academy}</span>
+                  <span className="text-sm">Academy</span>
                   <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/academy:rotate-90" />
                 </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarMenuSub className="ml-5 mt-1 space-y-0.5 border-l-2 border-purple-200 dark:border-purple-800/40 pl-3">
-                  <SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=content`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'content' || (!new URLSearchParams(location.search).get('tab'))
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <BookOpen className="h-3.5 w-3.5" />
-      <span>{ts.content}</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=notes`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'notes'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <FileText className="h-3.5 w-3.5" />
-      <span>{ts.notes}</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=resources`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'resources'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <Download className="h-3.5 w-3.5" />
-      <span>{ts.resources}</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a
-      href={`${location.pathname}?tab=questions`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'questions'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <MessageSquare className="h-3.5 w-3.5" />
-      <span>{ts.questions}</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<div className="h-px bg-purple-200 dark:bg-purple-800/40 my-1" />
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=skills`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'skills'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <Target className="h-3.5 w-3.5" />
-      <span>{ts.skills}</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=simulation`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'simulation'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <FlaskConical className="h-3.5 w-3.5" />
-      <span>{ts.simulation}</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=practice`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'practice'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <Briefcase className="h-3.5 w-3.5" />
-      <span>{ts.practice}</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=quiz`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'quiz'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <CheckCircle className="h-3.5 w-3.5" />
-      <span>{ts.quiz}</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<div className="h-px bg-purple-200 dark:bg-purple-800/40 my-1" />
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=exam`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'exam'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <GraduationCap className="h-3.5 w-3.5" />
-      <span>{ts.exam}</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=certificate`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'certificate'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <Award className="h-3.5 w-3.5" />
-      <span>{ts.certificate}</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
+                  {[
+                    { tab: 'content', icon: BookOpen, label: isNL ? 'Inhoud' : 'Content', isDefault: true },
+                    { tab: 'notes', icon: FileText, label: isNL ? 'Notities' : 'Notes' },
+                    { tab: 'resources', icon: Download, label: 'Resources' },
+                    { tab: 'questions', icon: MessageSquare, label: isNL ? 'Vragen' : 'Questions' },
+                    { divider: true },
+                    { tab: 'skills', icon: Target, label: 'Skills' },
+                    { tab: 'simulation', icon: FlaskConical, label: isNL ? 'Simulatie' : 'Simulation' },
+                    { tab: 'practice', icon: Briefcase, label: isNL ? 'Praktijk' : 'Practice' },
+                    { tab: 'quiz', icon: CheckCircle, label: 'Quiz' },
+                    { divider: true },
+                    { tab: 'exam', icon: GraduationCap, label: isNL ? 'Examen' : 'Exam' },
+                    { tab: 'certificate', icon: Award, label: isNL ? 'Certificaat' : 'Certificate' },
+                  ].map((item, idx) => {
+                    if ('divider' in item && item.divider) {
+                      return <div key={`div-${idx}`} className="h-px bg-purple-200 dark:bg-purple-800/40 my-1" />;
+                    }
+                    const currentTab = new URLSearchParams(location.search).get('tab');
+                    const isActive = item.tab === currentTab || (item.isDefault && !currentTab);
+                    const Icon = item.icon!;
+                    return (
+                      <SidebarMenuSubItem key={item.tab}>
+                        <SidebarMenuSubButton asChild>
+                          <button
+                            onClick={() => navigate(`${location.pathname}?tab=${item.tab}`)}
+                            className={cn(
+                              "rounded-md transition-all duration-150 text-sm w-full",
+                              isActive
+                                ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
+                                : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
+                            )}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                            <span>{item.label}</span>
+                          </button>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    );
+                  })}
                 </SidebarMenuSub>
               </CollapsibleContent>
             </SidebarMenuItem>
@@ -1400,7 +1262,7 @@ export function AppSidebar() {
           <SidebarMenuButton asChild>
             <a href="/academy">
               <GraduationCap className="h-4 w-4" />
-              <span>{ts.academy}</span>
+              <span>Academy</span>
             </a>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -1416,7 +1278,7 @@ export function AppSidebar() {
             <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-fuchsia-500/10 dark:from-violet-500/20 dark:via-purple-500/20 dark:to-fuchsia-500/20 p-3 border border-purple-200/50 dark:border-purple-800/30">
               <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-purple-400/20 to-fuchsia-400/20 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="relative">
-                <p className="text-[10px] uppercase tracking-wider text-purple-600/70 dark:text-purple-400/70 font-semibold mb-1">{ts.currentPlan}</p>
+                <p className="text-[10px] uppercase tracking-wider text-purple-600/70 dark:text-purple-400/70 font-semibold mb-1">Current Plan</p>
                 <Badge className={cn(getTierColor(userFeatures.tier), "text-xs font-semibold")}>
                   {getTierName(userFeatures.tier)}
                 </Badge>
@@ -1427,7 +1289,7 @@ export function AppSidebar() {
                   onClick={() => window.location.href = '/profile?tab=subscription'}
                 >
                   <CreditCard className="w-3 h-3 mr-1.5" />
-                  {ts.managePlan}
+                  Manage Plan
                 </Button>
               </div>
             </div>

@@ -64,87 +64,6 @@ interface MethodologyOption {
   bgColor: string;
 }
 
-const METHODOLOGIES: MethodologyOption[] = [
-  {
-    id: 'prince2',
-    name: 'PRINCE2',
-    shortName: 'PRINCE2',
-    description: 'Projects IN Controlled Environments - A structured project management method with defined stages and governance.',
-    icon: <Crown className="h-6 w-6" />,
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-500',
-  },
-  {
-    id: 'agile',
-    name: 'Agile',
-    shortName: 'Agile',
-    description: 'Iterative approach focusing on collaboration, flexibility, and responding to change.',
-    icon: <Zap className="h-6 w-6" />,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-500',
-  },
-  {
-    id: 'scrum',
-    name: 'Scrum',
-    shortName: 'Scrum',
-    description: 'Framework for developing complex products through iterative sprints and ceremonies.',
-    icon: <Repeat className="h-6 w-6" />,
-    color: 'text-green-600',
-    bgColor: 'bg-green-500',
-  },
-  {
-    id: 'kanban',
-    name: 'Kanban',
-    shortName: 'Kanban',
-    description: 'Visual workflow management with continuous delivery and WIP limits.',
-    icon: <Kanban className="h-6 w-6" />,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-500',
-  },
-  {
-    id: 'waterfall',
-    name: 'Waterfall',
-    shortName: 'Waterfall',
-    description: 'Sequential design process with distinct phases flowing downward like a waterfall.',
-    icon: <Droplets className="h-6 w-6" />,
-    color: 'text-cyan-600',
-    bgColor: 'bg-cyan-500',
-  },
-  {
-    id: 'lean_six_sigma_green',
-    name: 'Lean Six Sigma (Green Belt)',
-    shortName: 'LSS Green',
-    description: 'DMAIC methodology for process improvement with moderate complexity.',
-    icon: <Award className="h-6 w-6" />,
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-500',
-  },
-  {
-    id: 'lean_six_sigma_black',
-    name: 'Lean Six Sigma (Black Belt)',
-    shortName: 'LSS Black',
-    description: 'Advanced DMAIC methodology with statistical analysis for complex improvements.',
-    icon: <Award className="h-6 w-6" />,
-    color: 'text-gray-800',
-    bgColor: 'bg-gray-800',
-  },
-  {
-    id: 'hybrid',
-    name: 'Hybrid',
-    shortName: 'Hybrid',
-    description: 'Combines elements from multiple methodologies based on project needs.',
-    icon: <GitMerge className="h-6 w-6" />,
-    color: 'text-pink-600',
-    bgColor: 'bg-pink-500',
-  },
-];
-
-const STEPS = [
-  { id: 1, title: 'Methodology', description: 'Select framework' },
-  { id: 2, title: 'Details', description: 'Project information' },
-  { id: 3, title: 'Review', description: 'Confirm & create' },
-];
-
 // AI Helper function
 const callAI = async (prompt: string): Promise<string> => {
   const token = localStorage.getItem("access_token");
@@ -168,6 +87,88 @@ const callAI = async (prompt: string): Promise<string> => {
 
 const CreateProject = () => {
   const { pt } = usePageTranslations();
+
+  const METHODOLOGIES: MethodologyOption[] = [
+    {
+      id: 'prince2',
+      name: 'PRINCE2',
+      shortName: 'PRINCE2',
+      description: pt('PRINCE2 desc'),
+      icon: <Crown className="h-6 w-6" />,
+      color: 'text-amber-600',
+      bgColor: 'bg-amber-500',
+    },
+    {
+      id: 'agile',
+      name: 'Agile',
+      shortName: 'Agile',
+      description: pt('Agile desc'),
+      icon: <Zap className="h-6 w-6" />,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-500',
+    },
+    {
+      id: 'scrum',
+      name: 'Scrum',
+      shortName: 'Scrum',
+      description: pt('Scrum desc'),
+      icon: <Repeat className="h-6 w-6" />,
+      color: 'text-green-600',
+      bgColor: 'bg-green-500',
+    },
+    {
+      id: 'kanban',
+      name: 'Kanban',
+      shortName: 'Kanban',
+      description: pt('Kanban desc'),
+      icon: <Kanban className="h-6 w-6" />,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-500',
+    },
+    {
+      id: 'waterfall',
+      name: 'Waterfall',
+      shortName: 'Waterfall',
+      description: pt('Waterfall desc'),
+      icon: <Droplets className="h-6 w-6" />,
+      color: 'text-cyan-600',
+      bgColor: 'bg-cyan-500',
+    },
+    {
+      id: 'lean_six_sigma_green',
+      name: 'Lean Six Sigma (Green Belt)',
+      shortName: 'LSS Green',
+      description: pt('LSS Green desc'),
+      icon: <Award className="h-6 w-6" />,
+      color: 'text-emerald-600',
+      bgColor: 'bg-emerald-500',
+    },
+    {
+      id: 'lean_six_sigma_black',
+      name: 'Lean Six Sigma (Black Belt)',
+      shortName: 'LSS Black',
+      description: pt('LSS Black desc'),
+      icon: <Award className="h-6 w-6" />,
+      color: 'text-gray-800',
+      bgColor: 'bg-gray-800',
+    },
+    {
+      id: 'hybrid',
+      name: 'Hybrid',
+      shortName: 'Hybrid',
+      description: pt('Hybrid desc'),
+      icon: <GitMerge className="h-6 w-6" />,
+      color: 'text-pink-600',
+      bgColor: 'bg-pink-500',
+    },
+  ];
+
+  const STEPS = [
+    { id: 1, title: pt('Methodology'), description: pt('Select framework') },
+    { id: 2, title: pt('Details'), description: pt('Project information') },
+    { id: 3, title: pt('Review'), description: pt('Confirm & create') },
+  ];
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
@@ -246,19 +247,19 @@ const CreateProject = () => {
     mutationFn: (data: any) => projectsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
-      toast.success("Project created successfully!");
+      toast.success(pt("Project created successfully!"));
       navigate("/projects");
     },
     onError: (error: any) => {
       console.error("Create project error:", error);
-      toast.error(error?.message || "Failed to create project");
+      toast.error(error?.message || pt("Failed to create project"));
     },
   });
 
   // AI Methodology Advisor
   const handleAIAdvisor = async () => {
     if (!aiPrompt.trim()) {
-      toast.error("Please describe your project first");
+      toast.error(pt("Please describe your project first"));
       return;
     }
 
@@ -303,7 +304,7 @@ Consider:
         });
       }
     } catch (error) {
-      toast.error("AI advisor temporarily unavailable. Please select manually.");
+      toast.error(pt("AI advisor temporarily unavailable. Please select manually."));
     } finally {
       setAiLoading(false);
     }
@@ -320,7 +321,7 @@ Consider:
   // AI Generate Project Details
   const handleAIGenerate = async () => {
     if (!generatePrompt.trim()) {
-      toast.error("Please describe what you want to create");
+      toast.error(pt("Please describe what you want to create"));
       return;
     }
 
@@ -366,10 +367,10 @@ Be specific and professional. Use the context to determine appropriate methodolo
         }));
         
         setAiGenerateOpen(false);
-        toast.success("Project details generated! Review and adjust as needed.");
+        toast.success(pt("Project details generated! Review and adjust as needed."));
       }
     } catch (error) {
-      toast.error("AI generation temporarily unavailable");
+      toast.error(pt("AI generation temporarily unavailable"));
     } finally {
       setAiLoading(false);
     }
@@ -377,7 +378,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
   const handleGenerateDescription = async () => {
     if (!formData.name) {
-      toast.error("Please enter a project name first");
+      toast.error(pt("Please enter a project name first"));
       return;
     }
 
@@ -389,9 +390,9 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
       const response = await callAI(prompt);
       setFormData(prev => ({ ...prev, description: response.trim() }));
-      toast.success("Description generated!");
+      toast.success(pt("Description generated!"));
     } catch (error) {
-      toast.error("Could not generate description");
+      toast.error(pt("Could not generate description"));
     } finally {
       setAiLoading(false);
     }
@@ -399,7 +400,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
   const handleGenerateObjectives = async () => {
     if (!formData.name && !formData.description) {
-      toast.error("Please enter a project name or description first");
+      toast.error(pt("Please enter a project name or description first"));
       return;
     }
 
@@ -413,9 +414,9 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
       const response = await callAI(prompt);
       setFormData(prev => ({ ...prev, objectives: response.trim() }));
-      toast.success("Objectives generated!");
+      toast.success(pt("Objectives generated!"));
     } catch (error) {
-      toast.error("Could not generate objectives");
+      toast.error(pt("Could not generate objectives"));
     } finally {
       setAiLoading(false);
     }
@@ -481,16 +482,16 @@ Be specific and professional. Use the context to determine appropriate methodolo
         <div className="mb-8">
           <Button variant="ghost" onClick={() => navigate('/projects')} className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Projects
+            {pt("Back to Projects")}
           </Button>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold flex items-center gap-3">
                 <FolderKanban className="h-8 w-8 text-primary" />
-                Create New Project
+                {pt("Create New Project")}
               </h1>
               <p className="text-muted-foreground mt-1">
-                Set up a new project with the right methodology
+                {pt("Set up a new project with the right methodology")}
               </p>
             </div>
             
@@ -498,29 +499,29 @@ Be specific and professional. Use the context to determine appropriate methodolo
               <DialogTrigger asChild>
                 <Button variant="outline" className="gap-2">
                   <Sparkles className="h-4 w-4 text-purple-500" />
-                  Generate with AI
+                  {pt("Generate with AI")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-purple-500" />
-                    Generate Project with AI
+                    {pt("Generate Project with AI")}
                   </DialogTitle>
                   <DialogDescription>
-                    Describe your project and AI will generate all the details for you.
+                    {pt("Describe your project and AI will generate all the details for you.")}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <Textarea
-                    placeholder="Example: Build a new customer portal with user authentication, dashboard, and reporting features. The team has 5 developers and we need to deliver in 3 months."
+                    placeholder={pt("Example: Build a new customer portal with user authentication, dashboard, and reporting features. The team has 5 developers and we need to deliver in 3 months.")}
                     value={generatePrompt}
                     onChange={(e) => setGeneratePrompt(e.target.value)}
                     rows={5}
                   />
                   <div className="flex items-start gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
                     <Lightbulb className="h-4 w-4 mt-0.5 text-amber-500" />
-                    <p>Tip: Include details about team size, timeline, deliverables, and any constraints for better results.</p>
+                    <p>{pt("Tip: Include details about team size, timeline, deliverables, and any constraints for better results.")}</p>
                   </div>
                 </div>
                 <DialogFooter>
@@ -531,12 +532,12 @@ Be specific and professional. Use the context to determine appropriate methodolo
                     {aiLoading ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Generating...
+                        {pt("Generating...")}
                       </>
                     ) : (
                       <>
                         <Wand2 className="h-4 w-4 mr-2" />
-                        Generate
+                        {pt("Generate")}
                       </>
                     )}
                   </Button>
@@ -594,9 +595,9 @@ Be specific and professional. Use the context to determine appropriate methodolo
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="text-center flex-1">
-                    <h2 className="text-xl font-semibold mb-2">Choose Your Methodology</h2>
+                    <h2 className="text-xl font-semibold mb-2">{pt("Choose Your Methodology")}</h2>
                     <p className="text-muted-foreground">
-                      Select the project management methodology that best fits your project needs
+                      {pt("Select the project management methodology that best fits your project needs")}
                     </p>
                   </div>
                   
@@ -604,22 +605,22 @@ Be specific and professional. Use the context to determine appropriate methodolo
                     <DialogTrigger asChild>
                       <Button variant="secondary" className="gap-2">
                         <MessageSquare className="h-4 w-4 text-purple-500" />
-                        AI Advisor
+                        {pt("AI Advisor")}
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-lg">
                       <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                           <Sparkles className="h-5 w-5 text-purple-500" />
-                          AI Methodology Advisor
+                          {pt("AI Methodology Advisor")}
                         </DialogTitle>
                         <DialogDescription>
-                          Describe your project and AI will recommend the best methodology.
+                          {pt("Describe your project and AI will recommend the best methodology.")}
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4 py-4">
                         <Textarea
-                          placeholder="Example: We're building a mobile app for internal use. Team of 4 developers, 2 month timeline, requirements may change based on user feedback..."
+                          placeholder={pt("Example: We're building a mobile app for internal use. Team of 4 developers, 2 month timeline, requirements may change based on user feedback...")}
                           value={aiPrompt}
                           onChange={(e) => setAiPrompt(e.target.value)}
                           rows={4}
@@ -661,11 +662,11 @@ Be specific and professional. Use the context to determine appropriate methodolo
                               setAiPrompt("");
                             }}>
                               <RefreshCw className="h-4 w-4 mr-2" />
-                              Try Again
+                              {pt("Try Again")}
                             </Button>
                             <Button onClick={applyAIRecommendation}>
                               <Check className="h-4 w-4 mr-2" />
-                              Apply Recommendation
+                              {pt("Apply Recommendation")}
                             </Button>
                           </>
                         ) : (
@@ -673,12 +674,12 @@ Be specific and professional. Use the context to determine appropriate methodolo
                             {aiLoading ? (
                               <>
                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Analyzing...
+                                {pt("Analyzing...")}
                               </>
                             ) : (
                               <>
                                 <Sparkles className="h-4 w-4 mr-2" />
-                                Get Recommendation
+                                {pt("Get Recommendation")}
                               </>
                             )}
                           </Button>
@@ -733,18 +734,18 @@ Be specific and professional. Use the context to determine appropriate methodolo
             {currentStep === 2 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold mb-2">Project Details</h2>
+                  <h2 className="text-xl font-semibold mb-2">{pt("Project Details")}</h2>
                   <p className="text-muted-foreground">
-                    Enter the basic information about your project
+                    {pt("Enter the basic information about your project")}
                   </p>
                 </div>
 
                 <div className="grid gap-6">
                   <div className="grid gap-2">
-                    <Label htmlFor="name">Project Name *</Label>
+                    <Label htmlFor="name">{pt("Project Name")} *</Label>
                     <Input
                       id="name"
-                      placeholder="e.g., Customer Portal v2.0"
+                      placeholder={pt("e.g., Customer Portal v2.0")}
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     />
@@ -752,26 +753,26 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <Label>Portfolio (optional)</Label>
+                      <Label>{pt("Portfolio (optional)")}</Label>
                       <select
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         value={formData.portfolio}
                         onChange={(e) => setFormData(prev => ({ ...prev, portfolio: e.target.value }))}
                       >
-                        <option value="">No portfolio</option>
+                        <option value="">{pt("No portfolio")}</option>
                         {portfolios.map((p: any) => (
                           <option key={p.id} value={p.id}>{p.name}</option>
                         ))}
                       </select>
                     </div>
                     <div className="grid gap-2">
-                      <Label>Program (optional)</Label>
+                      <Label>{pt("Program (optional)")}</Label>
                       <select
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         value={formData.program}
                         onChange={(e) => setFormData(prev => ({ ...prev, program: e.target.value }))}
                       >
-                        <option value="">No program</option>
+                        <option value="">{pt("No program")}</option>
                         {programs.map((p: any) => (
                           <option key={p.id} value={p.id}>{p.name}</option>
                         ))}
@@ -794,12 +795,12 @@ Be specific and professional. Use the context to determine appropriate methodolo
                         ) : (
                           <Sparkles className="h-3 w-3 text-purple-500" />
                         )}
-                        Generate with AI
+                        {pt("Generate with AI")}
                       </Button>
                     </div>
                     <Textarea
                       id="description"
-                      placeholder="Describe the project scope and deliverables..."
+                      placeholder={pt("Describe the project scope and deliverables...")}
                       value={formData.description}
                       onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                       rows={3}
@@ -808,7 +809,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
                   <div className="grid gap-2">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="objectives">Objectives</Label>
+                      <Label htmlFor="objectives">{pt("Objectives")}</Label>
                       <Button 
                         variant="ghost" 
                         size="sm" 
@@ -821,12 +822,12 @@ Be specific and professional. Use the context to determine appropriate methodolo
                         ) : (
                           <Sparkles className="h-3 w-3 text-purple-500" />
                         )}
-                        Generate with AI
+                        {pt("Generate with AI")}
                       </Button>
                     </div>
                     <Textarea
                       id="objectives"
-                      placeholder="What are the key objectives and success criteria?"
+                      placeholder={pt("What are the key objectives and success criteria?")}
                       value={formData.objectives}
                       onChange={(e) => setFormData(prev => ({ ...prev, objectives: e.target.value }))}
                       rows={3}
@@ -835,7 +836,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="startDate">Start Date *</Label>
+                      <Label htmlFor="startDate">{pt("Start Date")} *</Label>
                       <Input
                         id="startDate"
                         type="date"
@@ -844,7 +845,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="endDate">End Date *</Label>
+                      <Label htmlFor="endDate">{pt("End Date")} *</Label>
                       <Input
                         id="endDate"
                         type="date"
@@ -860,13 +861,13 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       <Input
                         id="budget"
                         type="number"
-                        placeholder="e.g., 50000"
+                        placeholder={pt("e.g., 50000")}
                         value={formData.budget}
                         onChange={(e) => setFormData(prev => ({ ...prev, budget: e.target.value }))}
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="currency">Currency</Label>
+                      <Label htmlFor="currency">{pt("Currency")}</Label>
                       <Select 
                         value={formData.currency}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}
@@ -907,16 +908,16 @@ Be specific and professional. Use the context to determine appropriate methodolo
             {currentStep === 3 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold mb-2">Review & Create</h2>
+                  <h2 className="text-xl font-semibold mb-2">{pt("Review & Create")}</h2>
                   <p className="text-muted-foreground">
-                    Review your project details before creating
+                    {pt("Review your project details before creating")}
                   </p>
                 </div>
 
                 <div className="grid gap-6">
                   <Card>
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-sm text-muted-foreground">Methodology</CardTitle>
+                      <CardTitle className="text-sm text-muted-foreground">{pt("Methodology")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       {selectedMethodology && (
@@ -936,7 +937,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
                   <Card>
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-sm text-muted-foreground">Project Details</CardTitle>
+                      <CardTitle className="text-sm text-muted-foreground">{pt("Project Details")}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
@@ -951,7 +952,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       )}
                       {formData.objectives && (
                         <div>
-                          <p className="text-sm text-muted-foreground">Objectives</p>
+                          <p className="text-sm text-muted-foreground">{pt("Objectives")}</p>
                           <p>{formData.objectives}</p>
                         </div>
                       )}
@@ -992,7 +993,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
             onClick={currentStep === 1 ? () => navigate('/projects') : handleBack}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            {currentStep === 1 ? 'Cancel' : 'Back'}
+            {currentStep === 1 ? pt('Cancel') : pt('Back')}
           </Button>
 
           {currentStep < 3 ? (
@@ -1005,7 +1006,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
               {createMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creating...
+                  {pt("Creating...")}
                 </>
               ) : (
                 <>

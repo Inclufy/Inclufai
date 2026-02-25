@@ -88,12 +88,16 @@ export default function Stakeholders() {
         headers,
         body: JSON.stringify(editForm),
       });
-      if (!res.ok) throw new Error("Failed to update");
-      toast({ title: "Updated", description: "Stakeholder updated successfully." });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        console.error("Stakeholder update failed:", res.status, errorData);
+        throw new Error(errorData?.detail || "Failed to update");
+      }
+      toast({ title: pt("Updated"), description: pt("Stakeholder updated successfully.") });
       setEditModalOpen(false);
       fetchStakeholders();
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to update.", variant: "destructive" });
+    } catch (error: any) {
+      toast({ title: pt("Error"), description: error?.message || pt("Failed to update."), variant: "destructive" });
     }
   };
 
@@ -138,21 +142,21 @@ export default function Stakeholders() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <TrendingUp className="h-8 w-8" /> Stakeholder Management
+            <TrendingUp className="h-8 w-8" /> {pt("Stakeholder Management")}
           </h1>
-          <p className="text-muted-foreground mt-1">Strategic stakeholder engagement and influence mapping</p>
+          <p className="text-muted-foreground mt-1">{pt("Strategic stakeholder engagement and influence mapping")}</p>
         </div>
         <Button onClick={() => navigate("/governance/stakeholders/new")}>
-          <Plus className="h-4 w-4 mr-2" /> Add Stakeholder
+          <Plus className="h-4 w-4 mr-2" /> {pt("Add Stakeholder")}
         </Button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Total Stakeholders</p><p className="text-2xl font-bold mt-1">{stakeholders.length}</p></div><User className="h-8 w-8 text-blue-600" /></div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Key Players</p><p className="text-2xl font-bold mt-1">{matrix.manage_closely.length}</p></div><AlertCircle className="h-8 w-8 text-red-600" /></div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">High Influence</p><p className="text-2xl font-bold mt-1">{matrix.manage_closely.length + matrix.keep_satisfied.length}</p></div><TrendingUp className="h-8 w-8 text-orange-600" /></div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">High Interest</p><p className="text-2xl font-bold mt-1">{matrix.manage_closely.length + matrix.keep_informed.length}</p></div><User className="h-8 w-8 text-green-600" /></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Total Stakeholders")}</p><p className="text-2xl font-bold mt-1">{stakeholders.length}</p></div><User className="h-8 w-8 text-blue-600" /></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Key Players")}</p><p className="text-2xl font-bold mt-1">{matrix.manage_closely.length}</p></div><AlertCircle className="h-8 w-8 text-red-600" /></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("High Influence")}</p><p className="text-2xl font-bold mt-1">{matrix.manage_closely.length + matrix.keep_satisfied.length}</p></div><TrendingUp className="h-8 w-8 text-orange-600" /></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("High Interest")}</p><p className="text-2xl font-bold mt-1">{matrix.manage_closely.length + matrix.keep_informed.length}</p></div><User className="h-8 w-8 text-green-600" /></div></CardContent></Card>
       </div>
 
       {/* Stakeholder List */}
@@ -194,9 +198,9 @@ export default function Stakeholders() {
         <Card>
           <CardContent className="p-12 text-center">
             <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Stakeholders Yet</h3>
-            <p className="text-muted-foreground mb-4">Add stakeholders to track engagement and influence</p>
-            <Button onClick={() => navigate("/governance/stakeholders/new")}><Plus className="h-4 w-4 mr-2" /> Add Stakeholder</Button>
+            <h3 className="text-lg font-semibold mb-2">{pt("No Stakeholders Yet")}</h3>
+            <p className="text-muted-foreground mb-4">{pt("Add stakeholders to track engagement and influence")}</p>
+            <Button onClick={() => navigate("/governance/stakeholders/new")}><Plus className="h-4 w-4 mr-2" /> {pt("Add Stakeholder")}</Button>
           </CardContent>
         </Card>
       )}
@@ -205,22 +209,22 @@ export default function Stakeholders() {
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Edit Stakeholder: {editingStakeholder?.user_name}</DialogTitle>
+            <DialogTitle>{pt("Edit Stakeholder")}: {editingStakeholder?.user_name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-4">
             <div className="grid gap-2">
               <Label>{pt("Role")}</Label>
               <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={editForm.role} onChange={(e) => setEditForm(prev => ({ ...prev, role: e.target.value }))}>
-                <option value="executive_sponsor">Executive Sponsor</option>
-                <option value="senior_responsible_owner">Senior Responsible Owner</option>
-                <option value="business_change_manager">Business Change Manager</option>
-                <option value="project_executive">Project Executive</option>
-                <option value="key_stakeholder">Key Stakeholder</option>
+                <option value="executive_sponsor">{pt("Executive Sponsor")}</option>
+                <option value="senior_responsible_owner">{pt("Senior Responsible Owner")}</option>
+                <option value="business_change_manager">{pt("Business Change Manager")}</option>
+                <option value="project_executive">{pt("Project Executive")}</option>
+                <option value="key_stakeholder">{pt("Key Stakeholder")}</option>
               </select>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label>Influence Level</Label>
+                <Label>{pt("Influence Level")}</Label>
                 <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={editForm.influence_level} onChange={(e) => setEditForm(prev => ({ ...prev, influence_level: e.target.value }))}>
                   <option value="high">{pt("High")}</option>
                   <option value="medium">{pt("Medium")}</option>
@@ -228,7 +232,7 @@ export default function Stakeholders() {
                 </select>
               </div>
               <div className="grid gap-2">
-                <Label>Interest Level</Label>
+                <Label>{pt("Interest Level")}</Label>
                 <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={editForm.interest_level} onChange={(e) => setEditForm(prev => ({ ...prev, interest_level: e.target.value }))}>
                   <option value="high">{pt("High")}</option>
                   <option value="medium">{pt("Medium")}</option>
@@ -237,8 +241,8 @@ export default function Stakeholders() {
               </div>
             </div>
             <div className="grid gap-2">
-              <Label>Communication Plan</Label>
-              <Textarea value={editForm.communication_plan} onChange={(e) => setEditForm(prev => ({ ...prev, communication_plan: e.target.value }))} placeholder="How should this stakeholder be engaged?" />
+              <Label>{pt("Communication Plan")}</Label>
+              <Textarea value={editForm.communication_plan} onChange={(e) => setEditForm(prev => ({ ...prev, communication_plan: e.target.value }))} placeholder={pt("How should this stakeholder be engaged?")} />
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setEditModalOpen(false)}>{pt("Cancel")}</Button>

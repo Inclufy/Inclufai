@@ -228,7 +228,7 @@ const ModuleAccordion = ({
                       </span>
                       {isPreview && (
                         <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-xs shrink-0">
-                          Preview
+                          {isNL ? 'Voorbeeld' : 'Preview'}
                         </Badge>
                       )}
                       {lesson.type === 'quiz' && (
@@ -238,7 +238,7 @@ const ModuleAccordion = ({
                       )}
                       {lesson.type === 'assignment' && (
                         <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs shrink-0">
-                          Opdracht
+                          {isNL ? 'Opdracht' : 'Assignment'}
                         </Badge>
                       )}
                     </div>
@@ -275,61 +275,74 @@ interface PreviewModalProps {
   onClose: () => void;
   lesson: Lesson | null;
   courseTitle: string;
+  isNL: boolean;
 }
 
-const PreviewModal = ({ isOpen, onClose, lesson, courseTitle }: PreviewModalProps) => {
+const PreviewModal = ({ isOpen, onClose, lesson, courseTitle, isNL }: PreviewModalProps) => {
   const [activeTab, setActiveTab] = useState('overview');
 
   if (!lesson) return null;
 
   // Methodologies data
   const methodologies = [
-    { 
-      emoji: '🌊', 
-      name: 'Waterfall', 
-      subtitle: 'Traditioneel', 
-      description: 'Sequentieel: fasen volgen elkaar lineair op - Veel upfront planning en documentatie - Ideaal voor: stabiele requirements, gereguleerde omgevingen, bouw', 
-      tags: ['Stabiele requirements', 'Gereguleerde omgevingen'], 
+    {
+      emoji: '🌊',
+      name: 'Waterfall',
+      subtitle: isNL ? 'Traditioneel' : 'Traditional',
+      description: isNL
+        ? 'Sequentieel: fasen volgen elkaar lineair op - Veel upfront planning en documentatie - Ideaal voor: stabiele requirements, gereguleerde omgevingen, bouw'
+        : 'Sequential: phases follow each other linearly - Extensive upfront planning and documentation - Ideal for: stable requirements, regulated environments, construction',
+      tags: isNL ? ['Stabiele requirements', 'Gereguleerde omgevingen'] : ['Stable requirements', 'Regulated environments'],
       gradient: 'from-blue-500 to-cyan-500'
     },
-    { 
-      emoji: '⚡', 
-      name: 'Agile', 
-      subtitle: 'Iteratief', 
-      description: 'Iteratief en incrementeel - Flexibel, omarmt verandering - Frequente oplevering van werkende producten - Ideaal voor: software development, veranderende requirements', 
-      tags: ['Software development', 'Veranderende requirements'], 
+    {
+      emoji: '⚡',
+      name: 'Agile',
+      subtitle: isNL ? 'Iteratief' : 'Iterative',
+      description: isNL
+        ? 'Iteratief en incrementeel - Flexibel, omarmt verandering - Frequente oplevering van werkende producten - Ideaal voor: software development, veranderende requirements'
+        : 'Iterative and incremental - Flexible, embraces change - Frequent delivery of working products - Ideal for: software development, changing requirements',
+      tags: isNL ? ['Software development', 'Veranderende requirements'] : ['Software development', 'Changing requirements'],
       gradient: 'from-green-500 to-emerald-500'
     },
-    { 
-      emoji: '🎯', 
-      name: 'Scrum', 
-      subtitle: 'Agile Framework', 
-      description: 'Specifiek Agile framework - Vaste rollen (Product Owner, Scrum Master, Team) - Sprints van 1-4 weken - Ideaal voor: productontwikkeling, innovatie', 
-      tags: ['Productontwikkeling', 'Innovatie'], 
+    {
+      emoji: '🎯',
+      name: 'Scrum',
+      subtitle: 'Agile Framework',
+      description: isNL
+        ? 'Specifiek Agile framework - Vaste rollen (Product Owner, Scrum Master, Team) - Sprints van 1-4 weken - Ideaal voor: productontwikkeling, innovatie'
+        : 'Specific Agile framework - Fixed roles (Product Owner, Scrum Master, Team) - Sprints of 1-4 weeks - Ideal for: product development, innovation',
+      tags: isNL ? ['Productontwikkeling', 'Innovatie'] : ['Product development', 'Innovation'],
       gradient: 'from-purple-500 to-pink-500'
     },
-    { 
-      emoji: '📊', 
-      name: 'Kanban', 
-      subtitle: 'Flow-based', 
-      description: 'Focus op flow en visualisatie - WIP-limieten (Work In Progress) - Continue flow in plaats van sprints - Ideaal voor: operations, support, maintenance', 
-      tags: ['Operations', 'Support', 'Maintenance'], 
+    {
+      emoji: '📊',
+      name: 'Kanban',
+      subtitle: 'Flow-based',
+      description: isNL
+        ? 'Focus op flow en visualisatie - WIP-limieten (Work In Progress) - Continue flow in plaats van sprints - Ideaal voor: operations, support, maintenance'
+        : 'Focus on flow and visualization - WIP limits (Work In Progress) - Continuous flow instead of sprints - Ideal for: operations, support, maintenance',
+      tags: ['Operations', 'Support', 'Maintenance'],
       gradient: 'from-cyan-500 to-blue-500'
     },
-    { 
-      emoji: '👑', 
-      name: 'PRINCE2', 
-      subtitle: 'Procesgebaseerd', 
-      description: 'Procesgebaseerde methodologie uit het VK - Duidelijke rollen en verantwoordelijkheden - Stage-gates voor beslismomenten - Ideaal voor: overheid, governance-focus', 
-      tags: ['Overheid', 'Governance-focus'], 
+    {
+      emoji: '👑',
+      name: 'PRINCE2',
+      subtitle: isNL ? 'Procesgebaseerd' : 'Process-based',
+      description: isNL
+        ? 'Procesgebaseerde methodologie uit het VK - Duidelijke rollen en verantwoordelijkheden - Stage-gates voor beslismomenten - Ideaal voor: overheid, governance-focus'
+        : 'Process-based methodology from the UK - Clear roles and responsibilities - Stage-gates for decision points - Ideal for: government, governance-focused',
+      tags: isNL ? ['Overheid', 'Governance-focus'] : ['Government', 'Governance-focused'],
       gradient: 'from-indigo-500 to-purple-500'
     },
-    { 
-      emoji: '📈', 
-      name: 'Lean Six Sigma', 
-      subtitle: 'Procesverbetering', 
-      description: 'Focus op procesverbetering - DMAIC cyclus (Define, Measure, Analyze, Improve, Control) - Data-gedreven besluitvorming - Ideaal voor: procesoptimalisatie, kwaliteit', 
-      tags: ['Procesoptimalisatie', 'Kwaliteit'], 
+    {
+      emoji: '📈',
+      name: 'Lean Six Sigma',
+      subtitle: isNL ? 'Procesverbetering' : 'Process improvement',
+      description: isNL
+        ? 'Focus op procesverbetering - DMAIC cyclus (Define, Measure, Analyze, Improve, Control) - Data-gedreven besluitvorming - Ideaal voor: procesoptimalisatie, kwaliteit'
+        : 'Focus on process improvement - DMAIC cycle (Define, Measure, Analyze, Improve, Control) - Data-driven decision making - Ideal for: process optimization, quality',
+      tags: isNL ? ['Procesoptimalisatie', 'Kwaliteit'] : ['Process optimization', 'Quality'],
       gradient: 'from-orange-500 to-red-500'
     },
   ];
@@ -342,7 +355,7 @@ const PreviewModal = ({ isOpen, onClose, lesson, courseTitle }: PreviewModalProp
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0">
       <DialogTitle className="sr-only">{lesson.title} - {courseTitle}
       </DialogTitle>
-      <DialogDescription className="sr-only">Preview van de les {lesson.title}
+      <DialogDescription className="sr-only">{isNL ? `Voorbeeld van de les ${lesson.title}` : `Preview of lesson ${lesson.title}`}
       </DialogDescription>
         {/* Header met gradient */}
         <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 p-6">
@@ -383,7 +396,7 @@ const PreviewModal = ({ isOpen, onClose, lesson, courseTitle }: PreviewModalProp
                   : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
             >
-              📝 Overview
+              📝 {isNL ? 'Overzicht' : 'Overview'}
             </button>
             {lesson.transcript && (
               <button
@@ -395,7 +408,7 @@ const PreviewModal = ({ isOpen, onClose, lesson, courseTitle }: PreviewModalProp
                 }`}
               >
                 <FileText className="w-4 h-4 inline mr-1" />
-                Transcript
+                {isNL ? 'Transcript' : 'Transcript'}
               </button>
             )}
             {keyTakeaways.length > 0 && (
@@ -407,7 +420,7 @@ const PreviewModal = ({ isOpen, onClose, lesson, courseTitle }: PreviewModalProp
                     : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                 }`}
               >
-                ✨ Key Takeaways
+                ✨ {isNL ? 'Belangrijkste Punten' : 'Key Takeaways'}
               </button>
             )}
           </div>
@@ -418,20 +431,39 @@ const PreviewModal = ({ isOpen, onClose, lesson, courseTitle }: PreviewModalProp
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              {/* Video Preview */}
-              <div className="aspect-video bg-gradient-to-br from-purple-900 to-pink-900 rounded-xl flex items-center justify-center">
-                <div className="text-center text-white">
-                  <PlayCircle className="h-16 w-16 mx-auto mb-3 opacity-80" />
-                  <p className="text-lg font-medium">Preview Video</p>
-                  <p className="text-sm opacity-70">{lesson.duration}</p>
+              {/* Lesson Preview Content */}
+              {lesson.transcript ? (
+                <div className="bg-white dark:bg-gray-800 border border-purple-100 dark:border-purple-800 rounded-xl overflow-hidden">
+                  {/* Header */}
+                  <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-5 py-3 flex items-center gap-3">
+                    <BookOpen className="h-5 w-5 text-white" />
+                    <span className="text-white font-medium text-sm">
+                      {isNL ? 'Voorbeeld van deze les' : 'Preview of this lesson'}
+                    </span>
+                    <Badge className="bg-white/20 text-white border-0 ml-auto text-xs">
+                      <Clock className="w-3 h-3 mr-1" />
+                      {lesson.duration}
+                    </Badge>
+                  </div>
+                  {/* Content preview - first 3 paragraphs */}
+                  <div className="p-5 space-y-4">
+                    {lesson.transcript.split('\n\n').slice(0, 3).map((paragraph, i) => (
+                      <div key={i} className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
+                        {renderMarkdownBlock(paragraph)}
+                      </div>
+                    ))}
+                    <div className="pt-2 border-t border-purple-100 dark:border-purple-800">
+                      <p className="text-xs text-muted-foreground italic">
+                        {isNL ? 'Dit is een voorbeeld. Schrijf je in om de volledige les te bekijken.' : 'This is a preview. Enroll to view the full lesson.'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              {/* Intro */}
-              {lesson.transcript && (
-                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-xl p-5">
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {lesson.transcript.split('\n\n')[0]}
+              ) : (
+                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-xl p-6 text-center">
+                  <BookOpen className="h-10 w-10 mx-auto mb-3 text-purple-400" />
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {isNL ? 'Schrijf je in om de lesinhoud te bekijken.' : 'Enroll to view the lesson content.'}
                   </p>
                 </div>
               )}
@@ -441,7 +473,7 @@ const PreviewModal = ({ isOpen, onClose, lesson, courseTitle }: PreviewModalProp
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                     <Target className="w-5 h-5 text-purple-600" />
-                    🎯 De Belangrijkste Methodologieën
+                    🎯 {isNL ? 'De Belangrijkste Methodologieën' : 'The Key Methodologies'}
                   </h3>
                   
                   <div className="space-y-3">
@@ -488,38 +520,38 @@ const PreviewModal = ({ isOpen, onClose, lesson, courseTitle }: PreviewModalProp
               {isMethodologyLesson && (
                 <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-200 dark:border-purple-800 rounded-xl p-6 shadow-sm">
                   <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2 text-lg">
-                    <span>🤔</span> Welke Methodologie Kiezen?
+                    <span>🤔</span> {isNL ? 'Welke Methodologie Kiezen?' : 'Which Methodology to Choose?'}
                   </h4>
                   <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
                     <div className="flex items-start gap-3">
                       <div className="w-6 h-6 rounded-full bg-purple-200 dark:bg-purple-800 flex items-center justify-center shrink-0 mt-0.5">
                         <span className="text-xs font-bold text-purple-700 dark:text-purple-300">1</span>
                       </div>
-                      <p><strong>Projecttype en industrie</strong> - Wat voor soort project is het?</p>
+                      <p><strong>{isNL ? 'Projecttype en industrie' : 'Project type and industry'}</strong> - {isNL ? 'Wat voor soort project is het?' : 'What kind of project is it?'}</p>
                     </div>
                     <div className="flex items-start gap-3">
                       <div className="w-6 h-6 rounded-full bg-purple-200 dark:bg-purple-800 flex items-center justify-center shrink-0 mt-0.5">
                         <span className="text-xs font-bold text-purple-700 dark:text-purple-300">2</span>
                       </div>
-                      <p><strong>Requirements stabiliteit</strong> - Hoe zeker zijn de requirements?</p>
+                      <p><strong>{isNL ? 'Requirements stabiliteit' : 'Requirements stability'}</strong> - {isNL ? 'Hoe zeker zijn de requirements?' : 'How stable are the requirements?'}</p>
                     </div>
                     <div className="flex items-start gap-3">
                       <div className="w-6 h-6 rounded-full bg-purple-200 dark:bg-purple-800 flex items-center justify-center shrink-0 mt-0.5">
                         <span className="text-xs font-bold text-purple-700 dark:text-purple-300">3</span>
                       </div>
-                      <p><strong>Organisatiecultuur</strong> - Past het bij je organisatie?</p>
+                      <p><strong>{isNL ? 'Organisatiecultuur' : 'Organizational culture'}</strong> - {isNL ? 'Past het bij je organisatie?' : 'Does it fit your organization?'}</p>
                     </div>
                     <div className="flex items-start gap-3">
                       <div className="w-6 h-6 rounded-full bg-purple-200 dark:bg-purple-800 flex items-center justify-center shrink-0 mt-0.5">
                         <span className="text-xs font-bold text-purple-700 dark:text-purple-300">4</span>
                       </div>
-                      <p><strong>Team ervaring</strong> - Heeft het team de juiste skills?</p>
+                      <p><strong>{isNL ? 'Team ervaring' : 'Team experience'}</strong> - {isNL ? 'Heeft het team de juiste skills?' : 'Does the team have the right skills?'}</p>
                     </div>
                     <div className="flex items-start gap-3">
                       <div className="w-6 h-6 rounded-full bg-purple-200 dark:bg-purple-800 flex items-center justify-center shrink-0 mt-0.5">
                         <span className="text-xs font-bold text-purple-700 dark:text-purple-300">5</span>
                       </div>
-                      <p><strong>Regelgeving en compliance</strong> - Zijn er wettelijke eisen?</p>
+                      <p><strong>{isNL ? 'Regelgeving en compliance' : 'Regulations and compliance'}</strong> - {isNL ? 'Zijn er wettelijke eisen?' : 'Are there legal requirements?'}</p>
                     </div>
                   </div>
                 </div>
@@ -539,7 +571,7 @@ const PreviewModal = ({ isOpen, onClose, lesson, courseTitle }: PreviewModalProp
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-purple-600" />
-                Belangrijkste Punten
+                {isNL ? 'Belangrijkste Punten' : 'Key Takeaways'}
               </h3>
               {keyTakeaways.map((takeaway, i) => (
                 <div 
@@ -561,17 +593,17 @@ const PreviewModal = ({ isOpen, onClose, lesson, courseTitle }: PreviewModalProp
         {/* Footer */}
         <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-6 py-4">
           <div className="flex items-center justify-between">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={onClose}
               className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
             >
-              Sluiten
+              {isNL ? 'Sluiten' : 'Close'}
             </Button>
-            <Button 
+            <Button
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
             >
-              Start Les
+              {isNL ? 'Start Les' : 'Start Lesson'}
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
@@ -762,17 +794,17 @@ const CourseDetail = () => {
                   {safeCourse.featured && (
                     <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
                       <Star className="h-3 w-3 mr-1" />
-                      Featured
+                      {isNL ? 'Uitgelicht' : 'Featured'}
                     </Badge>
                   )}
                 </div>
               </div>
 
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-3">
-                {safeCourse.title}
+                {isNL && safeCourse.titleNL ? safeCourse.titleNL : safeCourse.title}
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">
-                {safeCourse.subtitle}
+                {isNL && safeCourse.descriptionNL ? safeCourse.descriptionNL : (safeCourse.subtitle || safeCourse.description)}
               </p>
 
               {/* Rating & Stats */}
@@ -780,7 +812,7 @@ const CourseDetail = () => {
                 <div className="flex items-center gap-1">
                   <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
                   <span className="font-bold text-gray-900 dark:text-white">{safeCourse.rating}</span>
-                  <span className="text-gray-500">({safeCourse.reviewCount.toLocaleString()} reviews)</span>
+                  <span className="text-gray-500">({safeCourse.reviewCount.toLocaleString()} {isNL ? 'beoordelingen' : 'reviews'})</span>
                 </div>
                 <div className="flex items-center gap-1 text-gray-500">
                   <Users className="h-4 w-4" />
@@ -803,7 +835,7 @@ const CourseDetail = () => {
                   {isNL ? 'Wat je leert' : 'What you\'ll learn'}
                 </h2>
                 <div className="grid md:grid-cols-2 gap-3">
-                  {(safeCourse.whatYouLearn || []).map((item, i) => (
+                  {(isNL && safeCourse.whatYouLearnNL?.length ? safeCourse.whatYouLearnNL : safeCourse.whatYouLearn || []).map((item, i) => (
                     <div key={i} className="flex items-start gap-3">
                       <div className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0 mt-0.5">
                         <Check className="h-3 w-3 text-green-600 dark:text-green-400" />
@@ -847,7 +879,7 @@ const CourseDetail = () => {
                   {isNL ? 'Vereisten' : 'Requirements'}
                 </h2>
                 <ul className="space-y-2">
-                  {(safeCourse.requirements || []).map((req, i) => (
+                  {(isNL && safeCourse.requirementsNL?.length ? safeCourse.requirementsNL : safeCourse.requirements || []).map((req, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
                       <span className="text-purple-500">•</span>
                       {req}
@@ -864,7 +896,7 @@ const CourseDetail = () => {
                   {isNL ? 'Voor wie is deze cursus?' : 'Who is this course for?'}
                 </h2>
                 <ul className="space-y-2">
-                  {(safeCourse.targetAudience || []).map((item, i) => (
+                  {(isNL && safeCourse.targetAudienceNL?.length ? safeCourse.targetAudienceNL : safeCourse.targetAudience || []).map((item, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
                       <Users className="h-4 w-4 text-purple-500 shrink-0 mt-0.5" />
                       {item}
@@ -930,7 +962,7 @@ const CourseDetail = () => {
                     <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
                       <Play className="h-8 w-8 text-white ml-1" />
                     </div>
-                    <span className="font-medium">Preview</span>
+                    <span className="font-medium">{isNL ? 'Voorbeeld' : 'Preview'}</span>
                   </div>
                 </div>
 
@@ -984,6 +1016,23 @@ const CourseDetail = () => {
                     <Button
                       variant="outline"
                       className="flex-1 rounded-xl border-purple-200 hover:bg-purple-50"
+                      onClick={() => {
+                        const url = window.location.href;
+                        if (navigator.share) {
+                          navigator.share({
+                            title: isNL && safeCourse.titleNL ? safeCourse.titleNL : safeCourse.title,
+                            text: isNL && safeCourse.descriptionNL ? safeCourse.descriptionNL : safeCourse.description,
+                            url,
+                          }).catch(() => {});
+                        } else {
+                          navigator.clipboard.writeText(url).then(() => {
+                            toast({
+                              title: isNL ? 'Link gekopieerd!' : 'Link copied!',
+                              description: isNL ? 'De link is naar je klembord gekopieerd.' : 'The link has been copied to your clipboard.',
+                            });
+                          });
+                        }
+                      }}
                     >
                       <Share2 className="h-4 w-4 mr-2" />
                       {isNL ? 'Delen' : 'Share'}
@@ -1036,7 +1085,12 @@ const CourseDetail = () => {
                         <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
                           {isNL ? 'Vraag een offerte aan voor groepstrainingen met korting.' : 'Request a quote for group training with discounts.'}
                         </p>
-                        <Button variant="outline" size="sm" className="w-full rounded-lg border-purple-200 text-purple-600 hover:bg-purple-100">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full rounded-lg border-purple-200 text-purple-600 hover:bg-purple-100"
+                          onClick={() => navigate(`/academy/quote/${safeCourse.id}`)}
+                        >
                           {isNL ? 'Offerte Aanvragen' : 'Request Quote'}
                         </Button>
                       </div>
@@ -1054,7 +1108,8 @@ const CourseDetail = () => {
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
         lesson={previewLesson}
-        courseTitle={safeCourse.title}
+        courseTitle={isNL && safeCourse.titleNL ? safeCourse.titleNL : safeCourse.title}
+        isNL={isNL}
       />
     </div>
   );

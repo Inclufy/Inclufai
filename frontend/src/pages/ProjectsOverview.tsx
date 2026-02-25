@@ -171,39 +171,39 @@ const ProjectsOverview = () => {
   const queryClient = useQueryClient();
   const { t } = useLanguage();
   
-  // Fallback translations
-  const tp = t.projects || {
-    title: 'Projects',
-    subtitle: 'Manage and track all your projects',
-    totalProjects: 'Total Projects',
-    active: 'Active',
-    atRisk: 'At Risk',
-    completed: 'Completed',
-    totalBudget: 'Total Budget',
-    searchPlaceholder: 'Search projects...',
-    allStatus: 'All Status',
-    allMethods: 'All Methods',
-    generateWithAI: 'Generate with AI',
-    newProject: 'New Project',
-    createNewProject: 'Create New Project',
-    createDescription: 'Start tracking a new project',
-    manual: 'Manual',
-    tasks: 'Tasks',
-    budget: 'Budget',
-    health: 'Health',
-    unassigned: 'Unassigned',
-    noProjects: 'No projects found',
-    view: 'View',
-    edit: 'Edit',
-    delete: 'Delete',
-    planning: 'Planning',
-    pending: 'Pending',
-    inProgress: 'In Progress',
-    onHold: 'On Hold',
-    clearFilters: 'Clear Filters',
+  // Translations using pt() for consistent Dutch support
+  const tp = {
+    title: pt('Projects'),
+    subtitle: pt('Manage and track all your projects'),
+    totalProjects: pt('Total Projects'),
+    active: pt('Active'),
+    atRisk: pt('At Risk'),
+    completed: pt('Completed'),
+    totalBudget: pt('Total Budget'),
+    searchPlaceholder: pt('Search projects...'),
+    allStatus: pt('All Status'),
+    allMethods: pt('All Methods'),
+    generateWithAI: pt('Generate with AI'),
+    newProject: pt('New Project'),
+    createNewProject: pt('Create New Project'),
+    createDescription: pt('Start tracking a new project'),
+    manual: pt('Manual'),
+    tasks: pt('Tasks'),
+    budget: pt('Budget'),
+    health: pt('Health'),
+    unassigned: pt('Unassigned'),
+    noProjects: pt('No projects found'),
+    view: pt('View'),
+    edit: pt('Edit'),
+    delete: pt('Delete'),
+    planning: pt('Planning'),
+    pending: pt('Pending'),
+    inProgress: pt('In Progress'),
+    onHold: pt('On Hold'),
+    clearFilters: pt('Clear Filters'),
   };
-  const ta = t.app || { progress: 'Progress' };
-  const tc = t.common || { retry: 'Retry', cancel: 'Cancel' };
+  const ta = { progress: pt('Progress') };
+  const tc = { retry: pt('Retry'), cancel: pt('Cancel') };
   
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -450,10 +450,10 @@ Respond in this EXACT JSON format only, no other text:
   // Render wizard step indicator
   const renderStepIndicator = () => {
     const steps = [
-      { key: 'idea', label: 'Idea', icon: Lightbulb },
-      { key: 'methodology', label: 'Method', icon: Target },
-      { key: 'details', label: 'Details', icon: FileText },
-      { key: 'review', label: 'Review', icon: CheckCircle2 },
+      { key: 'idea', label: pt('Idea'), icon: Lightbulb },
+      { key: 'methodology', label: pt('Method'), icon: Target },
+      { key: 'details', label: pt('Details'), icon: FileText },
+      { key: 'review', label: pt('Review'), icon: CheckCircle2 },
     ];
 
     const currentIndex = steps.findIndex(s => s.key === wizardStep);
@@ -512,7 +512,7 @@ Respond in this EXACT JSON format only, no other text:
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <p className="text-red-500">Failed to load projects</p>
+        <p className="text-red-500">{pt("Failed to load projects")}</p>
         <Button onClick={() => queryClient.invalidateQueries({ queryKey: ["projects"] })}>
           {tc.retry}
         </Button>
@@ -544,10 +544,10 @@ Respond in this EXACT JSON format only, no other text:
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-purple-500" />
-                  AI Project Assistant
+                  {pt("AI Project Assistant")}
                 </DialogTitle>
                 <DialogDescription>
-                  Let AI help you create the perfect project setup
+                  {pt("Let AI help you create the perfect project setup")}
                 </DialogDescription>
               </DialogHeader>
 
@@ -560,14 +560,14 @@ Respond in this EXACT JSON format only, no other text:
                     <div className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 flex items-center justify-center mx-auto mb-3">
                       <Lightbulb className="h-8 w-8 text-purple-600" />
                     </div>
-                    <h3 className="text-lg font-semibold">Describe Your Project</h3>
+                    <h3 className="text-lg font-semibold">{pt("Describe Your Project")}</h3>
                     <p className="text-sm text-muted-foreground">
-                      Tell me about your project idea and I'll recommend the best approach
+                      {pt("Tell me about your project idea and I'll recommend the best approach")}
                     </p>
                   </div>
 
                   <Textarea
-                    placeholder="Example: We want to develop a training program for soft skills development in our healthcare organization. The focus should be on communication, leadership, and teamwork skills for about 50 employees..."
+                    placeholder={pt("Example: We want to develop a training program for soft skills development in our healthcare organization. The focus should be on communication, leadership, and teamwork skills for about 50 employees...")}
                     value={projectIdea}
                     onChange={(e) => setProjectIdea(e.target.value)}
                     rows={5}
@@ -576,7 +576,7 @@ Respond in this EXACT JSON format only, no other text:
 
                   <div className="flex items-start gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
                     <Lightbulb className="h-4 w-4 mt-0.5 text-amber-500 flex-shrink-0" />
-                    <p>Tip: Include details like team size, timeline, goals, and any specific requirements for better recommendations.</p>
+                    <p>{pt("Tip: Include details like team size, timeline, goals, and any specific requirements for better recommendations.")}</p>
                   </div>
 
                   <div className="flex justify-end">
@@ -584,11 +584,11 @@ Respond in this EXACT JSON format only, no other text:
                       {aiLoading ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Analyzing...
+                          {pt("Analyzing...")}
                         </>
                       ) : (
                         <>
-                          Analyze & Recommend
+                          {pt("Analyze & Recommend")}
                           <ArrowRight className="h-4 w-4 ml-2" />
                         </>
                       )}
@@ -601,9 +601,9 @@ Respond in this EXACT JSON format only, no other text:
               {wizardStep === 'methodology' && aiRecommendation && (
                 <div className="space-y-4">
                   <div className="text-center mb-2">
-                    <h3 className="text-lg font-semibold">Recommended Methodology</h3>
+                    <h3 className="text-lg font-semibold">{pt("Recommended Methodology")}</h3>
                     <p className="text-sm text-muted-foreground">
-                      Based on your project, here's my recommendation
+                      {pt("Based on your project, here's my recommendation")}
                     </p>
                   </div>
 
@@ -655,7 +655,7 @@ Respond in this EXACT JSON format only, no other text:
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
                       <span className="bg-background px-2 text-muted-foreground">
-                        Or choose another
+                        {pt("Or choose another")}
                       </span>
                     </div>
                   </div>
@@ -700,15 +700,15 @@ Respond in this EXACT JSON format only, no other text:
               {wizardStep === 'details' && (
                 <div className="space-y-4">
                   <div className="text-center mb-2">
-                    <h3 className="text-lg font-semibold">Project Details</h3>
+                    <h3 className="text-lg font-semibold">{pt("Project Details")}</h3>
                     <p className="text-sm text-muted-foreground">
-                      Review and adjust the AI-generated details
+                      {pt("Review and adjust the AI-generated details")}
                     </p>
                   </div>
 
                   <div className="grid gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="name">Project Name *</Label>
+                      <Label htmlFor="name">{pt("Project Name")} *</Label>
                       <Input
                         id="name"
                         value={formData.name}
@@ -732,7 +732,7 @@ Respond in this EXACT JSON format only, no other text:
                       <div className="grid gap-2">
                         <Label htmlFor="teamSize" className="flex items-center gap-2">
                           <Users className="h-4 w-4 text-muted-foreground" />
-                          Team Size
+                          {pt("Team Size")}
                         </Label>
                         <Input
                           id="teamSize"
@@ -745,7 +745,7 @@ Respond in this EXACT JSON format only, no other text:
                       <div className="grid gap-2">
                         <Label htmlFor="budget" className="flex items-center gap-2">
                           <DollarSign className="h-4 w-4 text-muted-foreground" />
-                          Budget (€)
+                          {pt("Budget")} (€)
                         </Label>
                         <Input
                           id="budget"
@@ -761,7 +761,7 @@ Respond in this EXACT JSON format only, no other text:
                       <div className="grid gap-2">
                         <Label htmlFor="duration" className="flex items-center gap-2">
                           <Clock className="h-4 w-4 text-muted-foreground" />
-                          Duration (months)
+                          {pt("Duration (months)")}
                         </Label>
                         <Input
                           id="duration"
@@ -807,7 +807,7 @@ Respond in this EXACT JSON format only, no other text:
                     <div className="grid gap-2">
                       <Label htmlFor="objectives" className="flex items-center gap-2">
                         <Target className="h-4 w-4 text-muted-foreground" />
-                        Objectives
+                        {pt("Objectives")}
                       </Label>
                       <Textarea
                         id="objectives"
@@ -825,7 +825,7 @@ Respond in this EXACT JSON format only, no other text:
                       {pt("Back")}
                     </Button>
                     <Button onClick={handleGoToReview}>
-                      Review
+                      {pt("Review")}
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   </div>
@@ -836,9 +836,9 @@ Respond in this EXACT JSON format only, no other text:
               {wizardStep === 'review' && (
                 <div className="space-y-4">
                   <div className="text-center mb-2">
-                    <h3 className="text-lg font-semibold">Review Your Project</h3>
+                    <h3 className="text-lg font-semibold">{pt("Review Your Project")}</h3>
                     <p className="text-sm text-muted-foreground">
-                      Everything looks good? Let's create it!
+                      {pt("Everything looks good? Let's create it!")}
                     </p>
                   </div>
 
@@ -867,7 +867,7 @@ Respond in this EXACT JSON format only, no other text:
                               formData.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
                               'bg-gray-100 text-gray-800'
                             )}>
-                              {formData.priority} priority
+                              {pt(formData.priority.charAt(0).toUpperCase() + formData.priority.slice(1))} {pt("Priority").toLowerCase()}
                             </Badge>
                           </div>
                         </div>
@@ -882,7 +882,7 @@ Respond in this EXACT JSON format only, no other text:
                         {formData.teamSize && (
                           <div className="flex items-center gap-2">
                             <Users className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{formData.teamSize} people</span>
+                            <span className="text-sm">{formData.teamSize} {pt("people")}</span>
                           </div>
                         )}
                         {formData.budget && (
@@ -894,7 +894,7 @@ Respond in this EXACT JSON format only, no other text:
                         {formData.duration && (
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{formData.duration} months</span>
+                            <span className="text-sm">{formData.duration} {pt("months")}</span>
                           </div>
                         )}
                         {formData.startDate && (
@@ -909,7 +909,7 @@ Respond in this EXACT JSON format only, no other text:
                         <div className="pt-2 border-t">
                           <div className="flex items-center gap-2 mb-1">
                             <Target className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm font-medium">Objectives</span>
+                            <span className="text-sm font-medium">{pt("Objectives")}</span>
                           </div>
                           <p className="text-sm text-muted-foreground">{formData.objectives}</p>
                         </div>
@@ -920,7 +920,7 @@ Respond in this EXACT JSON format only, no other text:
                   <div className="flex justify-between pt-2">
                     <Button variant="outline" onClick={() => setWizardStep('details')}>
                       <ArrowLeft className="h-4 w-4 mr-2" />
-                      Edit Details
+                      {pt("Edit Details")}
                     </Button>
                     <Button onClick={handleCreateProject} size="lg" className="gap-2">
                       <Sparkles className="h-4 w-4" />
@@ -936,9 +936,9 @@ Respond in this EXACT JSON format only, no other text:
                   <div className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center mx-auto mb-4 animate-pulse">
                     <Sparkles className="h-8 w-8 text-white" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">Creating Your Project</h3>
+                  <h3 className="text-lg font-semibold mb-2">{pt("Creating Your Project")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Setting everything up...
+                    {pt("Setting everything up...")}
                   </p>
                   <Loader2 className="h-6 w-6 animate-spin mx-auto mt-4 text-primary" />
                 </div>
@@ -1195,7 +1195,7 @@ Respond in this EXACT JSON format only, no other text:
                 onClick={() => setAiGenerateOpen(true)}
               >
                 <Sparkles className="h-4 w-4 mr-1" />
-                AI Assistant
+                {pt("AI Assistant")}
               </Button>
               <Button 
                 size="sm"
@@ -1215,7 +1215,7 @@ Respond in this EXACT JSON format only, no other text:
           <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold mb-2">{tp.noProjects}</h3>
           <p className="text-muted-foreground mb-4">
-            Try adjusting your search or filters
+            {pt("Try adjusting your search or filters")}
           </p>
           <Button variant="outline" onClick={() => {
             setSearchQuery("");
@@ -1231,9 +1231,9 @@ Respond in this EXACT JSON format only, no other text:
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{tp.delete} Project</AlertDialogTitle>
+            <AlertDialogTitle>{pt("Delete Project")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{projectToDelete?.name}"? This action cannot be undone.
+              {pt("Are you sure?")} "{projectToDelete?.name}" - {pt("This action cannot be undone")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

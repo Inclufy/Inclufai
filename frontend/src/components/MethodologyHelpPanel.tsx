@@ -1,6 +1,7 @@
 // src/components/MethodologyHelpPanel.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 import {
   HelpCircle,
   X,
@@ -102,8 +103,8 @@ const METHODOLOGY_HELP: Record<string, MethodologyHelpConfig> = {
       'Betrek stakeholders actief',
     ],
     resources: [
-      { title: 'Agile Fundamentals', type: 'course', duration: '2 uur', link: '/academy/courses/agile-fundamentals' },
-      { title: 'Agile Manifesto Deep Dive', type: 'video', duration: '30 min', link: '/academy/courses/agile-manifesto' },
+      { title: 'Agile Fundamentals', type: 'course', duration: '2 uur', link: '/academy/course/agile-fundamentals' },
+      { title: 'Agile Manifesto Deep Dive', type: 'video', duration: '30 min', link: '/academy/course/agile-manifesto' },
       { title: 'User Stories Schrijven', type: 'article', link: '/academy/articles/user-stories' },
     ],
     academyTrack: 'Agile Leader Track',
@@ -151,8 +152,8 @@ const METHODOLOGY_HELP: Record<string, MethodologyHelpConfig> = {
       'Visualiseer werk op een Scrum board',
     ],
     resources: [
-      { title: 'Scrum Fundamentals', type: 'course', duration: '2 uur', link: '/academy/courses/scrum-fundamentals' },
-      { title: 'Sprint Planning Masterclass', type: 'video', duration: '45 min', link: '/academy/courses/sprint-planning' },
+      { title: 'Scrum Fundamentals', type: 'course', duration: '2 uur', link: '/academy/course/scrum-fundamentals' },
+      { title: 'Sprint Planning Masterclass', type: 'video', duration: '45 min', link: '/academy/course/sprint-planning' },
       { title: 'Scrum Events Guide', type: 'article', link: '/academy/articles/scrum-events' },
     ],
     academyTrack: 'Scrum Master Track',
@@ -200,8 +201,8 @@ const METHODOLOGY_HELP: Record<string, MethodologyHelpConfig> = {
       'Analyseer flow metrics regelmatig',
     ],
     resources: [
-      { title: 'Kanban Essentials', type: 'course', duration: '2 uur', link: '/academy/courses/kanban-essentials' },
-      { title: 'WIP Limits Masterclass', type: 'video', duration: '30 min', link: '/academy/courses/wip-limits' },
+      { title: 'Kanban Essentials', type: 'course', duration: '2 uur', link: '/academy/course/kanban-essentials' },
+      { title: 'WIP Limits Masterclass', type: 'video', duration: '30 min', link: '/academy/course/wip-limits' },
       { title: 'Cumulative Flow Diagrams', type: 'article', link: '/academy/articles/cfd' },
     ],
     academyTrack: 'Agile Leader Track',
@@ -250,8 +251,8 @@ const METHODOLOGY_HELP: Record<string, MethodologyHelpConfig> = {
       'Gebruik Work Packages voor delegatie',
     ],
     resources: [
-      { title: 'PRINCE2 Foundation', type: 'course', duration: '8 uur', link: '/academy/courses/prince2-foundation' },
-      { title: 'Business Case Development', type: 'video', duration: '30 min', link: '/academy/courses/business-case' },
+      { title: 'PRINCE2 Foundation', type: 'course', duration: '8 uur', link: '/academy/course/prince2-foundation' },
+      { title: 'Business Case Development', type: 'video', duration: '30 min', link: '/academy/course/business-case' },
       { title: 'Stage Gate Reviews', type: 'article', link: '/academy/articles/stage-gates' },
     ],
     academyTrack: 'Project Manager Track',
@@ -298,8 +299,8 @@ const METHODOLOGY_HELP: Record<string, MethodologyHelpConfig> = {
       'Bereid deployment documentation voor',
     ],
     resources: [
-      { title: 'Waterfall Methodology', type: 'course', duration: '4 uur', link: '/academy/courses/waterfall' },
-      { title: 'Requirements Engineering', type: 'video', duration: '1 uur', link: '/academy/courses/requirements' },
+      { title: 'Waterfall Methodology', type: 'course', duration: '4 uur', link: '/academy/course/waterfall' },
+      { title: 'Requirements Engineering', type: 'video', duration: '1 uur', link: '/academy/course/requirements' },
       { title: 'Testing Strategies', type: 'article', link: '/academy/articles/testing' },
     ],
     academyTrack: 'Project Manager Track',
@@ -347,8 +348,8 @@ const METHODOLOGY_HELP: Record<string, MethodologyHelpConfig> = {
       'Train medewerkers in nieuwe werkwijzen',
     ],
     resources: [
-      { title: 'Lean Six Sigma Yellow Belt', type: 'course', duration: '6 uur', link: '/academy/courses/lss-yellow' },
-      { title: 'DMAIC Deep Dive', type: 'video', duration: '2 uur', link: '/academy/courses/dmaic' },
+      { title: 'Lean Six Sigma Yellow Belt', type: 'course', duration: '6 uur', link: '/academy/course/lss-yellow' },
+      { title: 'DMAIC Deep Dive', type: 'video', duration: '2 uur', link: '/academy/course/dmaic' },
       { title: 'Statistical Tools', type: 'article', link: '/academy/articles/lss-tools' },
     ],
     academyTrack: 'Process Improvement Track',
@@ -395,8 +396,8 @@ const METHODOLOGY_HELP: Record<string, MethodologyHelpConfig> = {
       'Train team in de gekozen hybride aanpak',
     ],
     resources: [
-      { title: 'Hybrid Project Management', type: 'course', duration: '3 uur', link: '/academy/courses/hybrid-pm' },
-      { title: 'Agile in Waterfall Omgevingen', type: 'video', duration: '45 min', link: '/academy/courses/agile-waterfall' },
+      { title: 'Hybrid Project Management', type: 'course', duration: '3 uur', link: '/academy/course/hybrid-pm' },
+      { title: 'Agile in Waterfall Omgevingen', type: 'video', duration: '45 min', link: '/academy/course/agile-waterfall' },
       { title: 'Choosing Your Approach', type: 'article', link: '/academy/articles/hybrid-approach' },
     ],
     academyTrack: 'Project Manager Track',
@@ -445,8 +446,8 @@ const METHODOLOGY_HELP: Record<string, MethodologyHelpConfig> = {
       'Meet business value, niet alleen velocity',
     ],
     resources: [
-      { title: 'SAFe Fundamentals', type: 'course', duration: '4 uur', link: '/academy/courses/safe-fundamentals' },
-      { title: 'PI Planning Guide', type: 'video', duration: '1 uur', link: '/academy/courses/pi-planning' },
+      { title: 'SAFe Fundamentals', type: 'course', duration: '4 uur', link: '/academy/course/safe-fundamentals' },
+      { title: 'PI Planning Guide', type: 'video', duration: '1 uur', link: '/academy/course/pi-planning' },
       { title: 'ART Launch Checklist', type: 'article', link: '/academy/articles/art-launch' },
     ],
     academyTrack: 'SAFe Practitioner Track',
@@ -495,8 +496,8 @@ const METHODOLOGY_HELP: Record<string, MethodologyHelpConfig> = {
       'Bereid organisatie voor op verandering',
     ],
     resources: [
-      { title: 'MSP Foundation', type: 'course', duration: '8 uur', link: '/academy/courses/msp-foundation' },
-      { title: 'Benefits Management', type: 'video', duration: '45 min', link: '/academy/courses/benefits-management' },
+      { title: 'MSP Foundation', type: 'course', duration: '8 uur', link: '/academy/course/msp-foundation' },
+      { title: 'Benefits Management', type: 'video', duration: '45 min', link: '/academy/course/benefits-management' },
       { title: 'Blueprint Design', type: 'article', link: '/academy/articles/blueprint' },
     ],
     academyTrack: 'Programme Manager Track',
@@ -543,8 +544,8 @@ const METHODOLOGY_HELP: Record<string, MethodologyHelpConfig> = {
       'Review strategic fit regelmatig',
     ],
     resources: [
-      { title: 'PgMP Preparation', type: 'course', duration: '12 uur', link: '/academy/courses/pgmp-prep' },
-      { title: 'Program Governance', type: 'video', duration: '1 uur', link: '/academy/courses/program-governance' },
+      { title: 'PgMP Preparation', type: 'course', duration: '12 uur', link: '/academy/course/pgmp-prep' },
+      { title: 'Program Governance', type: 'video', duration: '1 uur', link: '/academy/course/program-governance' },
       { title: 'Benefits Realization', type: 'article', link: '/academy/articles/benefits-realization' },
     ],
     academyTrack: 'Programme Manager Track',
@@ -593,8 +594,8 @@ const METHODOLOGY_HELP: Record<string, MethodologyHelpConfig> = {
       'Houd governance proportioneel',
     ],
     resources: [
-      { title: 'PRINCE2 for Programmes', type: 'course', duration: '8 uur', link: '/academy/courses/prince2-programme' },
-      { title: 'Tranche Management', type: 'video', duration: '45 min', link: '/academy/courses/tranches' },
+      { title: 'PRINCE2 for Programmes', type: 'course', duration: '8 uur', link: '/academy/course/prince2-programme' },
+      { title: 'Tranche Management', type: 'video', duration: '45 min', link: '/academy/course/tranches' },
       { title: 'Programme Governance', type: 'article', link: '/academy/articles/programme-governance' },
     ],
     academyTrack: 'Programme Manager Track',
@@ -637,6 +638,7 @@ export const MethodologyHelpPanel = ({
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'tips' | 'practices' | 'resources'>('tips');
   const navigate = useNavigate();
+  const { pt } = usePageTranslations();
 
   const config = getHelpConfig(methodology);
   const Icon = config.icon;
@@ -669,8 +671,8 @@ export const MethodologyHelpPanel = ({
               <Icon className={cn("h-5 w-5", config.color)} />
             </div>
             <div>
-              <CardTitle className="text-lg">{config.name} Help</CardTitle>
-              <p className="text-xs text-muted-foreground">Contextual guidance</p>
+              <CardTitle className="text-lg">{config.name} {pt("Help")}</CardTitle>
+              <p className="text-xs text-muted-foreground">{pt("Contextual guidance")}</p>
             </div>
           </div>
           <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
@@ -720,7 +722,7 @@ export const MethodologyHelpPanel = ({
             <div>
               <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
                 <Target className={cn("h-4 w-4", config.color)} />
-                Key Principles
+                {pt("Key Principles")}
               </h4>
               <ul className="space-y-1">
                 {config.keyPrinciples.map((principle, i) => (
@@ -734,7 +736,7 @@ export const MethodologyHelpPanel = ({
             <div>
               <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
                 <CheckCircle2 className={cn("h-4 w-4", config.color)} />
-                Best Practices
+                {pt("Best Practices")}
               </h4>
               <ul className="space-y-1">
                 {config.bestPractices.map((practice, i) => (
@@ -758,7 +760,7 @@ export const MethodologyHelpPanel = ({
                 <div className="flex items-center gap-2">
                   <GraduationCap className={cn("h-5 w-5", config.color)} />
                   <div>
-                    <p className="font-medium text-sm">Recommended Track</p>
+                    <p className="font-medium text-sm">{pt("Recommended Track")}</p>
                     <p className="text-xs text-muted-foreground">{config.academyTrack}</p>
                   </div>
                   <ExternalLink className="h-4 w-4 ml-auto" />
@@ -797,7 +799,7 @@ export const MethodologyHelpPanel = ({
           onClick={() => navigate('/academy/marketplace')}
         >
           <GraduationCap className="h-4 w-4" />
-          Explore Full Academy
+          {pt("Explore Full Academy")}
         </Button>
       </div>
     </Card>

@@ -138,9 +138,9 @@ def generate_ai_report(request):
 @permission_classes([IsAuthenticated])
 def ai_generate_text(request):
     """Simple AI text generation endpoint."""
+    import logging
     from langchain_openai import ChatOpenAI
     from django.conf import settings
-    import logging
 
     logger = logging.getLogger(__name__)
 
@@ -165,7 +165,7 @@ def ai_generate_text(request):
         response = llm.invoke(prompt)
         return Response({"response": response.content.strip()})
     except Exception as e:
-        logger.error(f"AI generate failed: {e}")
+        logger.error(f"AI generate failed: {type(e).__name__}: {e}")
         return Response(
             {"error": f"AI service unavailable: {type(e).__name__}"},
             status=http_status.HTTP_503_SERVICE_UNAVAILABLE,

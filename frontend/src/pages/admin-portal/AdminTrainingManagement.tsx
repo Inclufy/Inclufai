@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen, Image } from 'lucide-react';
 import EnhancedCourseBuilder from '@/components/course-builder/EnhancedCourseBuilder';
-import VisualManagement from './VisualManagement';
+import VisualManagement from '@/components/admin/VisualManagement';
 
 const AdminTrainingManagement = () => {
   const [activeTab, setActiveTab] = useState('courses');

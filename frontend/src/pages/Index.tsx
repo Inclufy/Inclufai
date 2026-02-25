@@ -234,6 +234,7 @@ const CurrentPlanCard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { pt } = usePageTranslations();
   
   const tier = user?.subscription?.tier || 'trial';
   const status = user?.subscription?.status || 'pending';
@@ -267,7 +268,7 @@ const CurrentPlanCard = () => {
             </div>
             <div>
               <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-widest">
-                Current Plan
+                {pt("Current Plan")}
               </p>
               <h3 className="text-2xl font-bold bg-gradient-to-br from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 {tierNames[tier]}
@@ -282,7 +283,7 @@ const CurrentPlanCard = () => {
         {isTrial && (
           <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
             <p className="text-xs text-amber-800 dark:text-amber-300 font-medium">
-              ⏰ Limited features • Upgrade to unlock full potential
+              {pt("Limited features • Upgrade to unlock full potential")}
             </p>
           </div>
         )}
@@ -298,12 +299,12 @@ const CurrentPlanCard = () => {
           {isTrial ? (
             <>
               <ArrowUpRight className="w-4 h-4 mr-2" />
-              Upgrade Plan
+              {pt("Upgrade Plan")}
             </>
           ) : (
             <>
               <Settings className="w-4 h-4 mr-2" />
-              Manage Subscription
+              {pt("Manage Subscription")}
             </>
           )}
         </Button>

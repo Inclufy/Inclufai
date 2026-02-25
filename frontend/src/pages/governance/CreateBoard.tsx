@@ -102,24 +102,24 @@ const CreateBoard: React.FC = () => {
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Boards
+            {pt("Back to Boards")}
           </Button>
         </div>
 
         <div className="text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
             <Sparkles className="h-4 w-4" />
-            <span>🛡️ Create Governance Board</span>
+            <span>🛡️ {pt("Create Governance Board")}</span>
           </div>
 
           <h1 className="text-4xl font-bold mb-4 leading-tight">
             <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
-              New Governance Board
+              {pt("New Governance Board")}
             </span>
           </h1>
 
           <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
-            Create a governance board to oversee portfolio initiatives
+            {pt("Create a governance board to oversee portfolio initiatives")}
           </p>
         </div>
 
@@ -129,7 +129,7 @@ const CreateBoard: React.FC = () => {
               <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
                 <Shield className="h-5 w-5 text-white" />
               </div>
-              Board Details
+              {pt("Board Details")}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8">
@@ -143,7 +143,7 @@ const CreateBoard: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="portfolio" className="text-base font-semibold">
-                  Portfolio <span className="text-red-500">*</span>
+                  {pt("Portfolio")} <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={formData.portfolio}
@@ -151,7 +151,7 @@ const CreateBoard: React.FC = () => {
                   required
                 >
                   <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Select a portfolio" />
+                    <SelectValue placeholder={pt("Select a portfolio")} />
                   </SelectTrigger>
                   <SelectContent>
                     {portfolios.map((portfolio) => (
@@ -165,13 +165,13 @@ const CreateBoard: React.FC = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-base font-semibold">
-                  Board Name <span className="text-red-500">*</span>
+                  {pt("Board Name")} <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Strategic Investment Board"
+                  placeholder={pt("e.g., Strategic Investment Board")}
                   required
                   className="h-12 text-base"
                 />
@@ -185,7 +185,7 @@ const CreateBoard: React.FC = () => {
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Describe the board's responsibilities and scope..."
+                  placeholder={pt("Describe the board's responsibilities and scope...")}
                   rows={6}
                   className="text-base"
                 />
@@ -209,12 +209,12 @@ const CreateBoard: React.FC = () => {
                   {loading ? (
                     <>
                       <Sparkles className="h-4 w-4 mr-2 animate-spin" />
-                      Creating...
+                      {pt("Creating...")}
                     </>
                   ) : (
                     <>
                       <Shield className="h-4 w-4 mr-2" />
-                      Create Board
+                      {pt("Create Board")}
                     </>
                   )}
                 </Button>

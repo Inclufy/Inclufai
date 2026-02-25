@@ -2,8 +2,10 @@ import { Card } from "@/components/ui/card";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Edit, Trash2, Clock } from "lucide-react";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const ExecutionDeployment = () => {
+  const { pt } = usePageTranslations();
   const strategies = [
     { id: 1, title: "Go to market", description: "Hoe de omscholingstrajecten te vermarkten", completed: true },
     { id: 2, title: "Marketing", description: "how to market the omscholing concept", completed: true },
@@ -30,15 +32,13 @@ const ExecutionDeployment = () => {
       <div className="p-6">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-foreground mb-2">
-            Deployment Strategy: Task Management Application
+            {pt("Deployment Strategy")}: {pt("Task Management Application")}
           </h1>
           <p className="text-muted-foreground mb-4">
-            A comprehensive plan for deploying an AI-powered task management application, ensuring
-            <br />
-            scalability, reliability, and seamless AI integration.
+            {pt("A comprehensive plan for deploying an AI-powered task management application, ensuring scalability, reliability, and seamless AI integration.")}
           </p>
           <Button variant="outline" className="bg-primary text-primary-foreground hover:bg-primary/90">
-            Review Sent For
+            {pt("Review Sent For")}
           </Button>
         </div>
 
@@ -46,14 +46,14 @@ const ExecutionDeployment = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Clock className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold text-foreground">Deployment Strategy</h2>
+              <h2 className="text-lg font-semibold text-foreground">{pt("Deployment Strategy")}</h2>
             </div>
             <Button variant="ghost" size="icon">
               <Edit className="h-4 w-4 text-primary" />
             </Button>
           </div>
           
-          <p className="text-sm italic text-muted-foreground mb-4">No strategy overview yet.</p>
+          <p className="text-sm italic text-muted-foreground mb-4">{pt("No strategy overview yet.")}</p>
           
           <div className="space-y-3">
             {strategies.map((strategy) => (
@@ -79,7 +79,7 @@ const ExecutionDeployment = () => {
           </div>
           
           <Button className="mt-4 bg-primary hover:bg-primary/90">
-            Add Strategy Item
+            {pt("Add Strategy Item")}
           </Button>
         </Card>
 
@@ -87,14 +87,14 @@ const ExecutionDeployment = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Clock className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold text-foreground">Roll-Out Plan</h2>
+              <h2 className="text-lg font-semibold text-foreground">{pt("Roll-Out Plan")}</h2>
             </div>
             <Button variant="ghost" size="icon">
               <Edit className="h-4 w-4 text-primary" />
             </Button>
           </div>
           
-          <p className="text-sm italic text-muted-foreground mb-4">No roll-out overview yet.</p>
+          <p className="text-sm italic text-muted-foreground mb-4">{pt("No roll-out overview yet.")}</p>
           
           <div className="space-y-4">
             {rollOutPhases.map((phase, index) => (
@@ -120,14 +120,14 @@ const ExecutionDeployment = () => {
                   </div>
                 ))}
                 <Button variant="link" className="text-primary p-0 h-auto text-sm">
-                  + Add Task
+                  {pt("+ Add Task")}
                 </Button>
               </div>
             ))}
           </div>
           
           <Button className="mt-4 bg-primary hover:bg-primary/90">
-            Add Phase
+            {pt("Add Phase")}
           </Button>
         </Card>
       </div>

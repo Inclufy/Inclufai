@@ -273,7 +273,7 @@ const AppHeader = () => {
           className="gap-2"
         >
           <Globe className="h-4 w-4" />
-          <span className="hidden sm:inline">{t.navigation?.home || 'Home'}</span>
+          <span className="hidden sm:inline">{t.nav?.home || 'Home'}</span>
         </Button>
         
         {/* Language Selector */}
@@ -286,7 +286,7 @@ const AppHeader = () => {
         </Button>
         
         {/* Logout */}
-        <Button variant="ghost" size="icon" onClick={logout} title={t.auth?.logout || 'Logout'}>
+        <Button variant="ghost" size="icon" onClick={logout} title={t.nav?.logout || 'Logout'}>
           <LogOut className="h-5 w-5" />
         </Button>
       </div>
