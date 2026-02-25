@@ -1996,6 +1996,12 @@ De Board bestuurt "by exception" - ze worden alleen betrokken bij gates en escal
 
 De Team Manager rapporteert via Checkpoint Reports aan de PM. Kwaliteitscontrole gebeurt voordat producten worden opgeleverd.`,
           keyTakeaways: [
+            'MP is the process for Team Managers',
+            'Work Packages are the formal assignment from PM to Team',
+            'Checkpoint Reports report progress',
+            'Quality control before products are delivered',
+          ],
+          keyTakeawaysNL: [
             'MP is het proces voor Team Managers',
             'Work Packages zijn de formele opdracht van PM naar Team',
             'Checkpoint Reports rapporteren voortgang',
@@ -2018,6 +2024,12 @@ De Team Manager rapporteert via Checkpoint Reports aan de PM. Kwaliteitscontrole
 
 Het End Stage Report geeft de Board de informatie om te beslissen over doorgaan, stoppen, of aanpassen.`,
           keyTakeaways: [
+            'SB takes place at the end of each stage',
+            'End Stage Report for the Board\'s decision',
+            'Business Case is validated at each boundary',
+            'Exception Plans are created here when tolerances are exceeded',
+          ],
+          keyTakeawaysNL: [
             'SB vindt plaats aan het einde van elke stage',
             'End Stage Report voor de Board\'s beslissing',
             'Business Case wordt gevalideerd bij elke boundary',
@@ -2045,6 +2057,12 @@ Het End Stage Report geeft de Board de informatie om te beslissen over doorgaan,
 
 CP is verplicht, ook bij voortijdig stoppen!`,
           keyTakeaways: [
+            'CP is mandatory, even for premature closure',
+            'End Project Report evaluates the entire project',
+            'Benefits Review Plan for post-project benefits measurement',
+            'Lessons Report documents lessons learned',
+          ],
+          keyTakeawaysNL: [
             'CP is verplicht, ook bij voortijdig stoppen',
             'End Project Report evalueert het hele project',
             'Benefits Review Plan voor post-project benefits meting',
@@ -2076,6 +2094,12 @@ De 7 principes zijn niet onderhandelbaar.
 
 Bij kleine projecten: combineer SU en IP, minder formele documenten, PM combineert rollen.`,
           keyTakeaways: [
+            'Tailoring is a principle, not optional',
+            'Processes, themes and roles may be adapted',
+            'The 7 principles are non-negotiable',
+            'Document and get tailoring approved',
+          ],
+          keyTakeawaysNL: [
             'Tailoring is een principe, niet optioneel',
             'Processen, thema\'s en rollen mogen worden aangepast',
             'De 7 principes zijn niet onderhandelbaar',
