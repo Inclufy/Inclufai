@@ -432,7 +432,61 @@ const CourseLearningPlayer = () => {
   
   // Feature 2: Practice Work Storage
   const [practiceWork, setPracticeWork] = useState<PracticeWork[]>([]);
-  const [currentPracticeContent, setCurrentPracticeContent] = useState(''); 
+  const [currentPracticeContent, setCurrentPracticeContent] = useState('');
+
+  // NEW: Achievement System State
+  const [achievements, setAchievements] = useState<Achievement[]>([
+    {
+      id: 'first-lesson',
+      title: language === 'nl' ? '🎓 Eerste Les' : '🎓 First Lesson',
+      description: language === 'nl' ? 'Voltooi je eerste les' : 'Complete your first lesson',
+      icon: GraduationCap,
+      color: 'from-blue-500 to-cyan-500',
+      unlocked: false,
+    },
+    {
+      id: 'perfect-score',
+      title: language === 'nl' ? '💯 Perfect Score' : '💯 Perfect Score',
+      description: language === 'nl' ? '3 simulaties perfect beantwoord' : '3 simulations answered perfectly',
+      icon: Trophy,
+      color: 'from-yellow-500 to-orange-500',
+      unlocked: false,
+      progress: 0,
+      maxProgress: 3,
+    },
+    {
+      id: 'practice-master',
+      title: language === 'nl' ? '📝 Practice Master' : '📝 Practice Master',
+      description: language === 'nl' ? '5 praktijkopdrachten ingediend' : '5 practice assignments submitted',
+      icon: Award,
+      color: 'from-purple-500 to-pink-500',
+      unlocked: false,
+      progress: 0,
+      maxProgress: 5,
+    },
+    {
+      id: 'speed-learner',
+      title: language === 'nl' ? '⚡ Speed Learner' : '⚡ Speed Learner',
+      description: language === 'nl' ? 'Voltooi 5 lessen in één dag' : 'Complete 5 lessons in one day',
+      icon: Zap,
+      color: 'from-green-500 to-emerald-500',
+      unlocked: false,
+      progress: 0,
+      maxProgress: 5,
+    },
+    {
+      id: 'streak-week',
+      title: language === 'nl' ? '🔥 Week Streak' : '🔥 Week Streak',
+      description: language === 'nl' ? '7 dagen achtereen geleerd' : 'Learned 7 days in a row',
+      icon: Flame,
+      color: 'from-red-500 to-orange-500',
+      unlocked: false,
+      progress: 0,
+      maxProgress: 7,
+    },
+  ]);
+  const [showAchievementDialog, setShowAchievementDialog] = useState(false);
+  const [unlockedAchievement, setUnlockedAchievement] = useState<Achievement | null>(null);
 
   // ============================================
   // VISUAL RENDERING — Unified in VisualTemplateRenderer

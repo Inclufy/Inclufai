@@ -38,7 +38,7 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { usePageTranslations } from '@/hooks/usePageTranslations';
+// usePageTranslations removed - was causing Rules of Hooks violation in formatDurationFromMinutes
 
 // Use relative path - proxy handles the rest
 const API_BASE_URL = '/api/v1';
