@@ -2354,6 +2354,12 @@ De formele beschrijving van de kwaliteitseisen voor het Increment.
 - Creëert transparantie over wat is gedaan
 - Als een PB item niet voldoet aan DoD, mag het niet worden gereleased`,
           keyTakeaways: [
+            'Three artifacts each with a commitment',
+            'Product Backlog → Product Goal',
+            'Sprint Backlog → Sprint Goal',
+            'Increment → Definition of Done',
+          ],
+          keyTakeawaysNL: [
             'Drie artefacten met elk een commitment',
             'Product Backlog → Product Goal',
             'Sprint Backlog → Sprint Goal',
@@ -2403,12 +2409,12 @@ export const leanSixSigmaCourse: Course = {
   modules: [
     {
       id: 'lss-m1',
-      title: 'Module 1: DMAIC Introductie',
+      title: 'Module 1: DMAIC Introduction',
       description: 'De fundamenten van Lean Six Sigma en de DMAIC cyclus.',
       lessons: [
         {
           id: 'lss-l1',
-          title: 'Wat is Lean Six Sigma?',
+          title: 'What is Lean Six Sigma?',
           duration: '20:00',
           type: 'video',
           transcript: `Lean Six Sigma combineert twee krachtige methodologieën:
@@ -2436,6 +2442,12 @@ export const leanSixSigmaCourse: Course = {
 - 3 Sigma: 66.800 DPMO
 - 6 Sigma: 3.4 DPMO`,
           keyTakeaways: [
+            'Lean focuses on eliminating waste, Six Sigma on reducing variation',
+            'DMAIC = Define, Measure, Analyze, Improve, Control',
+            '8 wastes: TIMWOODS',
+            'Six Sigma aims for 3.4 defects per million opportunities',
+          ],
+          keyTakeawaysNL: [
             'Lean focust op verspilling elimineren, Six Sigma op variatie reduceren',
             'DMAIC = Define, Measure, Analyze, Improve, Control',
             '8 verspillingen: TIMWOODS',
@@ -2444,7 +2456,7 @@ export const leanSixSigmaCourse: Course = {
         },
         {
           id: 'lss-l2',
-          title: 'De Define Fase',
+          title: 'The Define Phase',
           duration: '25:00',
           type: 'video',
           transcript: `De Define fase legt de basis voor het hele project.
@@ -2479,6 +2491,12 @@ High-level procesoverzicht:
 
 SIPOC helpt scope te definiëren en grenzen te bepalen.`,
           keyTakeaways: [
+            'Problem statement contains no causes or solutions',
+            'VOC → Needs → CTQs translates customer needs',
+            'SIPOC provides high-level process insight',
+            'The Define phase determines the success of the entire project',
+          ],
+          keyTakeawaysNL: [
             'Problem statement bevat geen oorzaken of oplossingen',
             'VOC → Needs → CTQ\'s vertaalt klantbehoeften',
             'SIPOC geeft high-level procesinzicht',
@@ -2487,7 +2505,7 @@ SIPOC helpt scope te definiëren en grenzen te bepalen.`,
         },
         {
           id: 'lss-l3',
-          title: 'De Measure Fase',
+          title: 'The Measure Phase',
           duration: '28:00',
           type: 'video',
           transcript: `"In God we trust, all others must bring data." De Measure fase verzamelt feiten.
@@ -2528,6 +2546,12 @@ Meet huidige performance:
 
 Deze baseline is het vertrekpunt voor verbetering.`,
           keyTakeaways: [
+            'Validate the measurement system before collecting data (MSA)',
+            'Distinguish continuous and discrete data',
+            'Process mapping reveals waste',
+            'Baseline metrics provide the starting point',
+          ],
+          keyTakeawaysNL: [
             'Valideer het meetsysteem voordat je data verzamelt (MSA)',
             'Onderscheid continue en discrete data',
             'Process mapping onthult verspilling',
@@ -2536,7 +2560,7 @@ Deze baseline is het vertrekpunt voor verbetering.`,
         },
         {
           id: 'lss-l4',
-          title: 'De Analyze Fase',
+          title: 'The Analyze Phase',
           duration: '22:00',
           type: 'video',
           transcript: `De Analyze fase beantwoordt: WAAROM bestaat dit probleem?
@@ -2575,6 +2599,12 @@ Focus op de "vital few" in plaats van de "trivial many".
 - **Regression**: Kwantificeer de relatie tussen X en Y
 - **Correlation**: Is er een verband?`,
           keyTakeaways: [
+            '5 Whys repeatedly asks "why" until the root cause is found',
+            'Fishbone organizes causes into categories (6Ms)',
+            'Pareto identifies the "vital few" causes',
+            'Hypothesis testing verifies whether causes are statistically significant',
+          ],
+          keyTakeawaysNL: [
             '5 Whys vraagt herhaaldelijk "waarom" tot de root cause',
             'Fishbone organiseert oorzaken in categorieën (6M\'s)',
             'Pareto identificeert de "vital few" oorzaken',
@@ -2583,7 +2613,7 @@ Focus op de "vital few" in plaats van de "trivial many".
         },
         {
           id: 'lss-l5',
-          title: 'De Improve Fase',
+          title: 'The Improve Phase',
           duration: '18:00',
           type: 'video',
           transcript: `De Improve fase transformeert inzichten in actie.
@@ -2619,6 +2649,12 @@ Test op kleine schaal voordat je breed uitrolt:
 - Bewijs verzamelen
 - Buy-in creëren`,
           keyTakeaways: [
+            'Brainstorming generates solutions; matrices select the best',
+            'FMEA identifies risks of solutions',
+            'Pilots test solutions on a small scale',
+            'Change management is essential for adoption',
+          ],
+          keyTakeawaysNL: [
             'Brainstorm genereert oplossingen; matrices selecteren de beste',
             'FMEA identificeert risico\'s van oplossingen',
             'Pilots testen oplossingen op kleine schaal',
@@ -2627,7 +2663,7 @@ Test op kleine schaal voordat je breed uitrolt:
         },
         {
           id: 'lss-l6',
-          title: 'De Control Fase',
+          title: 'The Control Phase',
           duration: '25:00',
           type: 'video',
           transcript: `De Control fase zorgt dat verbeteringen blijvend zijn.
@@ -2665,6 +2701,12 @@ Na project closure:
 - Verantwoordelijkheden helder
 - Benefits tracking opgezet`,
           keyTakeaways: [
+            'Control charts detect out-of-control conditions early',
+            'Special cause variation requires investigation and correction',
+            'The Control Plan describes who measures what and what to do when deviations occur',
+            'Handover to Process Owner ensures long-term success',
+          ],
+          keyTakeawaysNL: [
             'Control charts detecteren out-of-control condities vroeg',
             'Special cause variation vereist onderzoek en correctie',
             'Het Control Plan beschrijft wie wat meet en wat te doen bij afwijking',
@@ -2713,12 +2755,12 @@ export const waterfallCourse: Course = {
   modules: [
     {
       id: 'wf-m1',
-      title: 'Module 1: Waterfall Fundamenten',
+      title: 'Module 1: Waterfall Fundamentals',
       description: 'De basis van Waterfall: fasen, wanneer te gebruiken, en de trade-offs.',
       lessons: [
         {
           id: 'wf-l1',
-          title: 'Wat is Waterfall?',
+          title: 'What is Waterfall?',
           duration: '15:00',
           type: 'video',
           transcript: `Waterfall is een sequentiële, lineaire aanpak voor projectmanagement.
@@ -2753,6 +2795,12 @@ Elke fase moet volledig worden afgerond voordat de volgende begint.
 - Late feedback (werkend product pas aan het einde)
 - Risico: fouten vroeg gemaakt, laat ontdekt`,
           keyTakeaways: [
+            'Waterfall is sequential: each phase must be completed before the next starts',
+            'Ideal for stable requirements and compliance-intensive projects',
+            'Offers predictability but is inflexible for changes',
+            'Still relevant in construction, hardware, enterprise IT and regulated sectors',
+          ],
+          keyTakeawaysNL: [
             'Waterfall is sequentieel: elke fase moet af voor de volgende start',
             'Ideaal voor stabiele requirements en compliance-intensieve projecten',
             'Biedt voorspelbaarheid maar is inflexibel voor wijzigingen',
@@ -2761,7 +2809,7 @@ Elke fase moet volledig worden afgerond voordat de volgende begint.
         },
         {
           id: 'wf-l2',
-          title: 'Requirements Fase',
+          title: 'Requirements Phase',
           duration: '22:00',
           type: 'video',
           transcript: `De Requirements fase is de fundering. Fouten hier zijn het duurst om te fixen.
@@ -2802,6 +2850,12 @@ Dit helpt bij impact analysis en verificatie.
 
 Na formele review en goedkeuring activeert sign-off het change control proces.`,
           keyTakeaways: [
+            'Requirements errors are the most expensive to fix',
+            'Use multiple techniques: interviews, workshops, observation',
+            'Good requirements are SMART and testable',
+            'Formal sign-off activates change control',
+          ],
+          keyTakeawaysNL: [
             'Requirements fouten zijn de duurste om te fixen',
             'Gebruik meerdere technieken: interviews, workshops, observatie',
             'Goede requirements zijn SMART en toetsbaar',
@@ -2856,6 +2910,12 @@ Uitrol naar productie:
 
 Altijd met rollback plan!`,
           keyTakeaways: [
+            'Design translates WHAT (requirements) into HOW (technical)',
+            'Testing occurs at multiple levels up to and including UAT',
+            'UAT sign-off is required for go-live',
+            'Deployment always with a rollback plan',
+          ],
+          keyTakeawaysNL: [
             'Design vertaalt WAT (requirements) naar HOE (technisch)',
             'Testing gebeurt op meerdere niveaus tot en met UAT',
             'UAT sign-off is vereist voor go-live',
@@ -2904,12 +2964,12 @@ export const kanbanCourse: Course = {
   modules: [
     {
       id: 'kb-m1',
-      title: 'Module 1: Kanban Fundamenten',
+      title: 'Module 1: Kanban Fundamentals',
       description: 'De basis: principes, practices en het Kanban bord.',
       lessons: [
         {
           id: 'kb-l1',
-          title: 'Wat is Kanban?',
+          title: 'What is Kanban?',
           duration: '15:00',
           type: 'video',
           transcript: `Kanban (看板) is Japans voor "visueel signaal". Het is een evolutionaire aanpak voor werk management.
@@ -2939,6 +2999,12 @@ export const kanbanCourse: Course = {
 
 Kanban vraagt geen grote reorganisatie. Je begint met je huidige proces en verbetert geleidelijk.`,
           keyTakeaways: [
+            'Kanban = visual signal, focus on flow and pull',
+            'Start where you are - no major reorganization needed',
+            '6 core practices form the heart of Kanban',
+            'Kanban is complementary to Scrum, not a replacement',
+          ],
+          keyTakeawaysNL: [
             'Kanban = visueel signaal, focus op flow en pull',
             'Start waar je bent - geen grote reorganisatie nodig',
             '6 core practices vormen het hart van Kanban',
@@ -2947,7 +3013,7 @@ Kanban vraagt geen grote reorganisatie. Je begint met je huidige proces en verbe
         },
         {
           id: 'kb-l2',
-          title: 'Het Kanban Bord Ontwerpen',
+          title: 'Designing the Kanban Board',
           duration: '20:00',
           type: 'video',
           transcript: `Het bord visualiseert je workflow.
@@ -2983,6 +3049,12 @@ Analysis [3] | Dev [5] | Review [2]
 
 Lead Time = tijd tussen deze twee punten.`,
           keyTakeaways: [
+            'Start by mapping your actual workflow',
+            'Split Doing/Done to reveal wait time',
+            'Make blockers explicitly visible',
+            'Evolve the board based on insights',
+          ],
+          keyTakeawaysNL: [
             'Begin met je werkelijke workflow te mappen',
             'Split Doing/Done om wachttijd te onthullen',
             'Maak blokkades expliciet zichtbaar',
@@ -2991,7 +3063,7 @@ Lead Time = tijd tussen deze twee punten.`,
         },
         {
           id: 'kb-l3',
-          title: 'WIP Limieten',
+          title: 'WIP Limits',
           duration: '18:00',
           type: 'video',
           transcript: `WIP limieten zijn het hart van Kanban.
@@ -3031,6 +3103,12 @@ Als het niet knelt, zijn je limieten te los.
 
 NIET: De limiet verhogen bij het eerste ongemak!`,
           keyTakeaways: [
+            'Little\'s Law: Lead Time = WIP / Throughput',
+            'Context switching costs 15-20 minutes per switch',
+            '"Stop starting, start finishing!"',
+            'The pain of WIP limits reveals problems',
+          ],
+          keyTakeawaysNL: [
             'Little\'s Law: Lead Time = WIP / Throughput',
             'Context switching kost 15-20 minuten per switch',
             '"Stop starting, start finishing!"',
@@ -3077,6 +3155,12 @@ Flow Efficiency = Werktijd / Lead Time × 100%
 Typisch voor kenniswerk: 5-15%!
 Dat is 85-95% wachttijd - hier zit verbeterpotentieel.`,
           keyTakeaways: [
+            'Lead Time = WIP / Throughput (Little\'s Law)',
+            'CFD visualizes WIP, lead time, throughput and bottlenecks',
+            'Use 85th percentile for reliable predictions',
+            'Flow efficiency in knowledge work is typically 5-15%',
+          ],
+          keyTakeawaysNL: [
             'Lead Time = WIP / Throughput (Little\'s Law)',
             'CFD visualiseert WIP, lead time, throughput en bottlenecks',
             'Gebruik 85e percentiel voor betrouwbare voorspellingen',
@@ -3125,12 +3209,12 @@ export const agileFundamentalsCourse: Course = {
   modules: [
     {
       id: 'ag-m1',
-      title: 'Module 1: De Agile Mindset',
+      title: 'Module 1: The Agile Mindset',
       description: 'Waarden, principes en de fundamentele mindshift.',
       lessons: [
         {
           id: 'ag-l1',
-          title: 'Het Agile Manifesto',
+          title: 'The Agile Manifesto',
           duration: '18:00',
           type: 'video',
           transcript: `In 2001 kwamen 17 software ontwikkelaars samen in Snowbird, Utah. Na drie dagen produceerden ze het Agile Manifesto.
@@ -3162,6 +3246,12 @@ Hoewel wij de zaken aan de rechterkant belangrijk vinden, hechten wij meer waard
 ❌ Chaos en "we zien wel"
 ❌ Alleen voor software`,
           keyTakeaways: [
+            'Four values: People, Working software, Customer collaboration, Responding to change',
+            'It is about prioritization, not elimination of the right side',
+            'Agile requires a mindshift from predicting to adapting',
+            'The Manifesto is a foundation, not a complete method',
+          ],
+          keyTakeawaysNL: [
             'Vier waarden: Mensen, Werkende software, Klantcollaboratie, Inspelen op verandering',
             'Het gaat om prioritering, niet eliminatie van de rechterkant',
             'Agile vraagt een mindshift van voorspellen naar aanpassen',
@@ -3170,7 +3260,7 @@ Hoewel wij de zaken aan de rechterkant belangrijk vinden, hechten wij meer waard
         },
         {
           id: 'ag-l2',
-          title: 'De 12 Principes',
+          title: 'The 12 Principles',
           duration: '25:00',
           type: 'video',
           transcript: `Achter de vier waarden liggen twaalf principes:
@@ -3201,6 +3291,12 @@ Hoewel wij de zaken aan de rechterkant belangrijk vinden, hechten wij meer waard
 
 De principes zijn geen checklist maar een kompas voor beslissingen.`,
           keyTakeaways: [
+            'The 12 principles make the 4 values concrete',
+            'Focus on frequent delivery of working software',
+            'Build around motivated people with trust',
+            'Continuous reflection and improvement is essential',
+          ],
+          keyTakeawaysNL: [
             'De 12 principes concretiseren de 4 waarden',
             'Focus op frequente levering van werkende software',
             'Bouw rond gemotiveerde mensen met vertrouwen',
@@ -3209,7 +3305,7 @@ De principes zijn geen checklist maar een kompas voor beslissingen.`,
         },
         {
           id: 'ag-l3',
-          title: 'Agile vs. Traditioneel',
+          title: 'Agile vs. Traditional',
           duration: '20:00',
           type: 'video',
           transcript: `**Het Stacey Diagram:**
@@ -3236,6 +3332,12 @@ Agile: Tijd/budget vast, scope variabel
 
 Bij Agile bouwen we de belangrijkste features eerst.`,
           keyTakeaways: [
+            'Traditional fits predictable, stable contexts',
+            'Agile fits uncertain, changing contexts',
+            'The Stacey diagram helps in choosing the approach',
+            'Hybrid approaches combine elements of both',
+          ],
+          keyTakeawaysNL: [
             'Traditioneel past bij voorspelbare, stabiele contexten',
             'Agile past bij onzekere, veranderlijke contexten',
             'Het Stacey diagram helpt bij het kiezen van de aanpak',
@@ -3244,7 +3346,7 @@ Bij Agile bouwen we de belangrijkste features eerst.`,
         },
         {
           id: 'ag-l4',
-          title: 'Agile Frameworks Overzicht',
+          title: 'Agile Frameworks Overview',
           duration: '22:00',
           type: 'video',
           transcript: `Het Manifesto biedt waarden en principes, maar geen concrete werkwijze. Daarom zijn er frameworks.
@@ -3276,6 +3378,12 @@ Factoren:
 
 Begin pure, pas aan na ervaring.`,
           keyTakeaways: [
+            'Frameworks are the HOW, the Manifesto is the WHY',
+            'Scrum, Kanban, XP are the most used team-level frameworks',
+            'SAFe, LeSS, Nexus scale to multiple teams',
+            'Start pure, adapt after experience (ShuHaRi)',
+          ],
+          keyTakeawaysNL: [
             'Frameworks zijn de HOW, het Manifesto is de WHY',
             'Scrum, Kanban, XP zijn de meest gebruikte team-frameworks',
             'SAFe, LeSS, Nexus schalen naar meerdere teams',
