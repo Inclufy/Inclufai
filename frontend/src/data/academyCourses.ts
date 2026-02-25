@@ -891,7 +891,6 @@ Huidige situatie:
       id: 'pm-m3',
       title: 'Module 3: Planning',
       description: 'WBS, Gantt charts, resource planning, budgettering en risicomanagement.',
-
       lessons: [
         {
           id: 'pm-l11',
@@ -935,6 +934,12 @@ Elk werkpakket wordt beschreven in de WBS Dictionary:
 - Geschatte duur en kosten
 - Acceptatiecriteria`,
           keyTakeaways: [
+            'The WBS is the foundation for all planning and control',
+            'Follow the 100% rule: all work must be included',
+            'Use deliverables (what), not activities (how)',
+            'Work packages of 8-80 hours are ideal',
+          ],
+          keyTakeawaysNL: [
             'De WBS is de basis voor alle planning en control',
             'Volg de 100% regel: alle werk moet erin zitten',
             'Gebruik deliverables (wat), geen activiteiten (hoe)',
@@ -947,7 +952,7 @@ Elk werkpakket wordt beschreven in de WBS Dictionary:
         },
         {
           id: 'pm-l12',
-          title: 'Gantt charts maken',
+          title: 'Creating Gantt charts',
           duration: '20:00',
           type: 'video',
           transcript: `De Gantt chart is een visuele weergave van de projectplanning, vernoemd naar Henry Gantt (1910).
@@ -981,6 +986,12 @@ Kenmerken:
 - Vertraging op kritiek pad = vertraging project
 - Focus je monitoring op kritieke taken`,
           keyTakeaways: [
+            'Gantt charts visualize schedules and dependencies',
+            'The critical path determines the minimum project duration',
+            'There are four types of dependencies: FS, SS, FF, SF',
+            'Update the Gantt regularly for an accurate picture',
+          ],
+          keyTakeawaysNL: [
             'Gantt charts visualiseren planning en afhankelijkheden',
             'Het kritieke pad bepaalt de minimale projectduur',
             'Er zijn vier soorten afhankelijkheden: FS, SS, FF, SF',

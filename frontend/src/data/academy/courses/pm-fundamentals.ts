@@ -1371,6 +1371,12 @@ Goede scope definitie:
 - Vormt de basis voor planning en change control
 - Wordt vastgelegd in een formele Scope Statement`,
       keyTakeaways: [
+        'Scope = what is and is not part of the project',
+        'Distinguish product scope from project scope',
+        'Explicitly stating out-of-scope prevents scope creep',
+        'The scope statement is the formal documentation',
+      ],
+      keyTakeawaysNL: [
         'Scope = wat wel en niet tot het project behoort',
         'Onderscheid product scope van project scope',
         'Out-of-scope expliciet benoemen voorkomt scope creep',
@@ -1461,6 +1467,12 @@ const module3: Module = {
       duration: '18:00',
       type: 'video',
       keyTakeaways: [
+        'The WBS is the foundation for all planning and control',
+        'Follow the 100% rule: all work must be included',
+        'Use deliverables (what), not activities (how)',
+        'Work packages of 8-80 hours are ideal',
+      ],
+      keyTakeawaysNL: [
         'De WBS is de basis voor alle planning en control',
         'Volg de 100% regel: alle werk moet erin zitten',
         'Gebruik deliverables (wat), geen activiteiten (hoe)',
@@ -1478,6 +1490,12 @@ const module3: Module = {
       duration: '20:00',
       type: 'video',
       keyTakeaways: [
+        'Gantt charts visualize schedules and dependencies',
+        'The critical path determines the minimum project duration',
+        'There are four types of dependencies: FS, SS, FF, SF',
+        'Update the Gantt regularly for an up-to-date view',
+      ],
+      keyTakeawaysNL: [
         'Gantt charts visualiseren planning en afhankelijkheden',
         'Het kritieke pad bepaalt de minimale projectduur',
         'Er zijn vier soorten afhankelijkheden: FS, SS, FF, SF',
