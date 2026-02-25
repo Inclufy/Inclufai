@@ -2197,7 +2197,7 @@ Deze waarden geven richting aan werk, acties en gedrag van het Scrum Team.`,
         },
         {
           id: 'scrum-l2',
-          title: 'De Scrum Rollen (Accountabilities)',
+          title: 'The Scrum Roles (Accountabilities)',
           duration: '22:00',
           type: 'video',
           transcript: `Het Scrum Team bestaat uit drie accountabilities. Er zijn geen hiërarchieën of sub-teams.
@@ -2243,6 +2243,12 @@ Verantwoordelijkheden:
 - Dagelijks het plan aanpassen richting Sprint Goal
 - Elkaar accountable houden als professionals`,
           keyTakeaways: [
+            'Three accountabilities: Product Owner, Scrum Master, Developers',
+            'PO maximizes value and manages the Product Backlog',
+            'SM is servant-leader and coach for team and organization',
+            'Developers are all people working on the Increment',
+          ],
+          keyTakeawaysNL: [
             'Drie accountabilities: Product Owner, Scrum Master, Developers',
             'PO maximaliseert waarde en beheert de Product Backlog',
             'SM is servant-leader en coach voor team en organisatie',
@@ -2251,7 +2257,7 @@ Verantwoordelijkheden:
         },
         {
           id: 'scrum-l3',
-          title: 'De Scrum Events',
+          title: 'The Scrum Events',
           duration: '25:00',
           type: 'video',
           transcript: `Scrum gebruikt events om regelmaat te creëren en de behoefte aan andere meetings te minimaliseren.
@@ -2297,6 +2303,12 @@ Timebox: max 3 uur voor 1-maand Sprint.
 - Hoe werden problemen opgelost (of niet)?
 - Identificeer verbeteringen voor volgende Sprint`,
           keyTakeaways: [
+            'The Sprint is the container for all events (max 4 weeks)',
+            'Sprint Planning defines WHAT and HOW, resulting in the Sprint Goal',
+            'Daily Scrum is max 15 min, for Developers',
+            'Review shows the Increment; Retrospective improves the process',
+          ],
+          keyTakeawaysNL: [
             'De Sprint is de container voor alle events (max 4 weken)',
             'Sprint Planning definieert WAT en HOE, resulterend in Sprint Goal',
             'Daily Scrum is max 15 min, voor Developers',
@@ -2305,7 +2317,7 @@ Timebox: max 3 uur voor 1-maand Sprint.
         },
         {
           id: 'scrum-l4',
-          title: 'De Scrum Artefacten',
+          title: 'The Scrum Artifacts',
           duration: '18:00',
           type: 'video',
           transcript: `Scrum artefacten representeren werk of waarde. Elk artefact heeft een commitment dat transparantie en focus versterkt.
