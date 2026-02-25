@@ -874,7 +874,7 @@ const renderGenericContent = (content: string, isNL: boolean, index: number) => 
 };
 // ============================================
 // MAIN CONTENT SECTIONS — split by **Header** markers
-// Uses renderMarkdownBlock for proper content rendering
+// Uses VisualTemplateRenderer for visual rendering
 // ============================================
 const contentSections = useMemo(() => {
   const fullContent = currentLesson?.transcript || currentLesson?.content || '';
@@ -894,6 +894,12 @@ const contentSections = useMemo(() => {
       keyPoints: [] as string[],
     }];
   }
+
+  // Get visual config — merge API data with any fetched LessonVisual data
+  const apiVisualType = (currentLesson as any)?.visual_type || 'auto';
+  const lessonVisualData = (currentLesson as any)?.visual_data || null;
+  // approvedVisualData from LessonVisual fetch takes priority
+  const apiVisualData = approvedVisualData || lessonVisualData;
 
   const icons = [
     <Target className="w-8 h-8 text-white" />,
@@ -975,16 +981,30 @@ const contentSections = useMemo(() => {
   // Limit to 10 sections max
   const finalSections = parsedSections.slice(0, 10);
 
-  return finalSections.map((section, index) => ({
-    title: section.title,
-    subtitle: `${isNL ? 'Deel' : 'Part'} ${index + 1} ${isNL ? 'van' : 'of'} ${finalSections.length}`,
-    icon: icons[index % icons.length],
-    color: colors[index % colors.length],
-    content: section.content,
-    reactContent: renderMarkdownBlock(section.content),
-    keyPoints: [] as string[],
-  }));
-}, [currentLesson, isNL]);
+  return finalSections.map((section, index) => {
+    // Use API visual type for the first section, auto-detect for subsequent
+    const visualType = index === 0 && apiVisualType !== 'auto' ? apiVisualType : 'auto';
+    const visualData = index === 0 ? apiVisualData : null;
+
+    return {
+      title: section.title,
+      subtitle: `${isNL ? 'Deel' : 'Part'} ${index + 1} ${isNL ? 'van' : 'of'} ${finalSections.length}`,
+      icon: icons[index % icons.length],
+      color: colors[index % colors.length],
+      content: section.content,
+      reactContent: (
+        <VisualTemplateRenderer
+          visualType={visualType}
+          visualData={visualData}
+          content={section.content}
+          isNL={isNL}
+          index={index}
+        />
+      ),
+      keyPoints: [] as string[],
+    };
+  });
+}, [currentLesson, isNL, approvedVisualData]);
   // Get interactive slides
   const slides = generateInteractiveSlides(currentLesson, isNL);
   
