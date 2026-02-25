@@ -14,8 +14,13 @@ Covers:
 9. Certificate generation basics
 """
 
+import os
 import uuid
 from decimal import Decimal
+
+# Set a dummy OpenAI API key before any Django URL imports trigger
+# academy.admin_api module-level OpenAI client initialisation.
+os.environ.setdefault("OPENAI_API_KEY", "sk-test-dummy-key-for-testing")
 
 import pytest
 from django.urls import reverse
