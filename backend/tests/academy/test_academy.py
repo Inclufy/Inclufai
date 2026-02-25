@@ -571,7 +571,7 @@ class TestCourseModuleListing:
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 2
         for module in response.data:
-            assert module["course"] == str(published_course.pk)
+            assert str(module["course"]) == str(published_course.pk)
 
     def test_list_modules_filter_excludes_other_courses(
         self, api_client, published_course, course_module, second_category
@@ -590,7 +590,7 @@ class TestCourseModuleListing:
         url = reverse("module-list")
         response = api_client.get(url, {"course": str(published_course.pk)})
         for module in response.data:
-            assert module["course"] == str(published_course.pk)
+            assert str(module["course"]) == str(published_course.pk)
 
     def test_list_modules_without_filter_returns_all(
         self, api_client, published_course, course_module, second_module, second_category
