@@ -1398,6 +1398,12 @@ Initiating a Project:
 - Creëert het Project Plan
 - Eindigt met een go/no-go beslissing`,
       keyTakeaways: [
+        'IP creates the Project Initiation Documentation (PID)',
+        'The PID is the baseline for the project',
+        'Four strategies are prepared: Risk, Quality, Config, Comms',
+        'The Business Case is refined with better cost estimates',
+      ],
+      keyTakeawaysNL: [
         'IP creëert de Project Initiation Documentation (PID)',
         'De PID is de baseline voor het project',
         'Vier strategieën worden opgesteld: Risk, Quality, Config, Comms',
@@ -1497,6 +1503,12 @@ Directing a Project:
 - Past Management by Exception toe
 - Vereist minimale maar cruciale betrokkenheid`,
       keyTakeaways: [
+        'DP is the process for the Project Board',
+        'Runs from start to end of the project',
+        'Focuses on authorizations and key decisions',
+        'Management by Exception minimizes Board time',
+      ],
+      keyTakeawaysNL: [
         'DP is het proces voor de Project Board',
         'Loopt van begin tot eind van het project',
         'Focust op autorisaties en key decisions',
@@ -1612,6 +1624,12 @@ Controlling a Stage:
 - Past management by exception toe
 - Produceert Highlight en Exception Reports`,
       keyTakeaways: [
+        'CS is the daily management process of the PM',
+        'Work Packages delegate work to Team Managers',
+        'Highlight Reports go regularly to the Board',
+        'Exception Reports escalate beyond tolerances',
+      ],
+      keyTakeawaysNL: [
         'CS is het dagelijkse management proces van de PM',
         'Work Packages delegeren werk aan Team Managers',
         'Highlight Reports gaan regelmatig naar de Board',
@@ -1709,6 +1727,12 @@ Managing Product Delivery:
 - Rapporteert via Checkpoint Reports
 - Zorgt voor kwaliteitscontrole op producten`,
       keyTakeaways: [
+        'MP is the process for Team Managers',
+        'Work Packages are the formal assignment from PM to Team Manager',
+        'Checkpoint Reports report on progress',
+        'Quality control takes place before products are delivered',
+      ],
+      keyTakeawaysNL: [
         'MP is het proces voor Team Managers',
         'Work Packages zijn de formele opdracht van PM naar Team Manager',
         'Checkpoint Reports rapporteren voortgang',
@@ -1808,6 +1832,12 @@ Managing a Stage Boundary:
 - Produceert End Stage Report
 - Is het beslismoment voor de Board`,
       keyTakeaways: [
+        'SB takes place at the end of each stage',
+        'End Stage Report provides the Board with information for decision-making',
+        'The Business Case is validated at each boundary',
+        'Exception Plans are created here when needed',
+      ],
+      keyTakeawaysNL: [
         'SB vindt plaats aan het einde van elke stage',
         'End Stage Report geeft de Board informatie voor beslissing',
         'Business Case wordt gevalideerd bij elke boundary',

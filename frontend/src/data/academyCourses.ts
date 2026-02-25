@@ -372,6 +372,12 @@ De statistieken zijn ontnuchterend:
 
 De projecten die wel slagen, hebben meestal één ding gemeen: goed projectmanagement.`,
           keyTakeaways: [
+            'A project is temporary, unique and delivers a specific result',
+            'The Triple Constraint (scope, time, budget) defines project boundaries',
+            'Projects differ fundamentally from operational activities',
+            '70% of projects fail without proper project management',
+          ],
+          keyTakeawaysNL: [
             'Een project is tijdelijk, uniek en levert een specifiek resultaat',
             'De Triple Constraint (scope, tijd, budget) bepaalt projectgrenzen',
             'Projecten verschillen fundamenteel van operationele werkzaamheden',
@@ -384,7 +390,7 @@ De projecten die wel slagen, hebben meestal één ding gemeen: goed projectmanag
         },
         {
           id: 'pm-l2',
-          title: 'De rol van de projectmanager',
+          title: 'The role of the project manager',
           duration: '15:00',
           type: 'video',
           transcript: `Een projectmanager (PM) is de persoon die verantwoordelijk is voor het plannen, uitvoeren en afsluiten van een project. Maar wat houdt dat precies in?
@@ -425,6 +431,12 @@ Een moderne visie ziet de PM als een "servant leader":
 - Je creëert een omgeving waarin mensen kunnen excelleren
 - Je faciliteert in plaats van dicteert`,
           keyTakeaways: [
+            'The PM is responsible for scope, time, budget and quality',
+            'Both hard skills and soft skills are essential',
+            'Servant leadership is more effective than command & control',
+            'There are multiple career paths to project management',
+          ],
+          keyTakeawaysNL: [
             'De PM is verantwoordelijk voor scope, tijd, budget en kwaliteit',
             'Zowel hard skills als soft skills zijn essentieel',
             'Dienend leiderschap is effectiever dan command & control',
@@ -433,7 +445,7 @@ Een moderne visie ziet de PM als een "servant leader":
         },
         {
           id: 'pm-l3',
-          title: 'Projectmanagement methodologieën',
+          title: 'Project management methodologies',
           duration: '18:00',
           type: 'video',
           transcript: `Een projectmanagement methodologie is een gestructureerde aanpak voor het managen van projecten. Er zijn veel verschillende methodologieën, elk met eigen sterke punten.
@@ -484,6 +496,12 @@ Factoren om te overwegen:
 - Team ervaring
 - Regelgeving en compliance`,
           keyTakeaways: [
+            'Methodologies provide structure and a common language',
+            'Waterfall is sequential; Agile is iterative and flexible',
+            'PRINCE2 focuses on governance; Lean Six Sigma on process improvement',
+            'Choose the methodology that fits your project and organization',
+          ],
+          keyTakeawaysNL: [
             'Methodologieën bieden structuur en gemeenschappelijke taal',
             'Waterfall is sequentieel; Agile is iteratief en flexibel',
             'PRINCE2 focust op governance; Lean Six Sigma op procesverbetering',

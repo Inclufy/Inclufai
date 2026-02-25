@@ -1479,7 +1479,7 @@ const module3: Module = {
     },
     {
       id: 'pm-l15',
-      title: 'Risicomanagement',
+      title: 'Risk management',
       titleNL: 'Risicomanagement',
       duration: '22:00',
       type: 'video',
@@ -1508,7 +1508,7 @@ const module4: Module = {
   lessons: [
     {
       id: 'pm-l16',
-      title: 'Teams leiden en motiveren',
+      title: 'Leading and motivating teams',
       titleNL: 'Teams leiden en motiveren',
       duration: '18:00',
       type: 'video',
@@ -1677,7 +1677,7 @@ Effectief teamleiderschap:
     },
     {
       id: 'pm-l17',
-      title: 'Stakeholder communicatie',
+      title: 'Stakeholder communication',
       titleNL: 'Stakeholder communicatie',
       duration: '16:00',
       type: 'video',
@@ -1839,7 +1839,7 @@ Effectieve stakeholder communicatie:
     },
     {
       id: 'pm-l18',
-      title: 'Voortgangsbewaking met Earned Value',
+      title: 'Progress monitoring with Earned Value',
       titleNL: 'Voortgangsbewaking met Earned Value',
       duration: '22:00',
       type: 'video',
@@ -2140,7 +2140,7 @@ Effectief change control:
     },
     {
       id: 'pm-l20',
-      title: 'Quiz: Uitvoering & Monitoring',
+      title: 'Quiz: Execution & Monitoring',
       titleNL: 'Quiz: Uitvoering & Monitoring',
       duration: '15:00',
       type: 'quiz',
@@ -2222,7 +2222,7 @@ const module5: Module = {
   lessons: [
     {
       id: 'pm-l21',
-      title: 'Het belang van projectafsluiting',
+      title: 'The importance of project closure',
       titleNL: 'Het belang van projectafsluiting',
       duration: '12:00',
       type: 'video',
@@ -2311,7 +2311,7 @@ Projectafsluiting:
     },
     {
       id: 'pm-l22',
-      title: 'Formele acceptatie en overdracht',
+      title: 'Formal acceptance and handover',
       titleNL: 'Formele acceptatie en overdracht',
       duration: '14:00',
       type: 'video',
