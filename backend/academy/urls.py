@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from . import api_views, views, test_view, quiz_exam_api, ai_content_api, certificate_api, admin_api
+from . import api_views, views, test_view, quiz_exam_api, ai_content_api, certificate_api, admin_api, ai_views
 from .views import SkillViewSet, SkillCategoryViewSet, UserSkillViewSet, SkillGoalViewSet, SkillActivityViewSet
 
 router = DefaultRouter()
@@ -41,6 +41,9 @@ urlpatterns = [
     path('ai/generate-exam/', ai_content_api.generate_exam, name='ai-generate-exam'),
     path('ai/extract-skills/', ai_content_api.extract_skills, name='ai-extract-skills'),
     
+    # AI Coach endpoint
+    path('ai/coach/message/', ai_views.ai_coach_message, name='ai-coach-message'),
+
     # Certificate Generation
     path('certificate/generate/<uuid:enrollment_id>/', certificate_api.generate_certificate),
     path('certificate/<uuid:certificate_id>/download/', certificate_api.download_certificate),
