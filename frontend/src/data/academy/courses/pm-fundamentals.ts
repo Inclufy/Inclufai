@@ -2810,6 +2810,12 @@ Administratieve afsluiting:
 - Produceert een final project report
 - Eindigt met viering van succes`,
       keyTakeaways: [
+        'Financial closure prevents outstanding invoices and claims',
+        'Resources (people, tools, facilities) must be formally released',
+        'Archive documentation according to organizational policy',
+        'Don\'t forget to celebrate - it is good for team and culture',
+      ],
+      keyTakeawaysNL: [
         'Financiële afsluiting voorkomt openstaande facturen en claims',
         'Resources (mensen, tools, faciliteiten) moeten formeel worden vrijgegeven',
         'Documentatie archiveren volgens organisatiebeleid',

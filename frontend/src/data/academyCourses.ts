@@ -1399,7 +1399,7 @@ Regel: Niets toevoegen zonder formeel verzoek.`,
         },
         {
           id: 'pm-l20',
-          title: 'Quiz: Uitvoering & Monitoring',
+          title: 'Quiz: Execution & Monitoring',
           duration: '15:00',
           type: 'quiz',
           quiz: [
@@ -1447,12 +1447,12 @@ Regel: Niets toevoegen zonder formeel verzoek.`,
     // ==========================================
     {
       id: 'pm-m5',
-      title: 'Module 5: Afsluiting',
+      title: 'Module 5: Closure',
       description: 'Formele acceptatie, lessons learned en administratieve afsluiting.',
       lessons: [
         {
           id: 'pm-l21',
-          title: 'Het belang van projectafsluiting',
+          title: 'The importance of project closure',
           duration: '12:00',
           type: 'video',
           transcript: `Veel projectmanagers haasten door de afsluitingsfase. Dit is een grote fout.
@@ -1484,6 +1484,12 @@ Regel: Niets toevoegen zonder formeel verzoek.`,
 5. Archiveren van projectdocumentatie
 6. Vieren van succes`,
           keyTakeaways: [
+            'Closure is often neglected but is crucial',
+            'Zombie projects consume resources and cause confusion',
+            'Lessons learned prevent repeating mistakes',
+            'Even cancelled projects must be properly closed',
+          ],
+          keyTakeawaysNL: [
             'Afsluiting wordt vaak verwaarloosd maar is cruciaal',
             'Zombie projecten kosten resources en veroorzaken verwarring',
             'Lessons learned voorkomen herhaling van fouten',
@@ -1492,7 +1498,7 @@ Regel: Niets toevoegen zonder formeel verzoek.`,
         },
         {
           id: 'pm-l22',
-          title: 'Formele acceptatie en overdracht',
+          title: 'Formal acceptance and handover',
           duration: '14:00',
           type: 'video',
           transcript: `Formele acceptatie is het moment waarop de opdrachtgever bevestigt dat de deliverables voldoen aan de eisen.
