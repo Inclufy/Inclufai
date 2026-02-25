@@ -11,6 +11,7 @@ from .serializers import (
     GovernanceSerializer,
     ChangeRequestSerializer,
 )
+from projects.models import TimeEntry
 
 
 IsAdminOrPM = HasRole("admin", "pm")
