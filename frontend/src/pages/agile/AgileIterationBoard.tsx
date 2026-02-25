@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Plus, Play, CheckCircle2, LayoutDashboard, Trash2 } from "lucide-react";
@@ -87,7 +87,7 @@ const AgileIterationBoard = () => {
         )}
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{pt("New Iteration")}</DialogTitle></DialogHeader>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{pt("New Iteration")}</DialogTitle><DialogDescription>{pt("Create a new iteration")}</DialogDescription></DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2"><Label>{pt("Name")} *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
           <div className="space-y-2"><Label>{pt("Goal")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.goal} onChange={(e) => setForm({ ...form, goal: e.target.value })} /></div>

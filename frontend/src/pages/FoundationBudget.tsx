@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -46,7 +46,7 @@ const FoundationBudget = () => {
   const fetchData = async () => {
     try {
       const [expRes, projRes] = await Promise.all([
-        fetch(`/api/v1/expenses/?project=${projectId}`, { headers }),
+        fetch(`/api/v1/projects/expenses/?project=${projectId}`, { headers }),
         fetch(`/api/v1/projects/${projectId}/`, { headers }),
       ]);
       if (expRes.ok) {
@@ -97,7 +97,7 @@ const FoundationBudget = () => {
     setSubmitting(true);
     try {
       const body = { ...form, amount: parseFloat(form.amount), project: parseInt(projectId!) };
-      const url = editingExpense ? `/api/v1/expenses/${editingExpense.id}/` : "/api/v1/expenses/";
+      const url = editingExpense ? `/api/v1/projects/expenses/${editingExpense.id}/` : "/api/v1/projects/expenses/";
       const method = editingExpense ? "PATCH" : "POST";
       const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
       if (response.ok) {
@@ -115,7 +115,7 @@ const FoundationBudget = () => {
   const handleDelete = async (expenseId: number) => {
     if (!confirm(pt("Are you sure?"))) return;
     try {
-      const response = await fetch(`/api/v1/expenses/${expenseId}/`, { method: "DELETE", headers });
+      const response = await fetch(`/api/v1/projects/expenses/${expenseId}/`, { method: "DELETE", headers });
       if (response.ok || response.status === 204) {
         toast.success(t.common.expenseDeleted);
         fetchData();
@@ -214,6 +214,7 @@ const FoundationBudget = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{editingExpense ? pt("Edit") : pt("Add")} Expense</DialogTitle>
+            <DialogDescription>{editingExpense ? pt("Edit expense details") : pt("Add a new expense")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">

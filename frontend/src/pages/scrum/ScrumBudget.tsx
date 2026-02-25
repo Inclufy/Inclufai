@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -31,7 +31,7 @@ const ScrumBudget = () => {
   const fetchData = async () => {
     try {
       const [eRes, pRes] = await Promise.all([
-        fetch(`/api/v1/expenses/?project=${id}`, { headers }),
+        fetch(`/api/v1/projects/expenses/?project=${id}`, { headers }),
         fetch(`/api/v1/projects/${id}/`, { headers }),
       ]);
       if (eRes.ok) { const d = await eRes.json(); setExpenses(Array.isArray(d) ? d : d.results || []); }
@@ -44,8 +44,8 @@ const ScrumBudget = () => {
 
   const openCreate = () => { setEditing(null); setForm({ title: "", amount: "", category: "labor_cost", status: "pending", date: new Date().toISOString().split("T")[0] }); setDialogOpen(true); };
   const openEdit = (e: any) => { setEditing(e); setForm({ title: e.title, amount: String(e.amount), category: e.category || "labor_cost", status: e.status || "pending", date: e.date?.split("T")[0] || "" }); setDialogOpen(true); };
-  const handleSave = async () => { if (!form.title || !form.amount) { toast.error(pt("Title and amount required")); return; } setSubmitting(true); try { const body = { ...form, amount: parseFloat(form.amount), project: parseInt(id!) }; const url = editing ? `/api/v1/expenses/${editing.id}/` : `/api/v1/expenses/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) }); if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); } else toast.error(pt("Save failed")); } catch { toast.error(pt("Save failed")); } finally { setSubmitting(false); } };
-  const handleDelete = async (eId: number) => { if (!confirm(pt("Are you sure you want to delete this?"))) return; try { const r = await fetch(`/api/v1/expenses/${eId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); } } catch { toast.error(pt("Delete failed")); } };
+  const handleSave = async () => { if (!form.title || !form.amount) { toast.error(pt("Title and amount required")); return; } setSubmitting(true); try { const body = { ...form, amount: parseFloat(form.amount), project: parseInt(id!) }; const url = editing ? `/api/v1/projects/expenses/${editing.id}/` : `/api/v1/projects/expenses/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) }); if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); } else toast.error(pt("Save failed")); } catch { toast.error(pt("Save failed")); } finally { setSubmitting(false); } };
+  const handleDelete = async (eId: number) => { if (!confirm(pt("Are you sure you want to delete this?"))) return; try { const r = await fetch(`/api/v1/projects/expenses/${eId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); } } catch { toast.error(pt("Delete failed")); } };
 
   const totalBudget = project?.budget || 0;
   const totalSpent = expenses.filter(e => e.status === "paid").reduce((s, e) => s + parseFloat(e.amount || 0), 0);
@@ -68,7 +68,7 @@ const ScrumBudget = () => {
           ))}</div></CardContent></Card>
         )}
       </div>
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} Expense</DialogTitle></DialogHeader>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} Expense</DialogTitle><DialogDescription>{editing ? pt("Edit expense details") : pt("Add a new expense")}</DialogDescription></DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2"><Label>{pt("Title")} *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
           <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>{pt("Amount")} *</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div><div className="space-y-2"><Label>{pt("Date")}</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div></div>
