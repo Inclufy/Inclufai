@@ -115,6 +115,12 @@ In deze les heb je geleerd:
 In de volgende les gaan we dieper in op de rol van de projectmanager. Wie is dat eigenlijk, 
 en wat maakt iemand een goede PM?`,
       keyTakeaways: [
+        'A project is temporary, unique and delivers a specific result',
+        'The Triple Constraint (scope, time, budget) determines project boundaries',
+        'Projects differ fundamentally from operational activities',
+        '70% of projects fail without proper project management',
+      ],
+      keyTakeawaysNL: [
         'Een project is tijdelijk, uniek en levert een specifiek resultaat',
         'De Triple Constraint (scope, tijd, budget) bepaalt projectgrenzen',
         'Projecten verschillen fundamenteel van operationele werkzaamheden',
@@ -268,6 +274,12 @@ De projectmanager is de spil van elk project. Je combineert:
 In de volgende les verkennen we de verschillende projectmanagement methodologieën. 
 Dit geeft je een framework waarbinnen je deze PM-vaardigheden kunt toepassen.`,
       keyTakeaways: [
+        'The PM is responsible for scope, time, budget and quality',
+        'Both hard skills and soft skills are essential',
+        'Servant leadership is more effective than command & control',
+        'There are multiple career paths into project management',
+      ],
+      keyTakeawaysNL: [
         'De PM is verantwoordelijk voor scope, tijd, budget en kwaliteit',
         'Zowel hard skills als soft skills zijn essentieel',
         'Dienend leiderschap is effectiever dan command & control',
@@ -421,6 +433,12 @@ De afgelopen jaren zien we een duidelijke trend:
 - Kies op basis van project, organisatie en context
 - Hybride aanpakken worden steeds populairder`,
       keyTakeaways: [
+        'Methodologies provide structure and a common language',
+        'Waterfall is sequential; Agile is iterative and flexible',
+        'PRINCE2 focuses on governance; Lean Six Sigma on process improvement',
+        'Choose the methodology that fits your project and organization',
+      ],
+      keyTakeawaysNL: [
         'Methodologieën bieden structuur en gemeenschappelijke taal',
         'Waterfall is sequentieel; Agile is iteratief en flexibel',
         'PRINCE2 focust op governance; Lean Six Sigma op procesverbetering',

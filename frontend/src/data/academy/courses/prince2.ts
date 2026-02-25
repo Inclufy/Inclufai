@@ -2141,7 +2141,7 @@ Tailoring:
     },
     {
       id: 'p2-l19',
-      title: 'Eindexamen',
+      title: 'Final Exam',
       titleNL: 'Eindexamen',
       duration: '60:00',
       type: 'exam',
@@ -2171,7 +2171,7 @@ Succes!`,
     },
     {
       id: 'p2-l20',
-      title: 'Certificaat',
+      title: 'Certificate',
       titleNL: 'Certificaat',
       duration: '5:00',
       type: 'certificate',

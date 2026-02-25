@@ -683,6 +683,12 @@ Tussen fasen zitten vaak "gates" - beslismomenten waar wordt bepaald of het proj
 **Voorbeeld SMART Doel:**
 "Het nieuwe CRM-systeem implementeren voor de sales afdeling (50 gebruikers) tegen 1 maart 2025, binnen een budget van €150.000, met een gebruikerstevredenheid van minimaal 4/5."`,
           keyTakeaways: [
+            'The project charter formally authorizes the project',
+            'Contains: goals, scope, budget, schedule, stakeholders, risks',
+            'Defining out-of-scope is just as important as in-scope',
+            'Keep it concise: 2-5 pages is sufficient',
+          ],
+          keyTakeawaysNL: [
             'Het projectcharter autoriseert het project formeel',
             'Bevat: doelen, scope, budget, planning, stakeholders, risico\'s',
             'Out-of-scope definiëren is net zo belangrijk als in-scope',
@@ -695,7 +701,7 @@ Tussen fasen zitten vaak "gates" - beslismomenten waar wordt bepaald of het proj
         },
         {
           id: 'pm-l7',
-          title: 'Stakeholder analyse',
+          title: 'Stakeholder analysis',
           duration: '14:00',
           type: 'video',
           transcript: `"Stakeholders kunnen je project maken of breken." Dit is een van de belangrijkste lessen in projectmanagement.
@@ -734,6 +740,12 @@ Documenteer voor elke stakeholder:
 - Communicatiebehoefte
 - Strategie`,
           keyTakeaways: [
+            'Stakeholders can make or break your project',
+            'Analyze stakeholders on power, interest and attitude',
+            'The Power/Interest matrix helps with prioritization',
+            'Stakeholder analysis is an ongoing process',
+          ],
+          keyTakeawaysNL: [
             'Stakeholders kunnen je project maken of breken',
             'Analyseer stakeholders op macht, belang en houding',
             'De Power/Interest matrix helpt bij het prioriteren',
@@ -746,7 +758,7 @@ Documenteer voor elke stakeholder:
         },
         {
           id: 'pm-l8',
-          title: 'Business case ontwikkelen',
+          title: 'Developing a business case',
           duration: '15:00',
           type: 'video',
           transcript: `De business case rechtvaardigt de investering in het project. Het beantwoordt de vraag: "Waarom zouden we dit project doen?"
@@ -779,6 +791,12 @@ Payback = Investering / Jaarlijkse besparing
 Houdt rekening met tijdswaarde van geld.
 NPV > 0 = winstgevend project`,
           keyTakeaways: [
+            'The business case justifies the investment',
+            'Always compare multiple options including "do nothing"',
+            'Use financial metrics: ROI, payback, NPV',
+            'Be realistic about costs and benefits',
+          ],
+          keyTakeawaysNL: [
             'De business case rechtvaardigt de investering',
             'Vergelijk altijd meerdere opties inclusief "niets doen"',
             'Gebruik financiële metrics: ROI, payback, NPV',
