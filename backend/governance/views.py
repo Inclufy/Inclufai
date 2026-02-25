@@ -24,7 +24,26 @@ class PortfolioViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.role == 'superadmin':
             return Portfolio.objects.all()
-        return Portfolio.objects.filter(company=user.company)
+        company = getattr(user, 'company', None)
+        if not company:
+            return Portfolio.objects.none()
+        return Portfolio.objects.filter(company=company)
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        company = getattr(user, 'company', None)
+        if company:
+            serializer.save(company=company)
+        else:
+            serializer.save()
+
+    def perform_update(self, serializer):
+        user = self.request.user
+        company = getattr(user, 'company', None)
+        if company:
+            serializer.save(company=company)
+        else:
+            serializer.save()
 
 
 class GovernanceBoardViewSet(viewsets.ModelViewSet):
@@ -121,57 +140,11 @@ def ai_generate_text(request):
     """Simple AI text generation endpoint."""
     from langchain_openai import ChatOpenAI
     from django.conf import settings
-    
+
     prompt = request.data.get('prompt', '')
     if not prompt:
         return Response({"error": "prompt is required"}, status=http_status.HTTP_400_BAD_REQUEST)
-    
-    try:
-        llm = ChatOpenAI(
-            temperature=0.7,
-            model_name="gpt-4o",
-            openai_api_key=settings.OPENAI_API_KEY,
-        )
-        response = llm.invoke(prompt)
-        return Response({"response": response.content.strip()})
-    except Exception as e:
-        return Response({"error": str(e)}, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def ai_generate_text(request):
-    """Simple AI text generation endpoint."""
-    from langchain_openai import ChatOpenAI
-    from django.conf import settings
-    
-    prompt = request.data.get('prompt', '')
-    if not prompt:
-        return Response({"error": "prompt is required"}, status=http_status.HTTP_400_BAD_REQUEST)
-    
-    try:
-        llm = ChatOpenAI(
-            temperature=0.7,
-            model_name="gpt-4o",
-            openai_api_key=settings.OPENAI_API_KEY,
-        )
-        response = llm.invoke(prompt)
-        return Response({"response": response.content.strip()})
-    except Exception as e:
-        return Response({"error": str(e)}, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def ai_generate_text(request):
-    """Simple AI text generation endpoint."""
-    from langchain_openai import ChatOpenAI
-    from django.conf import settings
-    
-    prompt = request.data.get('prompt', '')
-    if not prompt:
-        return Response({"error": "prompt is required"}, status=http_status.HTTP_400_BAD_REQUEST)
-    
     try:
         llm = ChatOpenAI(
             temperature=0.7,
