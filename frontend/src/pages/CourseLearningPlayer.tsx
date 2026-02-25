@@ -47,6 +47,7 @@ import { useAcademyUser } from "@/hooks/useAcademyUser";
 import { useSkills } from '@/hooks/useSkills';
 import { SkillsTab } from '@/components/academy/SkillsTab';
 import VisualTemplateRenderer from '@/components/visuals/VisualTemplateRenderer';
+import { detectTopicFromTitle, detectTopicType } from '@/components/visuals/detectTopicType';
 
 // ============================================
 // BRAND COLORS
@@ -901,6 +902,12 @@ const contentSections = useMemo(() => {
   // approvedVisualData from LessonVisual fetch takes priority
   const apiVisualData = approvedVisualData || lessonVisualData;
 
+  // Resolve lesson-level visual type: DB value → title-based → content-based
+  // This ensures each lesson gets a UNIQUE visual, not the same one for every lesson.
+  const resolvedLessonVisualType = apiVisualType !== 'auto'
+    ? apiVisualType
+    : detectTopicFromTitle(currentLesson?.title || '') || detectTopicType(fullContent);
+
   const icons = [
     <Target className="w-8 h-8 text-white" />,
     <Triangle className="w-8 h-8 text-white" />,
@@ -982,8 +989,9 @@ const contentSections = useMemo(() => {
   const finalSections = parsedSections.slice(0, 10);
 
   return finalSections.map((section, index) => {
-    // Use API visual type for the first section, auto-detect for subsequent
-    const visualType = index === 0 && apiVisualType !== 'auto' ? apiVisualType : 'auto';
+    // Section 0: lesson-level visual (specialized template)
+    // Sections 1+: generic rich markdown (prevents repeating the same visual)
+    const visualType = index === 0 ? resolvedLessonVisualType : 'generic';
     const visualData = index === 0 ? apiVisualData : null;
 
     return {
