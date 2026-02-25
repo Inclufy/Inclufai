@@ -1908,6 +1908,12 @@ SU voorkomt dat we tijd en geld verspillen aan projecten die nooit hadden moeten
 
 De PID is de baseline waartegen het project wordt gemeten. Na goedkeuring door de Board start de eerste delivery stage.`,
           keyTakeaways: [
+            'IP creates the PID - the project baseline',
+            'Four management strategies are established',
+            'The Business Case is refined with more detail',
+            'The PID is the basis for all further decisions',
+          ],
+          keyTakeawaysNL: [
             'IP creëert de PID - de projectbaseline',
             'Vier management strategies worden opgesteld',
             'De Business Case wordt verfijnd met meer detail',
@@ -1930,6 +1936,12 @@ De PID is de baseline waartegen het project wordt gemeten. Na goedkeuring door d
 
 De Board bestuurt "by exception" - ze worden alleen betrokken bij gates en escalaties.`,
           keyTakeaways: [
+            'DP is the process for the Project Board',
+            'Focuses on authorizations and key decisions',
+            'Management by Exception minimizes Board time',
+            'Board decides on go/no-go at each stage',
+          ],
+          keyTakeawaysNL: [
             'DP is het proces voor de Project Board',
             'Focust op autorisaties en key decisions',
             'Management by Exception minimaliseert Board-tijd',
@@ -1958,6 +1970,12 @@ De Board bestuurt "by exception" - ze worden alleen betrokken bij gates en escal
 - Highlight Reports: PM → Board (regelmatig)
 - Exception Reports: PM → Board (bij tolerantie-overschrijding)`,
           keyTakeaways: [
+            'CS is the daily management process of the PM',
+            'Work Packages delegate work to Team Managers',
+            'Highlight Reports go regularly to the Board',
+            'Exception Reports escalate beyond tolerances',
+          ],
+          keyTakeawaysNL: [
             'CS is het dagelijkse management proces van de PM',
             'Work Packages delegeren werk aan Team Managers',
             'Highlight Reports gaan regelmatig naar de Board',
