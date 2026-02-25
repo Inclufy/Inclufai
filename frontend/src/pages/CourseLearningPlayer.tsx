@@ -1983,7 +1983,9 @@ switch (activeTab) {
                               description: isNL
                                 ? `Analyseer een scenario voor: ${currentLesson.title}`
                                 : `Analyze a scenario for: ${currentLesson.title}`,
-                              template: '# Analyse\n\n## Situatie\n\n## Aanpak\n\n## Risico\'s\n'
+                              template: isNL
+                                ? '# Analyse\n\n## Situatie\n\n## Aanpak\n\n## Risico\'s\n'
+                                : '# Analysis\n\n## Situation\n\n## Approach\n\n## Risks\n'
                             }
                           }
                         };
@@ -2674,7 +2676,7 @@ return (
           </DialogHeader>
           <div className="py-4">
             <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-6 mb-4 border-2 border-blue-200">
-              <h3 className="font-bold mb-2">{currentScenario?.simulation.title || 'Loading...'}</h3>
+              <h3 className="font-bold mb-2">{currentScenario?.simulation.title || (isNL ? 'Laden...' : 'Loading...')}</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 {currentScenario?.simulation.description || ''}
               </p>
@@ -2778,7 +2780,7 @@ return (
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Briefcase className="w-5 h-5 text-orange-600" />
-              {currentScenario?.practice.title || 'Practice Assignment'}
+              {currentScenario?.practice.title || (isNL ? 'Praktijkopdracht' : 'Practice Assignment')}
             </DialogTitle>
             <DialogDescription>
               {isNL ? 'Pas je kennis toe in een realistische case' : 'Apply your knowledge to a realistic case'}
