@@ -730,7 +730,8 @@ const ProjeXtPalLogo = ({ collapsed }: { collapsed: boolean }) => (
 
 export function AppSidebar() {
   const { state } = useSidebar();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isNL = language === 'nl';
   const { user } = useAuth();
   const { data: userFeatures, isLoading: featuresLoading } = useUserFeatures();
   const { toast } = useToast();
@@ -928,7 +929,7 @@ export function AppSidebar() {
                 const isActive = location.pathname === item.url || 
                                  (item.isProgramLink && isProgramContext);
                 const isGovActive = item.children && location.pathname.startsWith('/governance');
-                const iconColor = getIconColor(item.title);
+                const iconColor = getIconColor(item.title, item.url);
 
                 // Render collapsible for items with children
                 if (item.children && !isCollapsed) {
@@ -1209,179 +1210,45 @@ export function AppSidebar() {
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarMenuSub className="ml-5 mt-1 space-y-0.5 border-l-2 border-purple-200 dark:border-purple-800/40 pl-3">
-                  <SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=content`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'content' || (!new URLSearchParams(location.search).get('tab'))
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <BookOpen className="h-3.5 w-3.5" />
-      <span>Inhoud</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=notes`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'notes'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <FileText className="h-3.5 w-3.5" />
-      <span>Notities</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=resources`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'resources'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <Download className="h-3.5 w-3.5" />
-      <span>Resources</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=questions`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'questions'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <MessageSquare className="h-3.5 w-3.5" />
-      <span>Vragen</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<div className="h-px bg-purple-200 dark:bg-purple-800/40 my-1" />
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=skills`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'skills'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <Target className="h-3.5 w-3.5" />
-      <span>Skills</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=simulation`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'simulation'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <FlaskConical className="h-3.5 w-3.5" />
-      <span>Simulatie</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=practice`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'practice'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <Briefcase className="h-3.5 w-3.5" />
-      <span>Praktijk</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=quiz`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'quiz'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <CheckCircle className="h-3.5 w-3.5" />
-      <span>Quiz</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<div className="h-px bg-purple-200 dark:bg-purple-800/40 my-1" />
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=exam`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'exam'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <GraduationCap className="h-3.5 w-3.5" />
-      <span>Examen</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
-
-<SidebarMenuSubItem>
-  <SidebarMenuSubButton asChild>
-    <a 
-      href={`${location.pathname}?tab=certificate`}
-      className={cn(
-        "rounded-md transition-all duration-150 text-sm",
-        new URLSearchParams(location.search).get('tab') === 'certificate'
-          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-          : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-      )}
-    >
-      <Award className="h-3.5 w-3.5" />
-      <span>Certificaat</span>
-    </a>
-  </SidebarMenuSubButton>
-</SidebarMenuSubItem>
+                  {[
+                    { tab: 'content', icon: BookOpen, label: isNL ? 'Inhoud' : 'Content', isDefault: true },
+                    { tab: 'notes', icon: FileText, label: isNL ? 'Notities' : 'Notes' },
+                    { tab: 'resources', icon: Download, label: 'Resources' },
+                    { tab: 'questions', icon: MessageSquare, label: isNL ? 'Vragen' : 'Questions' },
+                    { divider: true },
+                    { tab: 'skills', icon: Target, label: 'Skills' },
+                    { tab: 'simulation', icon: FlaskConical, label: isNL ? 'Simulatie' : 'Simulation' },
+                    { tab: 'practice', icon: Briefcase, label: isNL ? 'Praktijk' : 'Practice' },
+                    { tab: 'quiz', icon: CheckCircle, label: 'Quiz' },
+                    { divider: true },
+                    { tab: 'exam', icon: GraduationCap, label: isNL ? 'Examen' : 'Exam' },
+                    { tab: 'certificate', icon: Award, label: isNL ? 'Certificaat' : 'Certificate' },
+                  ].map((item, idx) => {
+                    if ('divider' in item && item.divider) {
+                      return <div key={`div-${idx}`} className="h-px bg-purple-200 dark:bg-purple-800/40 my-1" />;
+                    }
+                    const currentTab = new URLSearchParams(location.search).get('tab');
+                    const isActive = item.tab === currentTab || (item.isDefault && !currentTab);
+                    const Icon = item.icon!;
+                    return (
+                      <SidebarMenuSubItem key={item.tab}>
+                        <SidebarMenuSubButton asChild>
+                          <button
+                            onClick={() => navigate(`${location.pathname}?tab=${item.tab}`)}
+                            className={cn(
+                              "rounded-md transition-all duration-150 text-sm w-full",
+                              isActive
+                                ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
+                                : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
+                            )}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                            <span>{item.label}</span>
+                          </button>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    );
+                  })}
                 </SidebarMenuSub>
               </CollapsibleContent>
             </SidebarMenuItem>
@@ -1393,10 +1260,10 @@ export function AppSidebar() {
       return (
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
-            <NavLink to="/academy">
+            <a href="/academy">
               <GraduationCap className="h-4 w-4" />
               <span>Academy</span>
-            </NavLink>
+            </a>
           </SidebarMenuButton>
         </SidebarMenuItem>
       );

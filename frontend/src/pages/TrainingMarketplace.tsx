@@ -814,7 +814,7 @@ const TrainingMarketplace = () => {
             >
               <GraduationCap className="w-4 h-4" />
               {content.hero.badge}
-              <Badge className="ml-1 text-white" style={{ backgroundColor: BRAND.green }}>{courses.length} COURSES</Badge>
+              <Badge className="ml-1 text-white" style={{ backgroundColor: BRAND.green }}>{courses.length} {isNL ? 'CURSUSSEN' : 'COURSES'}</Badge>
             </div>
 
             {/* Title */}
@@ -936,9 +936,9 @@ const TrainingMarketplace = () => {
               className="px-4 py-2 rounded-lg border border-border bg-card text-sm font-medium"
             >
               <option value="all">{isNL ? 'Alle Niveaus' : 'All Levels'}</option>
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
+              <option value="beginner">{isNL ? 'Beginner' : 'Beginner'}</option>
+              <option value="intermediate">{isNL ? 'Gemiddeld' : 'Intermediate'}</option>
+              <option value="advanced">{isNL ? 'Gevorderd' : 'Advanced'}</option>
             </select>
 
             {/* Duration Filter */}
@@ -1159,7 +1159,7 @@ const TrainingMarketplace = () => {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <ProjeXtPalLogo size="sm" />
             <p className="text-sm text-muted-foreground">
-              © 2025 ProjeXtPal Academy. {isNL ? 'Alle rechten voorbehouden.' : 'All rights reserved.'}
+              © 2026 ProjeXtPal Academy. {isNL ? 'Alle rechten voorbehouden.' : 'All rights reserved.'}
             </p>
           </div>
         </div>

@@ -46,7 +46,7 @@ export const useSkills = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const API_BASE = 'http://localhost:8090/api/v1/academy/skills';
+  const API_BASE = `${import.meta.env.VITE_BACKEND_URL || '/api/v1'}/academy/skills`;
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('access_token');

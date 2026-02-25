@@ -87,6 +87,8 @@ try {
   useToast = () => ({ toast: (opts: any) => console.log('Toast:', opts) });
 }
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '/api/v1';
+
 const BRAND = {
   purple: '#8B5CF6',
   pink: '#D946EF',
@@ -159,7 +161,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onClose, initialCourseId 
   const loadCourse = async (courseId: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:8001/api/v1/academy/admin/courses/${courseId}/`, {
+      const response = await fetch(`${API_BASE_URL}/academy/admin/courses/${courseId}/`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -239,7 +241,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onClose, initialCourseId 
   const handleAIGenerate = async (prompt: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:8001/api/v1/academy/ai/generate-module/', {
+      const response = await fetch(`${API_BASE_URL}/academy/ai/generate-module/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -314,7 +316,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onClose, initialCourseId 
         }))
       );
 
-      const response = await fetch('http://localhost:8001/api/v1/academy/ai/curate-course/', {
+      const response = await fetch(`${API_BASE_URL}/academy/ai/curate-course/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -430,8 +432,8 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onClose, initialCourseId 
       };
 
       const url = initialCourseId
-  ? `http://localhost:8001/api/v1/academy/admin/courses/${initialCourseId}/`
-  : 'http://localhost:8001/api/v1/academy/admin/courses/create/';
+  ? `${API_BASE_URL}/academy/admin/courses/${initialCourseId}/`
+  : `${API_BASE_URL}/academy/admin/courses/create/`;
 
       const response = await fetch(url, {
         method: initialCourseId ? 'PUT' : 'POST',
@@ -964,6 +966,26 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onClose, initialCourseId 
                                 <SelectItem value="quiz">Quiz</SelectItem>
                                 <SelectItem value="assignment">Assignment</SelectItem>
                                 <SelectItem value="exam">Exam</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {/* Visual Template Selector */}
+                            <Select
+                              value={(lesson as any).visual_type || 'auto'}
+                              onValueChange={(val) => updateLesson(module.id, lesson.id, { visual_type: val } as any)}
+                            >
+                              <SelectTrigger className="w-40">
+                                <SelectValue placeholder="Visual" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="auto">🔄 Auto-detect</SelectItem>
+                                <SelectItem value="project_def">🎯 Project Def</SelectItem>
+                                <SelectItem value="triple_constraint">⚖️ Triple Constraint</SelectItem>
+                                <SelectItem value="pm_role">👔 PM Role</SelectItem>
+                                <SelectItem value="comparison">⚔️ Comparison</SelectItem>
+                                <SelectItem value="lifecycle">🔄 Lifecycle</SelectItem>
+                                <SelectItem value="stakeholder">🎯 Stakeholder</SelectItem>
+                                <SelectItem value="risk">⚠️ Risk</SelectItem>
+                                <SelectItem value="generic">📝 Generic</SelectItem>
                               </SelectContent>
                             </Select>
                             <Button

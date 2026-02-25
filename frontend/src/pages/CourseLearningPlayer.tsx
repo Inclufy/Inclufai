@@ -46,7 +46,7 @@ import { useAcademyUser } from "@/hooks/useAcademyUser";
 // 1. Import useSkills at the top
 import { useSkills } from '@/hooks/useSkills';
 import { SkillsTab } from '@/components/academy/SkillsTab';
-import { buildVisualContext, selectVisual } from '@/lib/visualSelector';
+import VisualTemplateRenderer from '@/components/visuals/VisualTemplateRenderer';
 
 // ============================================
 // BRAND COLORS
@@ -137,6 +137,11 @@ interface Achievement {
 }
 
 // ============================================
+// API BASE URL
+// ============================================
+const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
+
+// ============================================
 // HELPER FUNCTIONS
 // ============================================
 const getLessonGlobalIndex = (modules: Module[], lessonId: string): number => {
@@ -150,10 +155,53 @@ const getLessonGlobalIndex = (modules: Module[], lessonId: string): number => {
   return 0;
 };
 
+/**
+ * Fetch course data from backend API.
+ * Returns null if API is unavailable — caller should fall back to static data.
+ */
+const fetchCourseFromAPI = async (courseId: string, isNL: boolean): Promise<CourseData | null> => {
+  try {
+    const res = await fetch(`${API_BASE}/academy/courses/${courseId}/`);
+    if (!res.ok) return null;
+    const data = await res.json();
+
+    if (!data.modules || data.modules.length === 0) return null;
+
+    return {
+      id: data.id,
+      title: isNL && data.title_nl ? data.title_nl : data.title,
+      icon: Target,
+      color: data.color || BRAND.purple,
+      gradient: data.gradient || `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.purpleDark})`,
+      totalLessons: data.modules.reduce((sum: number, m: any) => sum + (m.lessons?.length || 0), 0),
+      totalDuration: String(data.duration_hours || 0),
+      modules: data.modules.map((mod: any, mIdx: number) => ({
+        id: String(mod.id),
+        title: isNL && mod.title_nl ? `Module ${mIdx + 1}: ${mod.title_nl}` : `Module ${mIdx + 1}: ${mod.title}`,
+        lessons: (mod.lessons || []).map((les: any) => ({
+          id: String(les.id),
+          title: isNL && les.title_nl ? les.title_nl : les.title,
+          duration: les.duration_minutes ? `${les.duration_minutes}:00` : '10:00',
+          type: les.lesson_type as any,
+          transcript: isNL && les.content_nl ? les.content_nl : les.content,
+          content: isNL && les.content_nl ? les.content_nl : les.content,
+          keyTakeaways: [],
+          videoUrl: les.video_url || undefined,
+          // Visual template config from API
+          visual_type: les.visual_type || 'auto',
+          visual_data: les.visual_data || null,
+        })),
+      })),
+    };
+  } catch {
+    return null;
+  }
+};
+
 const getCourseData = (id: string, isNL: boolean): CourseData => {
   const staticCourse = getCourseById(id);
   const staticModules = getModulesByCourseId(id);
-  
+
   if (staticCourse && staticModules.length > 0) {
     return {
       id,
@@ -182,7 +230,7 @@ const getCourseData = (id: string, isNL: boolean): CourseData => {
       })),
     };
   }
-  
+
   return {
     id,
     title: 'Course',
@@ -386,2980 +434,13 @@ const CourseLearningPlayer = () => {
   const [currentPracticeContent, setCurrentPracticeContent] = useState(''); 
 
   // ============================================
-  // AI-POWERED VISUAL SELECTION FUNCTION
+  // VISUAL RENDERING — Unified in VisualTemplateRenderer
+  // Old renderVisual + 25 keyword template functions removed.
+  // All rendering now goes through contentSections → VisualTemplateRenderer.
   // ============================================
-  const analyzeContent = async (
-    courseTitle: string,
-    moduleTitle: string,
-    lessonTitle: string,
-    content: string,
-    methodology: string,
-    moduleIndex: number,
-    lessonIndex: number,
-    totalModules: number,
-    totalLessonsInModule: number
-  ): Promise<string> => {
-    
-    console.log('🤖 AI-POWERED VISUAL SELECTION');
-    
-    try {
-      const context = await buildVisualContext(
-        {
-          id: 'current-course',
-          title: courseTitle,
-          methodology: methodology || 'generic_pm',
-          modules: new Array(totalModules)
-        },
-        {
-          id: 'current-module',
-          title: moduleTitle,
-          methodology: methodology,
-          lessons: new Array(totalLessonsInModule)
-        },
-        {
-          id: 'current-lesson',
-          title: lessonTitle,
-          content: content,
-          type: 'text'
-        },
-        moduleIndex,
-        lessonIndex
-      );
-      
-      const selection = selectVisual(context);
-      
-      console.log('✅ AI SELECTED:', selection.visualId, `(${Math.round(selection.confidence * 100)}%)`);
-      
-      return selection.visualId;
-      
-    } catch (error) {
-      console.error('❌ Error:', error);
+  const isNL = language === "nl";
 
-      return 'lifecycle'; // fallback
-    }
-  };
-  // ============================================
-// VISUAL RENDERING FUNCTION - DATABASE DRIVEN
-// ============================================
-const renderVisual = (visualData: any) => {
-  const isNL = language === 'nl';
-  
-  // PRIORITY 1: Use DALL-E image if available
-  if (visualData?.preview_image_url) {
-    return (
-      <Card className="mb-6 border-2 border-purple-200 dark:border-purple-800 overflow-hidden shadow-xl">
-        <CardHeader className="bg-gradient-to-r from-purple-50 via-pink-50 to-purple-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-purple-950/20">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold">{isNL ? 'Visuele Uitleg' : 'Visual Explanation'}</h3>
-                <p className="text-xs text-muted-foreground font-normal">
-                  {visualData.ai_intent || (isNL ? 'AI-gegenereerde visualisatie' : 'AI-generated visualization')}
-                </p>
-              </div>
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <div className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-semibold flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" />
-                {isNL ? 'Goedgekeurd' : 'Approved'}
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-8">
-            <img 
-              src={visualData.preview_image_url} 
-              alt={visualData.visual_id}
-              className="w-full h-auto rounded-xl shadow-2xl border-2 border-white dark:border-gray-700"
-              loading="lazy"
-            />
-          </div>
-          
-          <div className="p-6 bg-white dark:bg-gray-900 border-t-2 border-gray-100 dark:border-gray-800">
-            {visualData.ai_concepts && visualData.ai_concepts.length > 0 && (
-              <div className="mb-4">
-                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                  <Tag className="w-4 h-4" />
-                  {isNL ? 'Kernconcepten:' : 'Key Concepts:'}
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {visualData.ai_concepts.map((concept: string, i: number) => (
-                    <span 
-                      key={i}
-                      className="px-3 py-1.5 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 text-purple-700 dark:text-purple-300 rounded-lg text-sm font-medium border border-purple-200 dark:border-purple-800"
-                    >
-                      {concept}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {visualData.ai_methodology && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="font-semibold">{isNL ? 'Methodologie:' : 'Methodology:'}</span>
-                <span className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded">
-                  {visualData.ai_methodology}
-                </span>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  // PRIORITY 2: Keyword-based template fallback
-  const keyword = visualData?.visual_id || primaryKeyword || '';
-  const lowerKeyword = keyword.toLowerCase();
-  
-  if (lowerKeyword.includes('charter')) return renderCharterTemplate();
-  if (lowerKeyword.includes('initiation') || lowerKeyword.includes('initiatie')) return renderInitiationTemplate();
-  if (lowerKeyword.includes('business') && lowerKeyword.includes('case')) return renderBusinessCaseTemplate();
-  if (lowerKeyword.includes('stakeholder')) return renderStakeholderTemplate();
-  if (lowerKeyword.includes('risk') || lowerKeyword.includes('risico')) return renderRiskTemplate();
-  if (lowerKeyword.includes('timeline') || lowerKeyword.includes('tijdlijn')) return renderTimelineTemplate();
-  if (lowerKeyword.includes('wbs') || lowerKeyword.includes('breakdown')) return renderWbsTemplate();
-  if (lowerKeyword.includes('constraint') || lowerKeyword.includes('triangle')) return renderConstraintTemplate();
-  if (lowerKeyword.includes('communication') || lowerKeyword.includes('communicatie')) return renderCommunicationTemplate();
-  if (lowerKeyword.includes('change') && lowerKeyword.includes('control')) return renderChangeControlTemplate();
-  if (lowerKeyword.includes('issue') || lowerKeyword.includes('log')) return renderIssueLogTemplate();
-  if (lowerKeyword.includes('budget') || lowerKeyword.includes('variance')) return renderBudgetVarianceTemplate();
-  if (lowerKeyword.includes('acceptance') || lowerKeyword.includes('checklist')) return renderAcceptanceChecklistTemplate();
-  if (lowerKeyword.includes('procurement') || lowerKeyword.includes('inkoop')) return renderProcurementPlanTemplate();
-  if (lowerKeyword.includes('raci') || lowerKeyword.includes('team')) return renderTeamTemplate();
-  if (lowerKeyword.includes('swot')) return renderSwotTemplate();
-  if (lowerKeyword.includes('lifecycle') || lowerKeyword.includes('levenscyclus')) return renderLifecycleTemplate();
-  if (lowerKeyword.includes('sprint')) return renderSprintTemplate();
-  if (lowerKeyword.includes('backlog')) return renderBacklogTemplate();
-  if (lowerKeyword.includes('scrum') && lowerKeyword.includes('event')) return renderScrumEventsTemplate();
-  if (lowerKeyword.includes('velocity')) return renderVelocityTemplate();
-  if (lowerKeyword.includes('manifesto')) return renderManifestoTemplate();
-  if (lowerKeyword.includes('comparison') || lowerKeyword.includes('agile') && lowerKeyword.includes('traditional')) return renderComparisonTemplate();
-  if (lowerKeyword.includes('principles') || lowerKeyword.includes('principe')) return renderPrinciplesTemplate();
-  if (lowerKeyword.includes('methodolog')) return renderMethodologiesTemplate();
-  if (lowerKeyword.includes('project') && lowerKeyword.includes('definition')) return renderProjectDefinitionTemplate();
-
-  // PRIORITY 3: Default fallback
-  return renderDefaultTemplate();
-};
-
-// ============================================
-// VISUAL TEMPLATE FUNCTIONS - KEYWORD FALLBACKS
-// ============================================
-// Declare isNL once for ALL templates
-const isNL = language === 'nl';
-
-// Charter Template - VOLLEDIG UITGEWERKT
-const renderCharterTemplate = () => (
-  <Card className="border-2 mb-6 overflow-hidden">
-    <CardHeader className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/20 dark:via-purple-950/20 dark:to-pink-950/20 border-b-2 border-purple-200">
-      <CardTitle className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-          <FileText className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h3 className="text-lg font-bold">{isNL ? 'Project Charter' : 'Project Charter'}</h3>
-          <p className="text-xs text-muted-foreground">{isNL ? 'De fundering van je project' : 'The foundation of your project'}</p>
-        </div>
-      </CardTitle>
-    </CardHeader>
-    <CardContent className="p-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-xl p-5 border-2 border-blue-200 shadow-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-md">
-                <Target className="w-5 h-5 text-white" />
-              </div>
-              <h4 className="font-bold text-blue-900 dark:text-blue-300">{isNL ? 'Doel & Scope' : 'Purpose & Scope'}</h4>
-            </div>
-            <ul className="text-sm space-y-2 text-muted-foreground">
-              <li>• {isNL ? 'Waarom starten we dit?' : 'Why are we doing this?'}</li>
-              <li>• {isNL ? 'Wat gaan we opleveren?' : 'What will we deliver?'}</li>
-              <li>• {isNL ? 'Wat valt er NIET onder?' : 'What is out of scope?'}</li>
-            </ul>
-          </div>
-          
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-xl p-5 border-2 border-purple-200 shadow-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-md">
-                <Users className="w-5 h-5 text-white" />
-              </div>
-              <h4 className="font-bold text-purple-900 dark:text-purple-300">{isNL ? 'Stakeholders' : 'Stakeholders'}</h4>
-            </div>
-            <ul className="text-sm space-y-2 text-muted-foreground">
-              <li>• {isNL ? 'Sponsor: Budget & beslissingen' : 'Sponsor: Budget & decisions'}</li>
-              <li>• {isNL ? 'PM: Dagelijkse leiding' : 'PM: Daily management'}</li>
-              <li>• {isNL ? 'Team: Uitvoering' : 'Team: Execution'}</li>
-            </ul>
-          </div>
-        </div>
-        
-        <div className="space-y-4">
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-xl p-5 border-2 border-green-200 shadow-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-md">
-                <Calendar className="w-5 h-5 text-white" />
-              </div>
-              <h4 className="font-bold text-green-900 dark:text-green-300">{isNL ? 'Tijd & Budget' : 'Time & Budget'}</h4>
-            </div>
-            <ul className="text-sm space-y-2 text-muted-foreground">
-              <li>• {isNL ? 'Start & einddatum' : 'Start & end date'}</li>
-              <li>• {isNL ? 'Belangrijke mijlpalen' : 'Key milestones'}</li>
-              <li>• {isNL ? 'Budget & resources' : 'Budget & resources'}</li>
-            </ul>
-          </div>
-          
-          <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 rounded-xl p-5 border-2 border-orange-200 shadow-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-md">
-                <AlertCircle className="w-5 h-5 text-white" />
-              </div>
-              <h4 className="font-bold text-orange-900 dark:text-orange-300">{isNL ? 'Risico\'s & Assumpties' : 'Risks & Assumptions'}</h4>
-            </div>
-            <ul className="text-sm space-y-2 text-muted-foreground">
-              <li>• {isNL ? 'Bekende risico\'s' : 'Known risks'}</li>
-              <li>• {isNL ? 'Belangrijke aannames' : 'Key assumptions'}</li>
-              <li>• {isNL ? 'Afhankelijkheden' : 'Dependencies'}</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      
-      <div className="mt-6 bg-gradient-to-r from-yellow-50 via-orange-50 to-red-50 dark:from-yellow-950/20 dark:via-orange-950/20 dark:to-red-950/20 rounded-xl p-6 border-2 border-yellow-300 shadow-sm">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center shadow-md">
-            <Award className="w-6 h-6 text-white" />
-          </div>
-          <h4 className="font-bold text-lg">{isNL ? 'Succes Criteria' : 'Success Criteria'}</h4>
-        </div>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-600">95%</div>
-            <p className="text-xs text-muted-foreground">{isNL ? 'Kwaliteit' : 'Quality'}</p>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-orange-600">On Time</div>
-            <p className="text-xs text-muted-foreground">{isNL ? 'Oplevering' : 'Delivery'}</p>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-red-600">€500K</div>
-            <p className="text-xs text-muted-foreground">{isNL ? 'Budget' : 'Budget'}</p>
-          </div>
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-);
-
-// Initiation Template
-const renderInitiationTemplate = () => (
-  <Card className="border-2 mb-6 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-cyan-50 via-blue-50 to-indigo-50 dark:from-cyan-950/20 dark:via-blue-950/20 dark:to-indigo-950/20">
-              <CardTitle className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg">
-                  <Rocket className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">{isNL ? 'Project Initiatie' : 'Project Initiation'}</h3>
-                  <p className="text-xs text-muted-foreground">{isNL ? 'Van idee naar goedkeuring' : 'From idea to approval'}</p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-8">
-              <div className="relative">
-                <div className="flex items-center justify-between mb-8">
-                  {[
-                    { step: isNL ? 'Idee' : 'Idea', icon: Lightbulb, color: 'from-yellow-400 to-orange-500', bg: 'from-yellow-50 to-orange-50' },
-                    { step: isNL ? 'Business Case' : 'Business Case', icon: FileText, color: 'from-blue-400 to-cyan-500', bg: 'from-blue-50 to-cyan-50' },
-                    { step: isNL ? 'Charter' : 'Charter', icon: FileCheck, color: 'from-purple-400 to-pink-500', bg: 'from-purple-50 to-pink-50' },
-                    { step: isNL ? 'Kick-off' : 'Kick-off', icon: Zap, color: 'from-green-400 to-emerald-500', bg: 'from-green-50 to-emerald-50' },
-                  ].map((item, i) => (
-                    <div key={i} className="flex flex-col items-center flex-1 relative">
-                      <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 shadow-xl border-4 border-white dark:border-gray-900`}>
-                        <item.icon className="w-10 h-10 text-white" />
-                      </div>
-                      <div className={`bg-gradient-to-br ${item.bg} dark:from-gray-800 dark:to-gray-900 rounded-lg px-4 py-2 border-2 border-white dark:border-gray-700 shadow-md`}>
-                        <span className="font-bold text-sm">{item.step}</span>
-                      </div>
-                      {i < 3 && (
-                        <div className="absolute top-10 left-[60%] w-[80%] h-1 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-700 dark:to-gray-600 rounded-full" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Business Case Template
-const renderBusinessCaseTemplate = () => (
-  <Card className="border-2 mb-6 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 via-green-50 to-teal-50 dark:from-emerald-950/20 dark:via-green-950/20 dark:to-teal-950/20">
-              <CardTitle className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">{isNL ? 'Business Case' : 'Business Case'}</h3>
-                  <p className="text-xs text-muted-foreground">{isNL ? 'Waarom investeren we?' : 'Why invest?'}</p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-8">
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 rounded-xl p-6 border-2 border-red-200 shadow-sm">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-md">
-                        <AlertCircle className="w-5 h-5 text-white" />
-                      </div>
-                      <h4 className="font-bold">{isNL ? 'Probleem' : 'Problem'}</h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{isNL ? 'Huidige pijnpunten en uitdagingen die het project oplost' : 'Current pain points and challenges the project solves'}</p>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-xl p-6 border-2 border-green-200 shadow-sm">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-md">
-                        <CheckCircle2 className="w-5 h-5 text-white" />
-                      </div>
-                      <h4 className="font-bold">{isNL ? 'Oplossing' : 'Solution'}</h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{isNL ? 'Voorgestelde aanpak en wat we gaan opleveren' : 'Proposed approach and what we will deliver'}</p>
-                  </div>
-                </div>
-                
-                <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 rounded-xl p-6 border-2 border-purple-300 shadow-lg">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
-                        <BarChart3 className="w-6 h-6 text-white" />
-                      </div>
-                      <h4 className="font-bold text-lg">{isNL ? 'Kosten vs Baten' : 'Cost vs Benefit'}</h4>
-                    </div>
-                    <Badge className="bg-green-600 text-white text-lg px-4 py-2">ROI: 250%</Badge>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <p className="text-sm font-semibold mb-3 text-red-600">{isNL ? 'Kosten (Jaar 1)' : 'Costs (Year 1)'}</p>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Team</span>
-                          <span className="font-semibold">€300K</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Software</span>
-                          <span className="font-semibold">€150K</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Training</span>
-                          <span className="font-semibold">€50K</span>
-                        </div>
-                        <div className="border-t pt-2 flex justify-between font-bold">
-                          <span>Totaal</span>
-                          <span className="text-red-600">€500K</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm font-semibold mb-3 text-green-600">{isNL ? 'Baten (3 jaar)' : 'Benefits (3 years)'}</p>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">{isNL ? 'Efficiëntie' : 'Efficiency'}</span>
-                          <span className="font-semibold">€800K</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">{isNL ? 'Nieuwe omzet' : 'New revenue'}</span>
-                          <span className="font-semibold">€450K</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">{isNL ? 'Risico reductie' : 'Risk reduction'}</span>
-                          <span className="font-semibold">€250K</span>
-                        </div>
-                        <div className="border-t pt-2 flex justify-between font-bold">
-                          <span>Totaal</span>
-                          <span className="text-green-600">€1.5M</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Stakeholder Template
-const renderStakeholderTemplate = () => (
-  <Card className="border-2 mb-6 overflow-hidden">
-    <CardHeader className="bg-gradient-to-r from-orange-50 via-red-50 to-pink-50 dark:from-orange-950/20 dark:via-red-950/20 dark:to-pink-950/20">
-              <CardTitle className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">{isNL ? 'Stakeholder Matrix' : 'Stakeholder Matrix'}</h3>
-                  <p className="text-xs text-muted-foreground">{isNL ? 'Invloed vs Interesse' : 'Power vs Interest'}</p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-8">
-              <div className="relative">
-                <div className="absolute -left-16 top-1/2 -translate-y-1/2 -rotate-90 text-sm font-bold text-muted-foreground">
-                  {isNL ? 'Invloed →' : 'Power →'}
-                </div>
-                <div className="text-center mb-4">
-                  <span className="text-sm font-bold text-muted-foreground">{isNL ? 'Interesse →' : 'Interest →'}</span>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 h-96">
-                  {/* YELLOW - Keep Satisfied */}
-                  <div className="bg-gradient-to-br from-yellow-100 via-yellow-200 to-amber-200 dark:from-yellow-900/30 dark:to-amber-800/30 rounded-2xl p-6 border-4 border-yellow-300 shadow-xl flex flex-col">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg border-2 border-white">
-                        <Users className="w-5 h-5 text-white" />
-                      </div>
-                      <h4 className="font-bold text-lg">{isNL ? 'Tevreden Houden' : 'Keep Satisfied'}</h4>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-4">{isNL ? 'Hoge invloed, lage interesse' : 'High power, low interest'}</p>
-                    <div className="space-y-2">
-                      <Badge className="bg-yellow-600 text-white shadow-sm">Regulators</Badge>
-                      <Badge className="bg-yellow-700 text-white shadow-sm">Legal</Badge>
-                    </div>
-                  </div>
-                  
-                  {/* RED - Manage Closely */}
-                  <div className="bg-gradient-to-br from-red-100 via-red-200 to-rose-200 dark:from-red-900/30 dark:to-rose-800/30 rounded-2xl p-6 border-4 border-red-300 shadow-xl flex flex-col">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg border-2 border-white">
-                        <Crown className="w-5 h-5 text-white" />
-                      </div>
-                      <h4 className="font-bold text-lg">{isNL ? 'Nauw Betrekken' : 'Manage Closely'}</h4>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-4">{isNL ? 'Hoge invloed, hoge interesse' : 'High power, high interest'}</p>
-                    <div className="space-y-2">
-                      <Badge className="bg-red-600 text-white shadow-sm">Sponsor</Badge>
-                      <Badge className="bg-red-700 text-white shadow-sm">Exec Board</Badge>
-                      <Badge className="bg-red-800 text-white shadow-sm">Key Client</Badge>
-                    </div>
-                  </div>
-                  
-                  {/* GRAY - Monitor */}
-                  <div className="bg-gradient-to-br from-gray-100 via-gray-200 to-slate-200 dark:from-gray-900/30 dark:to-slate-800/30 rounded-2xl p-6 border-4 border-gray-300 shadow-xl flex flex-col">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-400 to-slate-500 flex items-center justify-center shadow-lg border-2 border-white">
-                        <Eye className="w-5 h-5 text-white" />
-                      </div>
-                      <h4 className="font-bold text-lg">{isNL ? 'Monitoren' : 'Monitor'}</h4>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-4">{isNL ? 'Lage invloed, lage interesse' : 'Low power, low interest'}</p>
-                    <div className="space-y-2">
-                      <Badge className="bg-gray-600 text-white shadow-sm">Public</Badge>
-                    </div>
-                  </div>
-                  
-                  {/* BLUE - Keep Informed */}
-                  <div className="bg-gradient-to-br from-blue-100 via-blue-200 to-cyan-200 dark:from-blue-900/30 dark:to-cyan-800/30 rounded-2xl p-6 border-4 border-blue-300 shadow-xl flex flex-col">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg border-2 border-white">
-                        <MessageSquare className="w-5 h-5 text-white" />
-                      </div>
-                      <h4 className="font-bold text-lg">{isNL ? 'Informeren' : 'Keep Informed'}</h4>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-4">{isNL ? 'Lage invloed, hoge interesse' : 'Low power, high interest'}</p>
-                    <div className="space-y-2">
-                      <Badge className="bg-blue-600 text-white shadow-sm">End Users</Badge>
-                      <Badge className="bg-blue-700 text-white shadow-sm">Team</Badge>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Risk Template
-const renderRiskTemplate = () => (
-  <Card className="border-2 mb-6">
-            <CardHeader className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20">
-              <CardTitle className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-red-600" />
-                {isNL ? 'Risico Matrix (Kans × Impact)' : 'Risk Matrix (Probability × Impact)'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="relative">
-                <div className="absolute -left-20 top-1/2 -translate-y-1/2 -rotate-90 text-sm font-semibold">
-                  {isNL ? 'Waarschijnlijkheid →' : 'Probability →'}
-                </div>
-                
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  <div className="bg-yellow-200 dark:bg-yellow-800/40 rounded p-4 border-2 border-yellow-400 h-24 flex flex-col items-center justify-center">
-                    <span className="font-bold text-sm">Medium</span>
-                    <span className="text-xs">5-9</span>
-                  </div>
-                  <div className="bg-orange-300 dark:bg-orange-800/50 rounded p-4 border-2 border-orange-500 h-24 flex flex-col items-center justify-center">
-                    <span className="font-bold text-sm">High</span>
-                    <span className="text-xs">10-14</span>
-                  </div>
-                  <div className="bg-red-400 dark:bg-red-800/60 rounded p-4 border-2 border-red-600 h-24 flex flex-col items-center justify-center">
-                    <span className="font-bold text-white text-sm">Critical</span>
-                    <span className="text-xs text-white">15-25</span>
-                  </div>
-                  
-                  <div className="bg-green-200 dark:bg-green-800/40 rounded p-4 border-2 border-green-400 h-24 flex flex-col items-center justify-center">
-                    <span className="font-bold text-sm">Low</span>
-                    <span className="text-xs">1-4</span>
-                  </div>
-                  <div className="bg-yellow-300 dark:bg-yellow-800/50 rounded p-4 border-2 border-yellow-500 h-24 flex flex-col items-center justify-center">
-                    <span className="font-bold text-sm">Medium</span>
-                    <span className="text-xs">5-9</span>
-                  </div>
-                  <div className="bg-orange-400 dark:bg-orange-800/60 rounded p-4 border-2 border-orange-600 h-24 flex flex-col items-center justify-center">
-                    <span className="font-bold text-sm">High</span>
-                    <span className="text-xs">10-14</span>
-                  </div>
-                  
-                  <div className="bg-green-300 dark:bg-green-800/50 rounded p-4 border-2 border-green-500 h-24 flex flex-col items-center justify-center">
-                    <span className="font-bold text-sm">Low</span>
-                    <span className="text-xs">1-4</span>
-                  </div>
-                  <div className="bg-green-400 dark:bg-green-800/60 rounded p-4 border-2 border-green-600 h-24 flex flex-col items-center justify-center">
-                    <span className="font-bold text-sm">Low</span>
-                    <span className="text-xs">1-4</span>
-                  </div>
-                  <div className="bg-yellow-400 dark:bg-yellow-800/60 rounded p-4 border-2 border-yellow-600 h-24 flex flex-col items-center justify-center">
-                    <span className="font-bold text-sm">Medium</span>
-                    <span className="text-xs">5-9</span>
-                  </div>
-                </div>
-                
-                <div className="text-center text-sm font-semibold text-muted-foreground">
-                  {isNL ? '← Lage Impact | Hoge Impact →' : '← Low Impact | High Impact →'}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Timeline Template
-
-// Timeline Template
-const renderTimelineTemplate = () => (
-  <Card className="border-2 mb-6">
-    <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
-      <CardTitle className="flex items-center gap-2">
-        <Calendar className="w-5 h-5 text-purple-600" />
-        {isNL ? 'Project Tijdlijn & Fasen' : 'Project Timeline & Phases'}
-      </CardTitle>
-    </CardHeader>
-    <CardContent className="p-6">
-      <div className="space-y-3">
-        {[
-          { phase: isNL ? 'Initiatie' : 'Initiation', weeks: 2, color: 'bg-blue-500', tasks: ['Charter', 'Stakeholders'] },
-          { phase: isNL ? 'Planning' : 'Planning', weeks: 4, color: 'bg-purple-500', tasks: ['WBS', 'Schedule', 'Budget'] },
-          { phase: isNL ? 'Uitvoering' : 'Execution', weeks: 12, color: 'bg-pink-500', tasks: ['Build', 'Test', 'QA'] },
-          { phase: isNL ? 'Monitoring' : 'Monitoring', weeks: 12, color: 'bg-orange-500', tasks: ['Track', 'Report'] },
-          { phase: isNL ? 'Afsluiting' : 'Closure', weeks: 2, color: 'bg-green-500', tasks: ['Handover', 'Lessons'] },
-        ].map((phase, i) => (
-          <div key={i} className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="w-32 font-semibold text-sm">{phase.phase}</div>
-              <div className="flex-1 relative h-12 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-                <div 
-                  className={`h-full ${phase.color} flex items-center px-4 text-white font-semibold text-sm transition-all duration-700`}
-                  style={{ width: `${(phase.weeks / 20) * 100}%` }}
-                >
-                  {phase.weeks}w
-                </div>
-              </div>
-            </div>
-            <div className="ml-32 flex gap-2">
-              {phase.tasks.map((task, j) => (
-                <Badge key={j} variant="outline" className="text-xs">{task}</Badge>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </CardContent>
-  </Card>
-);
-
-// WBS Template
-const renderWbsTemplate = () => (
-  <Card className="border-2 mb-6">
-            <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
-              <CardTitle className="flex items-center gap-2">
-                <Target className="w-5 h-5 text-green-600" />
-                {isNL ? 'Work Breakdown Structure (WBS)' : 'Work Breakdown Structure (WBS)'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="flex justify-center">
-                  <div className="bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-lg p-4 font-bold text-center w-64">
-                    {isNL ? 'Project: CRM Implementatie' : 'Project: CRM Implementation'}
-                  </div>
-                </div>
-                
-                <div className="flex justify-center gap-4">
-                  {[isNL ? 'Analyse' : 'Analysis', isNL ? 'Ontwikkeling' : 'Development', isNL ? 'Implementatie' : 'Implementation'].map((item, i) => (
-                    <div key={i} className="bg-gradient-to-br from-blue-400 to-cyan-400 text-white rounded-lg p-3 text-center w-48 text-sm font-semibold">
-                      {item}
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="flex justify-center gap-2">
-                  {[
-                    isNL ? 'Requirements' : 'Requirements',
-                    isNL ? 'Design' : 'Design',
-                    isNL ? 'Coding' : 'Coding',
-                    isNL ? 'Testing' : 'Testing',
-                    isNL ? 'Training' : 'Training',
-                    isNL ? 'Go-Live' : 'Go-Live'
-                  ].map((item, i) => (
-                    <div key={i} className="bg-gradient-to-br from-green-300 to-emerald-300 rounded-lg p-2 text-center w-28 text-xs font-medium">
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Constraint Template
-const renderConstraintTemplate = () => (
-  <Card className="border-2 mb-6">
-            <CardHeader className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20">
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-yellow-600" />
-                {isNL ? 'IJzeren Driehoek (Triple Constraint)' : 'Triple Constraint Triangle'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-8">
-              <div className="relative w-full h-80 flex items-center justify-center">
-                <svg viewBox="0 0 200 200" className="w-full h-full">
-                  <polygon points="100,30 30,170 170,170" fill="none" stroke="currentColor" strokeWidth="3" className="text-purple-600" />
-                  
-                  <text x="100" y="20" textAnchor="middle" className="fill-current text-blue-600 font-bold text-sm">
-                    {isNL ? 'TIJD' : 'TIME'}
-                  </text>
-                  <text x="20" y="185" textAnchor="middle" className="fill-current text-green-600 font-bold text-sm">
-                    {isNL ? 'KOSTEN' : 'COST'}
-                  </text>
-                  <text x="180" y="185" textAnchor="middle" className="fill-current text-orange-600 font-bold text-sm">
-                    {isNL ? 'SCOPE' : 'SCOPE'}
-                  </text>
-                  
-                  <circle cx="100" cy="123" r="25" className="fill-purple-500" opacity="0.8" />
-                  <text x="100" y="128" textAnchor="middle" className="fill-white font-bold text-xs">
-                    {isNL ? 'KWALITEIT' : 'QUALITY'}
-                  </text>
-                </svg>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4 mt-6">
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">{isNL ? 'Minder tijd = Hogere kosten of kleinere scope' : 'Less time = Higher cost or reduced scope'}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">{isNL ? 'Lager budget = Meer tijd of kleinere scope' : 'Lower budget = More time or reduced scope'}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">{isNL ? 'Grotere scope = Meer tijd of hoger budget' : 'Bigger scope = More time or higher budget'}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Communication Template
-const renderCommunicationTemplate = () => (
-  <Card className="border-2 mb-6">
-            <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-green-600" />
-                {isNL ? 'Communicatieplan' : 'Communication Plan'}
-              </CardTitle>
-              <CardDescription>
-                {isNL ? 'Wie krijgt welke informatie, wanneer en hoe?' : 'Who gets what information, when and how?'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              {/* Communication Matrix Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-green-100 dark:bg-green-900/30">
-                      <th className="border border-green-200 dark:border-green-800 p-3 text-left font-semibold">
-                        {isNL ? 'Stakeholder' : 'Stakeholder'}
-                      </th>
-                      <th className="border border-green-200 dark:border-green-800 p-3 text-left font-semibold">
-                        {isNL ? 'Informatie' : 'Information'}
-                      </th>
-                      <th className="border border-green-200 dark:border-green-800 p-3 text-left font-semibold">
-                        {isNL ? 'Frequentie' : 'Frequency'}
-                      </th>
-                      <th className="border border-green-200 dark:border-green-800 p-3 text-left font-semibold">
-                        {isNL ? 'Kanaal' : 'Channel'}
-                      </th>
-                      <th className="border border-green-200 dark:border-green-800 p-3 text-left font-semibold">
-                        {isNL ? 'Verantwoordelijke' : 'Responsible'}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="hover:bg-green-50 dark:hover:bg-green-950/10">
-                      <td className="border border-green-200 dark:border-green-800 p-3 font-medium">
-                        {isNL ? 'Sponsor' : 'Sponsor'}
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        {isNL ? 'Voortgangsrapport, budget status' : 'Progress report, budget status'}
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        {isNL ? 'Wekelijks' : 'Weekly'}
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        Email
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        PM
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-green-50 dark:hover:bg-green-950/10">
-                      <td className="border border-green-200 dark:border-green-800 p-3 font-medium">
-                        {isNL ? 'Projectteam' : 'Project Team'}
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        {isNL ? 'Dagelijkse updates, blokkades' : 'Daily updates, blockers'}
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        {isNL ? 'Dagelijks' : 'Daily'}
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        {isNL ? 'Standup meeting' : 'Standup meeting'}
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        {isNL ? 'Teamleden' : 'Team members'}
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-green-50 dark:hover:bg-green-950/10">
-                      <td className="border border-green-200 dark:border-green-800 p-3 font-medium">
-                        {isNL ? 'Eindgebruikers' : 'End Users'}
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        {isNL ? 'Algemene updates, nieuwe features' : 'General updates, new features'}
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        {isNL ? 'Maandelijks' : 'Monthly'}
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        Newsletter
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        {isNL ? 'Marketing' : 'Marketing'}
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-green-50 dark:hover:bg-green-950/10">
-                      <td className="border border-green-200 dark:border-green-800 p-3 font-medium">
-                        {isNL ? 'Stuurgroep' : 'Steering Committee'}
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        {isNL ? 'Strategische beslissingen, escalaties' : 'Strategic decisions, escalations'}
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        {isNL ? 'Maandelijks' : 'Monthly'}
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        {isNL ? 'Formele vergadering' : 'Formal meeting'}
-                      </td>
-                      <td className="border border-green-200 dark:border-green-800 p-3 text-sm">
-                        PM
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Key Principles */}
-              <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg border border-green-200 dark:border-green-800">
-                <div className="flex items-start gap-3">
-                  <Info className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-green-900 dark:text-green-100 mb-2">
-                      {isNL ? 'Belangrijke principes:' : 'Key principles:'}
-                    </p>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• {isNL ? 'Pas frequentie aan op belang en invloed stakeholder' : 'Adjust frequency based on stakeholder importance and influence'}</li>
-                      <li>• {isNL ? 'Kies het juiste kanaal voor de boodschap' : 'Choose the right channel for the message'}</li>
-                      <li>• {isNL ? 'Wees consistent in timing en format' : 'Be consistent in timing and format'}</li>
-                      <li>• {isNL ? 'Documenteer wie verantwoordelijk is voor elke communicatie' : 'Document who is responsible for each communication'}</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Change Control Template
-const renderChangeControlTemplate = () => (
-  <Card className="border-2 mb-6">
-    <CardHeader className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20">
-              <CardTitle className="flex items-center gap-2">
-                <RefreshCw className="w-6 h-6 text-orange-600" />
-                {isNL ? 'Change Control Proces' : 'Change Control Process'}
-              </CardTitle>
-              <CardDescription>
-                {isNL ? 'Gestructureerd beheer van projectwijzigingen' : 'Structured management of project changes'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              {/* Process Flow */}
-              <div className="space-y-6">
-                
-                {/* Step 1: Request */}
-                <div className="relative">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-16 h-16 bg-gradient-to-br from-orange-600 to-amber-600 rounded-full flex items-center justify-center shadow-lg">
-                        <FileText className="w-8 h-8 text-white" />
-                      </div>
-                      <div className="absolute top-16 left-8 w-0.5 h-12 bg-orange-300 dark:bg-orange-700"></div>
-                    </div>
-                    <div className="flex-1 p-5 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 rounded-lg border-2 border-orange-200 dark:border-orange-800">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="px-3 py-1 bg-orange-600 text-white rounded-full text-xs font-bold">STAP 1</span>
-                        <h3 className="text-lg font-bold text-orange-900 dark:text-orange-100">
-                          {isNL ? 'Change Request' : 'Change Request'}
-                        </h3>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {isNL 
-                          ? 'Wijziging wordt geïnitieerd met: Wie, Wat, Waarom'
-                          : 'Change is initiated with: Who, What, Why'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Step 2: Impact Analysis */}
-                <div className="relative">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-full flex items-center justify-center shadow-lg">
-                        <BarChart3 className="w-8 h-8 text-white" />
-                      </div>
-                      <div className="absolute top-16 left-8 w-0.5 h-12 bg-blue-300 dark:bg-blue-700"></div>
-                    </div>
-                    <div className="flex-1 p-5 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="px-3 py-1 bg-blue-600 text-white rounded-full text-xs font-bold">STAP 2</span>
-                        <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">
-                          {isNL ? 'Impact Analyse' : 'Impact Analysis'}
-                        </h3>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3 mt-4">
-                        <div className="p-3 bg-white dark:bg-gray-800 rounded-lg text-center">
-                          <Clock className="w-6 h-6 text-blue-600 mx-auto mb-2" />
-                          <span className="text-sm font-medium">{isNL ? 'Tijd' : 'Time'}</span>
-                        </div>
-                        <div className="p-3 bg-white dark:bg-gray-800 rounded-lg text-center">
-                          <DollarSign className="w-6 h-6 text-green-600 mx-auto mb-2" />
-                          <span className="text-sm font-medium">{isNL ? 'Kosten' : 'Cost'}</span>
-                        </div>
-                        <div className="p-3 bg-white dark:bg-gray-800 rounded-lg text-center">
-                          <Layers className="w-6 h-6 text-purple-600 mx-auto mb-2" />
-                          <span className="text-sm font-medium">Scope</span>
-                        </div>
-                        <div className="p-3 bg-white dark:bg-gray-800 rounded-lg text-center">
-                          <AlertTriangle className="w-6 h-6 text-red-600 mx-auto mb-2" />
-                          <span className="text-sm font-medium">{isNL ? 'Risico' : 'Risk'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Step 3: CCB Decision */}
-                <div className="relative">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
-                        <Users className="w-8 h-8 text-white" />
-                      </div>
-                      <div className="absolute top-16 left-8 w-0.5 h-12 bg-purple-300 dark:bg-purple-700"></div>
-                    </div>
-                    <div className="flex-1 p-5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg border-2 border-purple-200 dark:border-purple-800">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="px-3 py-1 bg-purple-600 text-white rounded-full text-xs font-bold">STAP 3</span>
-                        <h3 className="text-lg font-bold text-purple-900 dark:text-purple-100">
-                          {isNL ? 'CCB Beslissing' : 'CCB Decision'}
-                        </h3>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {isNL 
-                          ? 'Change Control Board beoordeelt wijziging'
-                          : 'Change Control Board reviews change'}
-                      </p>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="p-4 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 rounded-lg border-2 border-green-600 dark:border-green-400">
-                          <div className="flex items-center justify-center gap-2">
-                            <CheckCircle className="w-6 h-6 text-green-600" />
-                            <span className="font-bold text-green-900 dark:text-green-100">
-                              {isNL ? 'Goedgekeurd' : 'Approved'}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="p-4 bg-gradient-to-br from-red-100 to-rose-100 dark:from-red-900/30 dark:to-rose-900/30 rounded-lg border-2 border-red-600 dark:border-red-400">
-                          <div className="flex items-center justify-center gap-2">
-                            <XCircle className="w-6 h-6 text-red-600" />
-                            <span className="font-bold text-red-900 dark:text-red-100">
-                              {isNL ? 'Afgewezen' : 'Rejected'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Step 4: Action */}
-                <div className="relative">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                        <Zap className="w-8 h-8 text-white" />
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg border-2 border-green-600">
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="px-3 py-1 bg-green-600 text-white rounded-full text-xs font-bold">STAP 4A</span>
-                            <h3 className="font-bold text-green-900 dark:text-green-100">
-                              {isNL ? 'Implementeren' : 'Implement'}
-                            </h3>
-                          </div>
-                          <ul className="text-sm text-muted-foreground space-y-1">
-                            <li>• {isNL ? 'Update plannen' : 'Update plans'}</li>
-                            <li>• {isNL ? 'Communiceer' : 'Communicate'}</li>
-                            <li>• {isNL ? 'Voer uit' : 'Execute'}</li>
-                          </ul>
-                        </div>
-                        <div className="p-5 bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20 rounded-lg border-2 border-red-600">
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="px-3 py-1 bg-red-600 text-white rounded-full text-xs font-bold">STAP 4B</span>
-                            <h3 className="font-bold text-red-900 dark:text-red-100">
-                              {isNL ? 'Archiveren' : 'Archive'}
-                            </h3>
-                          </div>
-                          <ul className="text-sm text-muted-foreground space-y-1">
-                            <li>• {isNL ? 'Documenteer' : 'Document'}</li>
-                            <li>• {isNL ? 'Informeer' : 'Inform'}</li>
-                            <li>• {isNL ? 'Bewaar' : 'Store'}</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Key Principle */}
-              <div className="mt-6 p-5 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 rounded-lg border-2 border-orange-200 dark:border-orange-800">
-                <div className="flex items-start gap-3">
-                  <ShieldCheck className="w-6 h-6 text-orange-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-bold text-orange-900 dark:text-orange-100 mb-2">
-                      {isNL ? 'Belangrijk:' : 'Important:'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {isNL 
-                        ? 'Elke wijziging moet via dit formele proces om scope creep te voorkomen en project control te behouden.'
-                        : 'Every change must go through this formal process to prevent scope creep and maintain project control.'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Issue Log Template
-const renderIssueLogTemplate = () => (
-  <Card className="border-2 mb-6">
-    <CardHeader className="bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20">
-              <CardTitle className="flex items-center gap-2">
-                <AlertCircle className="w-6 h-6 text-red-600" />
-                {isNL ? 'Issue Log' : 'Issue Log'}
-              </CardTitle>
-              <CardDescription>
-                {isNL ? 'Systematisch beheer van projectproblemen' : 'Systematic management of project issues'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              
-              {/* Priority Legend */}
-              <div className="grid grid-cols-4 gap-3 mb-6">
-                <div className="p-3 bg-gradient-to-br from-red-100 to-rose-100 dark:from-red-900/30 dark:to-rose-900/30 rounded-lg border-2 border-red-600 text-center">
-                  <AlertTriangle className="w-6 h-6 text-red-600 mx-auto mb-1" />
-                  <p className="font-bold text-xs text-red-900 dark:text-red-100">Critical</p>
-                </div>
-                <div className="p-3 bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 rounded-lg border-2 border-orange-500 text-center">
-                  <AlertTriangle className="w-6 h-6 text-orange-600 mx-auto mb-1" />
-                  <p className="font-bold text-xs text-orange-900 dark:text-orange-100">High</p>
-                </div>
-                <div className="p-3 bg-gradient-to-br from-yellow-100 to-amber-100 dark:from-yellow-900/30 dark:to-amber-900/30 rounded-lg border-2 border-yellow-500 text-center">
-                  <AlertCircle className="w-6 h-6 text-yellow-600 mx-auto mb-1" />
-                  <p className="font-bold text-xs text-yellow-900 dark:text-yellow-100">Medium</p>
-                </div>
-                <div className="p-3 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 rounded-lg border-2 border-green-500 text-center">
-                  <Info className="w-6 h-6 text-green-600 mx-auto mb-1" />
-                  <p className="font-bold text-xs text-green-900 dark:text-green-100">Low</p>
-                </div>
-              </div>
-              
-              {/* Issue Log Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-red-100 to-rose-100 dark:from-red-900/30 dark:to-rose-900/30">
-                      <th className="border border-red-200 dark:border-red-800 p-3 text-left font-semibold text-sm">
-                        ID
-                      </th>
-                      <th className="border border-red-200 dark:border-red-800 p-3 text-left font-semibold text-sm">
-                        {isNL ? 'Issue' : 'Issue'}
-                      </th>
-                      <th className="border border-red-200 dark:border-red-800 p-3 text-left font-semibold text-sm">
-                        {isNL ? 'Prioriteit' : 'Priority'}
-                      </th>
-                      <th className="border border-red-200 dark:border-red-800 p-3 text-left font-semibold text-sm">
-                        {isNL ? 'Eigenaar' : 'Owner'}
-                      </th>
-                      <th className="border border-red-200 dark:border-red-800 p-3 text-left font-semibold text-sm">
-                        Status
-                      </th>
-                      <th className="border border-red-200 dark:border-red-800 p-3 text-left font-semibold text-sm">
-                        {isNL ? 'Datum' : 'Date'}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Example Issue 1 - Critical */}
-                    <tr className="hover:bg-red-50 dark:hover:bg-red-950/10 border-l-4 border-l-red-600">
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm font-mono">
-                        ISS-001
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm">
-                        {isNL ? 'Database performance probleem' : 'Database performance issue'}
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 rounded text-xs font-semibold">
-                          <AlertTriangle className="w-3 h-3" />
-                          Critical
-                        </span>
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm">
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-muted-foreground" />
-                          John Smith
-                        </div>
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3">
-                        <span className="inline-flex items-center px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded text-xs font-semibold">
-                          {isNL ? 'In behandeling' : 'In Progress'}
-                        </span>
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          2024-02-15
-                        </div>
-                      </td>
-                    </tr>
-
-                    {/* Example Issue 2 - High */}
-                    <tr className="hover:bg-red-50 dark:hover:bg-red-950/10 border-l-4 border-l-orange-500">
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm font-mono">
-                        ISS-002
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm">
-                        {isNL ? 'Ontbrekende documentatie API' : 'Missing API documentation'}
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3">
-                        <span className="inline-flex items-center px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 rounded text-xs font-semibold">
-                          High
-                        </span>
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm">
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-muted-foreground" />
-                          Sarah Lee
-                        </div>
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3">
-                        <span className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded text-xs font-semibold">
-                          Open
-                        </span>
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          2024-02-16
-                        </div>
-                      </td>
-                    </tr>
-
-                    {/* Example Issue 3 - Medium */}
-                    <tr className="hover:bg-red-50 dark:hover:bg-red-950/10 border-l-4 border-l-yellow-500">
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm font-mono">
-                        ISS-003
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm">
-                        {isNL ? 'UI inconsistentie in menu' : 'UI inconsistency in menu'}
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3">
-                        <span className="inline-flex items-center px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded text-xs font-semibold">
-                          Medium
-                        </span>
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm">
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-muted-foreground" />
-                          Mike Chen
-                        </div>
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs font-semibold">
-                          <CheckCircle className="w-3 h-3" />
-                          {isNL ? 'Opgelost' : 'Resolved'}
-                        </span>
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          2024-02-14
-                        </div>
-                      </td>
-                    </tr>
-
-                    {/* Example Issue 4 - Low */}
-                    <tr className="hover:bg-red-50 dark:hover:bg-red-950/10 border-l-4 border-l-green-500">
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm font-mono">
-                        ISS-004
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm">
-                        {isNL ? 'Verbeter error messages' : 'Improve error messages'}
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3">
-                        <span className="inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs font-semibold">
-                          Low
-                        </span>
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm">
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-muted-foreground" />
-                          Anna Park
-                        </div>
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3">
-                        <span className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded text-xs font-semibold">
-                          Open
-                        </span>
-                      </td>
-                      <td className="border border-red-200 dark:border-red-800 p-3 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          2024-02-17
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Issue vs Risk Distinction */}
-              <div className="mt-6 p-5 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20 rounded-lg border-2 border-red-200 dark:border-red-800">
-                <div className="flex items-start gap-3">
-                  <Lightbulb className="w-6 h-6 text-red-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-bold text-red-900 dark:text-red-100 mb-3">
-                      {isNL ? 'Issue vs Risk:' : 'Issue vs Risk:'}
-                    </p>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border-l-4 border-l-red-600">
-                        <div className="flex items-center gap-2 mb-2">
-                          <AlertCircle className="w-5 h-5 text-red-600" />
-                          <span className="font-bold text-sm">Issue</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {isNL ? 'Actueel probleem dat NU speelt en opgelost moet worden' : 'Current problem that EXISTS NOW and needs resolution'}
-                        </p>
-                      </div>
-                      <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border-l-4 border-l-orange-600">
-                        <div className="flex items-center gap-2 mb-2">
-                          <AlertTriangle className="w-5 h-5 text-orange-600" />
-                          <span className="font-bold text-sm">Risk</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {isNL ? 'Potentieel probleem dat MISSCHIEN gebeurt in de toekomst' : 'Potential problem that MIGHT happen in the future'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Budget Variance Template
-const renderBudgetVarianceTemplate = () => (
-  <Card className="border-2 mb-6">
-    <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20">
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-emerald-600" />
-                {isNL ? 'Budget Analyse' : 'Budget Analysis'}
-              </CardTitle>
-              <CardDescription>
-                {isNL ? 'Geplande vs werkelijke kosten met variantie tracking' : 'Planned vs actual costs with variance tracking'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              
-              {/* Budget Summary Cards */}
-              <div className="grid md:grid-cols-3 gap-4 mb-6">
-                <div className="p-5 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-lg border-2 border-blue-200 dark:border-blue-800 text-center">
-                  <Wallet className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                  <p className="text-xs text-muted-foreground mb-1">{isNL ? 'Totaal Gepland' : 'Total Planned'}</p>
-                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">€108,000</p>
-                </div>
-                <div className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg border-2 border-purple-200 dark:border-purple-800 text-center">
-                  <CreditCard className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                  <p className="text-xs text-muted-foreground mb-1">{isNL ? 'Totaal Werkelijk' : 'Total Actual'}</p>
-                  <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">€98,850</p>
-                </div>
-                <div className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg border-2 border-green-200 dark:border-green-800 text-center">
-                  <PiggyBank className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                  <p className="text-xs text-muted-foreground mb-1">{isNL ? 'Besparing' : 'Savings'}</p>
-                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">€9,150</p>
-                  <p className="text-xs font-semibold text-green-600 mt-1">-8.5%</p>
-                </div>
-              </div>
-
-              {/* Budget Variance Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-emerald-100 dark:bg-emerald-900/30">
-                      <th className="border border-emerald-200 dark:border-emerald-800 p-3 text-left font-semibold">
-                        {isNL ? 'Categorie' : 'Category'}
-                      </th>
-                      <th className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-semibold">
-                        {isNL ? 'Gepland' : 'Planned'}
-                      </th>
-                      <th className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-semibold">
-                        {isNL ? 'Werkelijk' : 'Actual'}
-                      </th>
-                      <th className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-semibold">
-                        {isNL ? 'Variantie' : 'Variance'}
-                      </th>
-                      <th className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-semibold">
-                        %
-                      </th>
-                      <th className="border border-emerald-200 dark:border-emerald-800 p-3 text-center font-semibold">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Personnel - Under budget */}
-                    <tr className="hover:bg-emerald-50 dark:hover:bg-emerald-950/10">
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 font-medium">
-                        {isNL ? 'Personeel' : 'Personnel'}
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono">
-                        €50,000
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono">
-                        €48,500
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono text-green-600 dark:text-green-400">
-                        €1,500
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono text-green-600 dark:text-green-400">
-                        -3.0%
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-center">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs font-semibold">
-                          <TrendingDown className="w-3 h-3" />
-                          {isNL ? 'Onder' : 'Under'}
-                        </span>
-                      </td>
-                    </tr>
-
-                    {/* Equipment - Over budget */}
-                    <tr className="hover:bg-emerald-50 dark:hover:bg-emerald-950/10">
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 font-medium">
-                        {isNL ? 'Apparatuur' : 'Equipment'}
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono">
-                        €25,000
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono">
-                        €28,750
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono text-red-600 dark:text-red-400">
-                        -€3,750
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono text-red-600 dark:text-red-400">
-                        +15.0%
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-center">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 rounded text-xs font-semibold">
-                          <TrendingUp className="w-3 h-3" />
-                          {isNL ? 'Over' : 'Over'}
-                        </span>
-                      </td>
-                    </tr>
-
-                    {/* Materials - On budget */}
-                    <tr className="hover:bg-emerald-50 dark:hover:bg-emerald-950/10">
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 font-medium">
-                        {isNL ? 'Materialen' : 'Materials'}
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono">
-                        €15,000
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono">
-                        €15,200
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono text-yellow-600 dark:text-yellow-400">
-                        -€200
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono text-yellow-600 dark:text-yellow-400">
-                        +1.3%
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-center">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded text-xs font-semibold">
-                          <Minus className="w-3 h-3" />
-                          {isNL ? 'Op schema' : 'On Track'}
-                        </span>
-                      </td>
-                    </tr>
-
-                    {/* Travel - Under budget */}
-                    <tr className="hover:bg-emerald-50 dark:hover:bg-emerald-950/10">
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 font-medium">
-                        {isNL ? 'Reiskosten' : 'Travel'}
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono">
-                        €8,000
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono">
-                        €6,400
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono text-green-600 dark:text-green-400">
-                        €1,600
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono text-green-600 dark:text-green-400">
-                        -20.0%
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-center">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs font-semibold">
-                          <TrendingDown className="w-3 h-3" />
-                          {isNL ? 'Onder' : 'Under'}
-                        </span>
-                      </td>
-                    </tr>
-
-                    {/* Contingency - Not used yet */}
-                    <tr className="hover:bg-emerald-50 dark:hover:bg-emerald-950/10">
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 font-medium">
-                        {isNL ? 'Contingentie' : 'Contingency'}
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono">
-                        €10,000
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono">
-                        €0
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono text-green-600 dark:text-green-400">
-                        €10,000
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono text-green-600 dark:text-green-400">
-                        -100%
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-center">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded text-xs font-semibold">
-                          {isNL ? 'Reserve' : 'Reserve'}
-                        </span>
-                      </td>
-                    </tr>
-
-                    {/* TOTAL */}
-                    <tr className="bg-emerald-100 dark:bg-emerald-900/30 font-bold">
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3">
-                        TOTAAL
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono">
-                        €108,000
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono">
-                        €98,850
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono text-green-600 dark:text-green-400">
-                        €9,150
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-right font-mono text-green-600 dark:text-green-400">
-                        -8.5%
-                      </td>
-                      <td className="border border-emerald-200 dark:border-emerald-800 p-3 text-center">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs font-semibold">
-                          <CheckCircle className="w-3 h-3" />
-                          {isNL ? 'Goed' : 'Good'}
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Key Insights */}
-              <div className="mt-6 grid md:grid-cols-2 gap-4">
-                {/* Positive Variance */}
-                <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border-2 border-green-200 dark:border-green-800">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingDown className="w-5 h-5 text-green-600" />
-                    <h3 className="font-semibold text-green-900 dark:text-green-100">
-                      {isNL ? 'Positieve Variantie' : 'Positive Variance'}
-                    </h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {isNL 
-                      ? 'Onder budget = goed nieuws. Werkelijke kosten zijn lager dan gepland.'
-                      : 'Under budget = good news. Actual costs are lower than planned.'}
-                  </p>
-                </div>
-
-                {/* Negative Variance */}
-                <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border-2 border-red-200 dark:border-red-800">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-5 h-5 text-red-600" />
-                    <h3 className="font-semibold text-red-900 dark:text-red-100">
-                      {isNL ? 'Negatieve Variantie' : 'Negative Variance'}
-                    </h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {isNL 
-                      ? 'Over budget = actie vereist. Analyseer oorzaak en neem maatregelen.'
-                      : 'Over budget = action required. Analyze root cause and take corrective action.'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Best Practice */}
-              <div className="mt-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                <div className="flex items-start gap-3">
-                  <Info className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100 mb-2">
-                      {isNL ? 'Best Practice:' : 'Best Practice:'}
-                    </p>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• {isNL ? 'Monitor budget wekelijks of maandelijks' : 'Monitor budget weekly or monthly'}</li>
-                      <li>• {isNL ? 'Onderzoek varianties > 10%' : 'Investigate variances > 10%'}</li>
-                      <li>• {isNL ? 'Gebruik contingentie alleen voor onvoorziene kosten' : 'Use contingency only for unforeseen costs'}</li>
-                      <li>• {isNL ? 'Documenteer alle budgetwijzigingen' : 'Document all budget changes'}</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Acceptance Checklist Template
-const renderAcceptanceChecklistTemplate = () => (
-  <Card className="border-2 mb-6">
-    <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
-              <CardTitle className="flex items-center gap-2">
-                <ClipboardCheck className="w-6 h-6 text-blue-600" />
-                {isNL ? 'Formele Acceptatie Checklist' : 'Formal Acceptance Checklist'}
-              </CardTitle>
-              <CardDescription>
-                {isNL ? 'Criteria voor succesvolle projectafsluiting' : 'Criteria for successful project closure'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              {/* Acceptance Criteria Categories */}
-              <div className="space-y-6">
-                
-                {/* Category 1: Deliverables */}
-                <div className="p-5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg border-2 border-purple-200 dark:border-purple-800">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
-                      <Package className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-lg font-bold text-purple-900 dark:text-purple-100">
-                      {isNL ? '1. Deliverables Compleet' : '1. Deliverables Complete'}
-                    </h3>
-                  </div>
-                  <div className="space-y-3 ml-15">
-                    <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                      <CheckSquare className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-sm">{isNL ? 'Alle scope items opgeleverd' : 'All scope items delivered'}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Vergelijk met project scope statement' : 'Compare with project scope statement'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                      <CheckSquare className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-sm">{isNL ? 'Documentatie compleet en up-to-date' : 'Documentation complete and up-to-date'}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Gebruikershandleidingen, technische docs, etc.' : 'User manuals, technical docs, etc.'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                      <CheckSquare className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-sm">{isNL ? 'Training aan eindgebruikers gegeven' : 'End-user training completed'}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Alle gebruikers zijn opgeleid' : 'All users are trained'}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Category 2: Quality */}
-                <div className="p-5 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg border-2 border-green-200 dark:border-green-800">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-                      <Award className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-lg font-bold text-green-900 dark:text-green-100">
-                      {isNL ? '2. Kwaliteitscriteria Behaald' : '2. Quality Criteria Met'}
-                    </h3>
-                  </div>
-                  <div className="space-y-3 ml-15">
-                    <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                      <Star className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-sm">{isNL ? 'Alle kwaliteitstesten geslaagd' : 'All quality tests passed'}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{isNL ? 'UAT, functionele tests, performance tests' : 'UAT, functional tests, performance tests'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                      <Star className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-sm">{isNL ? 'Geen kritieke defects open' : 'No critical defects open'}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Alle high/critical issues opgelost' : 'All high/critical issues resolved'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                      <Star className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-sm">{isNL ? 'Performance voldoet aan eisen' : 'Performance meets requirements'}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Response tijd, throughput, etc.' : 'Response time, throughput, etc.'}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Category 3: Stakeholder Sign-off */}
-                <div className="p-5 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-                      <FileCheck className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">
-                      {isNL ? '3. Stakeholder Goedkeuring' : '3. Stakeholder Approval'}
-                    </h3>
-                  </div>
-                  <div className="space-y-3 ml-15">
-                    <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                      <UserCheck className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-sm">{isNL ? 'Sponsor heeft formeel akkoord gegeven' : 'Sponsor has formally approved'}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Getekend acceptatiedocument' : 'Signed acceptance document'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                      <UserCheck className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-sm">{isNL ? 'Eindgebruikers tevreden' : 'End users satisfied'}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Feedback verzameld en positief' : 'Feedback collected and positive'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                      <UserCheck className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-sm">{isNL ? 'Alle key stakeholders akkoord' : 'All key stakeholders approved'}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Formele handtekeningen verzameld' : 'Formal signatures collected'}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Category 4: Administrative */}
-                <div className="p-5 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 rounded-lg border-2 border-orange-200 dark:border-orange-800">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-orange-600 rounded-full flex items-center justify-center">
-                      <FolderCheck className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-lg font-bold text-orange-900 dark:text-orange-100">
-                      {isNL ? '4. Administratieve Afsluiting' : '4. Administrative Closure'}
-                    </h3>
-                  </div>
-                  <div className="space-y-3 ml-15">
-                    <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                      <FileText className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-sm">{isNL ? 'Alle contracten afgesloten' : 'All contracts closed'}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Vendors betaald, contracten beëindigd' : 'Vendors paid, contracts terminated'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                      <FileText className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-sm">{isNL ? 'Financiën afgerekend' : 'Financials settled'}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Alle kosten geboekt, budget afgesloten' : 'All costs booked, budget closed'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                      <FileText className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-sm">{isNL ? 'Archivering compleet' : 'Archiving complete'}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Alle documenten gearchiveerd' : 'All documents archived'}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Final Sign-off Section */}
-              <div className="mt-6 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-lg border-2 border-indigo-300 dark:border-indigo-700">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                      <ShieldCheck className="w-7 h-7 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-indigo-900 dark:text-indigo-100">
-                        {isNL ? 'Formele Acceptatie' : 'Formal Acceptance'}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {isNL ? 'Project officieel afgesloten' : 'Project officially closed'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                    <CheckCircle className="w-6 h-6 text-green-600" />
-                    <span className="font-bold text-green-900 dark:text-green-100">
-                      {isNL ? 'Geaccepteerd' : 'Accepted'}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="grid md:grid-cols-2 gap-4 mt-4">
-                  <div className="p-3 bg-white dark:bg-gray-800 rounded-lg">
-                    <p className="text-xs text-muted-foreground mb-1">{isNL ? 'Projectsponsor' : 'Project Sponsor'}</p>
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-indigo-600" />
-                      <p className="font-semibold">________________</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Handtekening & Datum' : 'Signature & Date'}</p>
-                  </div>
-                  
-                  <div className="p-3 bg-white dark:bg-gray-800 rounded-lg">
-                    <p className="text-xs text-muted-foreground mb-1">{isNL ? 'Project Manager' : 'Project Manager'}</p>
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-indigo-600" />
-                      <p className="font-semibold">________________</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Handtekening & Datum' : 'Signature & Date'}</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Procurement Plan Template
-const renderProcurementPlanTemplate = () => (
-  <Card className="border-2 mb-6">
-    <CardHeader className="bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20">
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingCart className="w-6 h-6 text-violet-600" />
-                {isNL ? 'Procurement Plan' : 'Procurement Plan'}
-              </CardTitle>
-              <CardDescription>
-                {isNL ? 'Systematisch proces voor inkoop en contractbeheer' : 'Systematic process for purchasing and contract management'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              
-              {/* Procurement Process Flow */}
-              <div className="space-y-6">
-                
-                {/* Step 1: Make-or-Buy Decision */}
-                <div className="relative">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                        <Scale className="w-8 h-8 text-white" />
-                      </div>
-                      <div className="absolute top-16 left-8 w-0.5 h-12 bg-violet-300 dark:bg-violet-700"></div>
-                    </div>
-                    <div className="flex-1 p-5 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20 rounded-lg border-2 border-violet-200 dark:border-violet-800">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="px-3 py-1 bg-violet-600 text-white rounded-full text-xs font-bold">STAP 1</span>
-                        <h3 className="text-lg font-bold text-violet-900 dark:text-violet-100">
-                          {isNL ? 'Make-or-Buy Beslissing' : 'Make-or-Buy Decision'}
-                        </h3>
-                      </div>
-                      
-                      <div className="grid md:grid-cols-2 gap-4 mt-4">
-                        <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border-2 border-green-200 dark:border-green-800">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Wrench className="w-5 h-5 text-green-600" />
-                            <h4 className="font-semibold text-green-900 dark:text-green-100">MAKE</h4>
-                          </div>
-                          <ul className="text-sm text-muted-foreground space-y-1">
-                            <li>• {isNL ? 'Intern ontwikkelen' : 'Develop internally'}</li>
-                            <li>• {isNL ? 'Expertise beschikbaar' : 'Expertise available'}</li>
-                            <li>• {isNL ? 'Meer controle' : 'More control'}</li>
-                            <li>• {isNL ? 'IP blijft intern' : 'IP stays internal'}</li>
-                          </ul>
-                        </div>
-                        
-                        <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border-2 border-blue-200 dark:border-blue-800">
-                          <div className="flex items-center gap-2 mb-2">
-                            <ShoppingBag className="w-5 h-5 text-blue-600" />
-                            <h4 className="font-semibold text-blue-900 dark:text-blue-100">BUY</h4>
-                          </div>
-                          <ul className="text-sm text-muted-foreground space-y-1">
-                            <li>• {isNL ? 'Extern inkopen' : 'Purchase externally'}</li>
-                            <li>• {isNL ? 'Sneller beschikbaar' : 'Faster availability'}</li>
-                            <li>• {isNL ? 'Specialistische kennis' : 'Specialist knowledge'}</li>
-                            <li>• {isNL ? 'Lage(re) kosten' : 'Lower costs'}</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Step 2: Vendor Selection */}
-                <div className="relative">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-full flex items-center justify-center shadow-lg">
-                        <Search className="w-8 h-8 text-white" />
-                      </div>
-                      <div className="absolute top-16 left-8 w-0.5 h-12 bg-blue-300 dark:bg-blue-700"></div>
-                    </div>
-                    <div className="flex-1 p-5 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="px-3 py-1 bg-blue-600 text-white rounded-full text-xs font-bold">STAP 2</span>
-                        <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">
-                          {isNL ? 'Vendor Selectie' : 'Vendor Selection'}
-                        </h3>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                          <Building2 className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="font-medium text-sm">{isNL ? 'Identificeer potentiële leveranciers' : 'Identify potential vendors'}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Research, referenties, marktonderzoek' : 'Research, references, market analysis'}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                          <FileText className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="font-medium text-sm">{isNL ? 'Stuur RFP (Request for Proposal)' : 'Send RFP (Request for Proposal)'}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Duidelijke requirements en criteria' : 'Clear requirements and criteria'}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                          <BarChart3 className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="font-medium text-sm">{isNL ? 'Evalueer offertes' : 'Evaluate proposals'}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Prijs, kwaliteit, ervaring, referenties' : 'Price, quality, experience, references'}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Step 3: Contract Negotiation */}
-                <div className="relative">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-16 h-16 bg-gradient-to-br from-amber-600 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
-                        <Handshake className="w-8 h-8 text-white" />
-                      </div>
-                      <div className="absolute top-16 left-8 w-0.5 h-12 bg-amber-300 dark:bg-amber-700"></div>
-                    </div>
-                    <div className="flex-1 p-5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-lg border-2 border-amber-200 dark:border-amber-800">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="px-3 py-1 bg-amber-600 text-white rounded-full text-xs font-bold">STAP 3</span>
-                        <h3 className="text-lg font-bold text-amber-900 dark:text-amber-100">
-                          {isNL ? 'Contract Onderhandeling' : 'Contract Negotiation'}
-                        </h3>
-                      </div>
-                      
-                      <div className="grid md:grid-cols-3 gap-3">
-                        <div className="p-3 bg-white dark:bg-gray-800 rounded-lg text-center">
-                          <DollarSign className="w-6 h-6 text-amber-600 mx-auto mb-2" />
-                          <p className="font-semibold text-sm">{isNL ? 'Prijs & Betalingen' : 'Price & Payments'}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Tarieven, milestones' : 'Rates, milestones'}</p>
-                        </div>
-                        
-                        <div className="p-3 bg-white dark:bg-gray-800 rounded-lg text-center">
-                          <Calendar className="w-6 h-6 text-amber-600 mx-auto mb-2" />
-                          <p className="font-semibold text-sm">{isNL ? 'Tijdlijnen' : 'Timelines'}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Deadlines, SLAs' : 'Deadlines, SLAs'}</p>
-                        </div>
-                        
-                        <div className="p-3 bg-white dark:bg-gray-800 rounded-lg text-center">
-                          <ShieldAlert className="w-6 h-6 text-amber-600 mx-auto mb-2" />
-                          <p className="font-semibold text-sm">{isNL ? 'Risico & Garanties' : 'Risk & Warranties'}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Aansprakelijkheid' : 'Liability'}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Step 4: Contract Management */}
-                <div className="relative">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                        <ClipboardList className="w-8 h-8 text-white" />
-                      </div>
-                    </div>
-                    <div className="flex-1 p-5 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg border-2 border-green-200 dark:border-green-800">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="px-3 py-1 bg-green-600 text-white rounded-full text-xs font-bold">STAP 4</span>
-                        <h3 className="text-lg font-bold text-green-900 dark:text-green-100">
-                          {isNL ? 'Contract Management' : 'Contract Management'}
-                        </h3>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                          <Eye className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="font-medium text-sm">{isNL ? 'Monitor prestaties' : 'Monitor performance'}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{isNL ? 'KPIs, SLA compliance, kwaliteitscontrole' : 'KPIs, SLA compliance, quality control'}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                          <MessageSquare className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="font-medium text-sm">{isNL ? 'Communicatie & relatiebeheer' : 'Communication & relationship management'}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Regelmatig overleg, issue resolution' : 'Regular meetings, issue resolution'}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                          <FileCheck className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="font-medium text-sm">{isNL ? 'Betalingen & administratie' : 'Payments & administration'}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Facturen verwerken, documenten beheren' : 'Process invoices, manage documents'}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Key Considerations */}
-              <div className="mt-6 p-5 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20 rounded-lg border-2 border-violet-200 dark:border-violet-800">
-                <div className="flex items-start gap-3">
-                  <Lightbulb className="w-6 h-6 text-violet-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-bold text-violet-900 dark:text-violet-100 mb-3">
-                      {isNL ? 'Belangrijke Overwegingen:' : 'Key Considerations:'}
-                    </p>
-                    <div className="grid md:grid-cols-2 gap-3 text-sm text-muted-foreground">
-                      <div>
-                        <span className="font-semibold text-violet-800 dark:text-violet-200">•</span> {isNL ? 'Documenteer alles schriftelijk' : 'Document everything in writing'}
-                      </div>
-                      <div>
-                        <span className="font-semibold text-violet-800 dark:text-violet-200">•</span> {isNL ? 'Definieer duidelijke acceptance criteria' : 'Define clear acceptance criteria'}
-                      </div>
-                      <div>
-                        <span className="font-semibold text-violet-800 dark:text-violet-200">•</span> {isNL ? 'Voorkom vendor lock-in' : 'Avoid vendor lock-in'}
-                      </div>
-                      <div>
-                        <span className="font-semibold text-violet-800 dark:text-violet-200">•</span> {isNL ? 'Plan exitstrategie van tevoren' : 'Plan exit strategy upfront'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </CardContent>
-          </Card>
-);
-
-// Team (RACI) Template
-const renderTeamTemplate = () => (
-  <Card className="border-2 mb-6">
-    <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20">
-              <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-indigo-600" />
-                {isNL ? 'RACI Matrix' : 'RACI Matrix'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gray-100 dark:bg-gray-800">
-                      <th className="border p-2 text-left text-sm font-semibold">{isNL ? 'Activiteit' : 'Activity'}</th>
-                      <th className="border p-2 text-center text-sm font-semibold">PM</th>
-                      <th className="border p-2 text-center text-sm font-semibold">Sponsor</th>
-                      <th className="border p-2 text-center text-sm font-semibold">Team</th>
-                      <th className="border p-2 text-center text-sm font-semibold">Stakeholder</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="border p-2 text-sm">{isNL ? 'Project Charter' : 'Project Charter'}</td>
-                      <td className="border p-2 text-center"><Badge className="bg-red-600 text-white">R</Badge></td>
-                      <td className="border p-2 text-center"><Badge className="bg-blue-600 text-white">A</Badge></td>
-                      <td className="border p-2 text-center"><Badge className="bg-green-600 text-white">C</Badge></td>
-                      <td className="border p-2 text-center"><Badge className="bg-yellow-600 text-white">I</Badge></td>
-                    </tr>
-                    <tr className="bg-gray-50 dark:bg-gray-900">
-                      <td className="border p-2 text-sm">{isNL ? 'Requirements' : 'Requirements'}</td>
-                      <td className="border p-2 text-center"><Badge className="bg-blue-600 text-white">A</Badge></td>
-                      <td className="border p-2 text-center"><Badge className="bg-yellow-600 text-white">I</Badge></td>
-                      <td className="border p-2 text-center"><Badge className="bg-red-600 text-white">R</Badge></td>
-                      <td className="border p-2 text-center"><Badge className="bg-green-600 text-white">C</Badge></td>
-                    </tr>
-                    <tr>
-                      <td className="border p-2 text-sm">{isNL ? 'Ontwikkeling' : 'Development'}</td>
-                      <td className="border p-2 text-center"><Badge className="bg-blue-600 text-white">A</Badge></td>
-                      <td className="border p-2 text-center"><Badge className="bg-yellow-600 text-white">I</Badge></td>
-                      <td className="border p-2 text-center"><Badge className="bg-red-600 text-white">R</Badge></td>
-                      <td className="border p-2 text-center"><Badge className="bg-yellow-600 text-white">I</Badge></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div className="grid grid-cols-4 gap-2 mt-4">
-                <div className="text-center">
-                  <Badge className="bg-red-600 text-white mb-1">R</Badge>
-                  <p className="text-xs">{isNL ? 'Verantwoordelijk' : 'Responsible'}</p>
-                </div>
-                <div className="text-center">
-                  <Badge className="bg-blue-600 text-white mb-1">A</Badge>
-                  <p className="text-xs">{isNL ? 'Aanspreekpunt' : 'Accountable'}</p>
-                </div>
-                <div className="text-center">
-                  <Badge className="bg-green-600 text-white mb-1">C</Badge>
-                  <p className="text-xs">{isNL ? 'Geraadpleegd' : 'Consulted'}</p>
-                </div>
-                <div className="text-center">
-                  <Badge className="bg-yellow-600 text-white mb-1">I</Badge>
-                  <p className="text-xs">{isNL ? 'Geïnformeerd' : 'Informed'}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// SWOT Template
-const renderSwotTemplate = () => (
-  <Card className="border-2 mb-6">
-    <CardHeader className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/20 dark:to-blue-950/20">
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-cyan-600" />
-                {isNL ? 'SWOT Analyse' : 'SWOT Analysis'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-800/30 rounded-lg p-6 border-2 border-green-400">
-                  <h4 className="font-bold mb-3 text-green-900 dark:text-green-300">💪 {isNL ? 'Sterktes' : 'Strengths'}</h4>
-                  <ul className="text-sm space-y-2">
-                    <li>• {isNL ? 'Ervaren team' : 'Experienced team'}</li>
-                    <li>• {isNL ? 'Bewezen technologie' : 'Proven technology'}</li>
-                    <li>• {isNL ? 'Sterke sponsor' : 'Strong sponsor'}</li>
-                  </ul>
-                </div>
-                
-                <div className="bg-gradient-to-br from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-800/30 rounded-lg p-6 border-2 border-red-400">
-                  <h4 className="font-bold mb-3 text-red-900 dark:text-red-300">⚠️ {isNL ? 'Zwaktes' : 'Weaknesses'}</h4>
-                  <ul className="text-sm space-y-2">
-                    <li>• {isNL ? 'Beperkt budget' : 'Limited budget'}</li>
-                    <li>• {isNL ? 'Krappe planning' : 'Tight timeline'}</li>
-                    <li>• {isNL ? 'Kennis hiaten' : 'Knowledge gaps'}</li>
-                  </ul>
-                </div>
-                
-                <div className="bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-800/30 rounded-lg p-6 border-2 border-blue-400">
-                  <h4 className="font-bold mb-3 text-blue-900 dark:text-blue-300">🌟 {isNL ? 'Kansen' : 'Opportunities'}</h4>
-                  <ul className="text-sm space-y-2">
-                    <li>• {isNL ? 'Marktgroei' : 'Market growth'}</li>
-                    <li>• {isNL ? 'Nieuwe partnerships' : 'New partnerships'}</li>
-                    <li>• {isNL ? 'Tech innovatie' : 'Tech innovation'}</li>
-                  </ul>
-                </div>
-                
-                <div className="bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-800/30 rounded-lg p-6 border-2 border-purple-400">
-                  <h4 className="font-bold mb-3 text-purple-900 dark:text-purple-300">⚡ {isNL ? 'Bedreigingen' : 'Threats'}</h4>
-                  <ul className="text-sm space-y-2">
-                    <li>• {isNL ? 'Concurrentie' : 'Competition'}</li>
-                    <li>• {isNL ? 'Regelgeving' : 'Regulations'}</li>
-                    <li>• {isNL ? 'Tech risico\'s' : 'Tech risks'}</li>
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Lifecycle Template
-const renderLifecycleTemplate = () => (
-  <Card className="border-2 mb-6">
-    <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/20 dark:to-cyan-950/20">
-              <CardTitle className="flex items-center gap-2">
-                <Repeat className="w-5 h-5 text-teal-600" />
-                {isNL ? 'Project Levenscyclus' : 'Project Lifecycle'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-8">
-              <div className="relative">
-                <div className="flex items-center justify-between">
-                  {[
-                    { label: isNL ? 'Start' : 'Start', icon: PlayCircle, color: 'blue' },
-                    { label: isNL ? 'Plannen' : 'Plan', icon: Calendar, color: 'purple' },
-                    { label: isNL ? 'Uitvoeren' : 'Execute', icon: Zap, color: 'pink' },
-                    { label: isNL ? 'Bewaken' : 'Monitor', icon: Target, color: 'orange' },
-                    { label: isNL ? 'Afsluiten' : 'Close', icon: CheckCircle2, color: 'green' },
-                  ].map((phase, i) => (
-                    <div key={i} className="flex flex-col items-center flex-1 relative">
-                      <div className={`w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mb-2 shadow-lg`}>
-                        <phase.icon className="w-8 h-8 text-white" />
-                      </div>
-                      <span className="font-semibold text-xs">{phase.label}</span>
-                      {i < 4 && (
-                        <div className="absolute top-8 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-gray-400 to-gray-300" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Sprint Template
-const renderSprintTemplate = () => (
-  <Card className="border-2 mb-6 overflow-hidden">
-    <CardHeader className="bg-gradient-to-r from-blue-50 via-cyan-50 to-teal-50 dark:from-blue-950/20 dark:via-cyan-950/20 dark:to-teal-950/20">
-              <CardTitle className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg">
-                  <Repeat className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">{isNL ? 'Sprint Cyclus' : 'Sprint Cycle'}</h3>
-                  <p className="text-xs text-muted-foreground">{isNL ? '2-4 weken iteraties' : '2-4 week iterations'}</p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-8">
-              <div className="space-y-6">
-                <div className="relative">
-                  <div className="flex items-center justify-between">
-                    {[
-                      { label: isNL ? 'Planning' : 'Planning', icon: Calendar, color: 'blue', day: 'Day 1' },
-                      { label: isNL ? 'Daily Scrum' : 'Daily Scrum', icon: Users, color: 'purple', day: 'Daily' },
-                      { label: isNL ? 'Development' : 'Development', icon: Code, color: 'pink', day: 'Day 2-13' },
-                      { label: isNL ? 'Review' : 'Review', icon: Eye, color: 'orange', day: 'Day 14' },
-                      { label: isNL ? 'Retro' : 'Retro', icon: Lightbulb, color: 'green', day: 'Day 14' },
-                    ].map((phase, i) => (
-                      <div key={i} className="flex flex-col items-center flex-1 relative">
-                        <div className={`w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mb-2 shadow-lg`}>
-                          <phase.icon className="w-8 h-8 text-white" />
-                        </div>
-                        <span className="font-bold text-xs">{phase.label}</span>
-                        <span className="text-xs text-muted-foreground">{phase.day}</span>
-                        {i < 4 && (
-                          <div className="absolute top-8 left-[60%] w-[80%] h-1 bg-gradient-to-r from-gray-300 to-gray-400 rounded-full" />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Backlog Template
-const renderBacklogTemplate = () => (
-  <Card className="border-2 mb-6 overflow-hidden">
-    <CardHeader className="bg-gradient-to-r from-purple-50 via-pink-50 to-rose-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-rose-950/20">
-              <CardTitle className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg">
-                  <ListChecks className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">{isNL ? 'Product Backlog' : 'Product Backlog'}</h3>
-                  <p className="text-xs text-muted-foreground">{isNL ? 'Geprioriteerde user stories' : 'Prioritized user stories'}</p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                {[
-                  { priority: 'HIGH', story: isNL ? 'Als gebruiker wil ik inloggen' : 'As a user I want to login', points: 8, status: 'ready' },
-                  { priority: 'HIGH', story: isNL ? 'Als gebruiker wil ik wachtwoord resetten' : 'As a user I want to reset password', points: 5, status: 'ready' },
-                  { priority: 'MEDIUM', story: isNL ? 'Als admin wil ik gebruikers beheren' : 'As admin I want to manage users', points: 13, status: 'refining' },
-                  { priority: 'LOW', story: isNL ? 'Als gebruiker wil ik profiel aanpassen' : 'As user I want to edit profile', points: 3, status: 'draft' },
-                ].map((item, i) => (
-                  <div key={i} className={`p-4 rounded-lg border-l-4 ${
-                    item.priority === 'HIGH' ? 'border-red-500 bg-red-50 dark:bg-red-950/20' :
-                    item.priority === 'MEDIUM' ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20' :
-                    'border-green-500 bg-green-50 dark:bg-green-950/20'
-                  }`}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge className={`${
-                            item.priority === 'HIGH' ? 'bg-red-600' :
-                            item.priority === 'MEDIUM' ? 'bg-yellow-600' :
-                            'bg-green-600'
-                          } text-white text-xs`}>
-                            {item.priority}
-                          </Badge>
-                          <Badge variant="outline" className="text-xs">
-                            {item.points} SP
-                          </Badge>
-                        </div>
-                        <p className="text-sm font-medium">{item.story}</p>
-                      </div>
-                      <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        item.status === 'ready' ? 'bg-green-100 text-green-700' :
-                        item.status === 'refining' ? 'bg-blue-100 text-blue-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {item.status === 'ready' ? '✓ Ready' : item.status === 'refining' ? '⚙️ Refining' : '📝 Draft'}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Scrum Events Template
-const renderScrumEventsTemplate = () => (
-  <Card className="border-2 mb-6 overflow-hidden">
-    <CardHeader className="bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-950/20 dark:via-amber-950/20 dark:to-yellow-950/20">
-              <CardTitle className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg">
-                  <CalendarDays className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">{isNL ? 'Scrum Events' : 'Scrum Events'}</h3>
-                  <p className="text-xs text-muted-foreground">{isNL ? 'De 5 ceremonies' : 'The 5 ceremonies'}</p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  { name: 'Sprint Planning', duration: '4h', frequency: isNL ? 'Begin sprint' : 'Start of sprint', icon: Calendar },
-                  { name: 'Daily Scrum', duration: '15min', frequency: isNL ? 'Dagelijks' : 'Daily', icon: Users },
-                  { name: 'Sprint Review', duration: '2h', frequency: isNL ? 'Einde sprint' : 'End of sprint', icon: Eye },
-                  { name: 'Sprint Retrospective', duration: '1.5h', frequency: isNL ? 'Einde sprint' : 'End of sprint', icon: Lightbulb },
-                ].map((event, i) => (
-                  <div key={i} className="bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20 rounded-lg p-4 border-2 border-orange-200">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center">
-                        <event.icon className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-sm">{event.name}</h4>
-                        <p className="text-xs text-muted-foreground">{event.frequency}</p>
-                      </div>
-                    </div>
-                    <Badge className="bg-orange-600 text-white text-xs">
-                      <Clock className="w-3 h-3 mr-1" />
-                      {event.duration}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Velocity Template
-const renderVelocityTemplate = () => (
-  <Card className="border-2 mb-6">
-    <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-green-600" />
-                {isNL ? 'Team Velocity & Burn Down' : 'Team Velocity & Burn Down'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-semibold mb-3 text-sm">{isNL ? 'Velocity Trend' : 'Velocity Trend'}</h4>
-                  <div className="space-y-2">
-                    {[
-                      { sprint: 'Sprint 1', points: 21 },
-                      { sprint: 'Sprint 2', points: 28 },
-                      { sprint: 'Sprint 3', points: 32 },
-                      { sprint: 'Sprint 4', points: 30 },
-                    ].map((s, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <span className="text-xs w-16">{s.sprint}</span>
-                        <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-green-500 to-emerald-500"
-                            style={{ width: `${(s.points / 40) * 100}%` }}
-                          />
-                        </div>
-                        <span className="text-xs font-bold w-8">{s.points}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-3 text-sm">{isNL ? 'Burn Down Chart' : 'Burn Down Chart'}</h4>
-                  <div className="text-center text-muted-foreground text-sm">
-                    📊 {isNL ? 'Sprint voortgang grafiek' : 'Sprint progress chart'}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Manifesto Template
-const renderManifestoTemplate = () => (
-  <Card className="border-2 mb-6 overflow-hidden">
-    <CardHeader className="bg-gradient-to-r from-orange-50 via-yellow-50 to-amber-50 dark:from-orange-950/20 dark:via-yellow-950/20 dark:to-amber-950/20">
-              <CardTitle className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg">
-                  <FileText className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">{isNL ? 'Het Agile Manifesto' : 'The Agile Manifesto'}</h3>
-                  <p className="text-xs text-muted-foreground">{isNL ? 'De 4 waardes' : 'The 4 values'}</p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-8">
-              <div className="space-y-4">
-                {[
-                  { 
-                    left: isNL ? 'Mensen en hun onderlinge interactie' : 'Individuals and interactions',
-                    right: isNL ? 'processen en hulpmiddelen' : 'processes and tools',
-                    color: 'from-blue-500 to-cyan-500'
-                  },
-                  { 
-                    left: isNL ? 'Werkende software' : 'Working software',
-                    right: isNL ? 'allesomvattende documentatie' : 'comprehensive documentation',
-                    color: 'from-purple-500 to-pink-500'
-                  },
-                  { 
-                    left: isNL ? 'Samenwerking met de klant' : 'Customer collaboration',
-                    right: isNL ? 'contractonderhandelingen' : 'contract negotiation',
-                    color: 'from-green-500 to-emerald-500'
-                  },
-                  { 
-                    left: isNL ? 'Inspelen op verandering' : 'Responding to change',
-                    right: isNL ? 'het volgen van een plan' : 'following a plan',
-                    color: 'from-orange-500 to-red-500'
-                  },
-                ].map((value, i) => (
-                  <div key={i} className="relative">
-                    <div className="flex items-center gap-4">
-                      <div className={`flex-1 bg-gradient-to-r ${value.color} text-white rounded-lg p-4 font-semibold text-center shadow-lg`}>
-                        {value.left}
-                      </div>
-                      <div className="text-2xl font-bold text-muted-foreground">&gt;</div>
-                      <div className="flex-1 bg-gray-100 dark:bg-gray-800 text-muted-foreground rounded-lg p-4 text-center border-2 border-gray-300">
-                        {value.right}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg p-4 border-2 border-yellow-300">
-                <p className="text-sm text-center font-medium">
-                  {isNL 
-                    ? 'Hoewel wij de zaken aan de rechterkant belangrijk vinden, hechten wij meer waarde aan de zaken aan de linkerkant.'
-                    : 'While there is value in the items on the right, we value the items on the left more.'}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Comparison Template
-const renderComparisonTemplate = () => (
-  <Card className="border-2 mb-6 overflow-hidden">
-    <CardHeader className="bg-gradient-to-r from-purple-50 via-blue-50 to-cyan-50 dark:from-purple-950/20 dark:via-blue-950/20 dark:to-cyan-950/20">
-              <CardTitle className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-600 flex items-center justify-center shadow-lg">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">{isNL ? 'Agile vs. Traditioneel' : 'Agile vs. Traditional'}</h3>
-                  <p className="text-xs text-muted-foreground">{isNL ? 'Fundamentele verschillen' : 'Fundamental differences'}</p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-purple-100 to-cyan-100 dark:from-purple-900/30 dark:to-cyan-900/30">
-                      <th className="border-2 border-purple-300 p-3 text-left font-bold">{isNL ? 'Aspect' : 'Aspect'}</th>
-                      <th className="border-2 border-purple-300 p-3 text-left font-bold bg-purple-200 dark:bg-purple-800/40">{isNL ? 'Traditioneel' : 'Traditional'}</th>
-                      <th className="border-2 border-cyan-300 p-3 text-left font-bold bg-cyan-200 dark:bg-cyan-800/40">Agile</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      { aspect: 'Planning', trad: isNL ? 'Upfront, gedetailleerd' : 'Upfront, detailed', agile: isNL ? 'Rolling wave, adaptief' : 'Rolling wave, adaptive' },
-                      { aspect: 'Scope', trad: isNL ? 'Vast' : 'Fixed', agile: isNL ? 'Flexibel' : 'Flexible' },
-                      { aspect: isNL ? 'Oplevering' : 'Delivery', trad: isNL ? 'Aan het einde' : 'At the end', agile: isNL ? 'Frequent, incrementeel' : 'Frequent, incremental' },
-                      { aspect: isNL ? 'Klant' : 'Customer', trad: isNL ? 'Begin en einde' : 'Start and end', agile: isNL ? 'Continu betrokken' : 'Continuously engaged' },
-                      { aspect: isNL ? 'Verandering' : 'Change', trad: isNL ? 'Via change control' : 'Via change control', agile: isNL ? 'Verwelkomd' : 'Welcomed' },
-                      { aspect: 'Teams', trad: isNL ? 'Functioneel gescheiden' : 'Functionally separated', agile: 'Cross-functional' },
-                    ].map((row, i) => (
-                      <tr key={i} className={i % 2 === 0 ? 'bg-gray-50 dark:bg-gray-900/20' : ''}>
-                        <td className="border border-gray-300 p-3 font-semibold">{row.aspect}</td>
-                        <td className="border border-gray-300 p-3 bg-purple-50 dark:bg-purple-950/20">{row.trad}</td>
-                        <td className="border border-gray-300 p-3 bg-cyan-50 dark:bg-cyan-950/20">{row.agile}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Principles Template
-const renderPrinciplesTemplate = () => (
-  <Card className="border-2 mb-6 overflow-hidden">
-    <CardHeader className="bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20">
-              <CardTitle className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                  <Sparkles className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">{isNL ? 'De 12 Agile Principes' : 'The 12 Agile Principles'}</h3>
-                  <p className="text-xs text-muted-foreground">{isNL ? 'Richting geven aan implementatie' : 'Guiding implementation'}</p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  { nr: 1, title: isNL ? 'Klanttevredenheid' : 'Customer satisfaction', icon: Target },
-                  { nr: 2, title: isNL ? 'Verwelkom verandering' : 'Welcome change', icon: Repeat },
-                  { nr: 3, title: isNL ? 'Lever frequent' : 'Deliver frequently', icon: Rocket },
-                  { nr: 4, title: isNL ? 'Dagelijks samenwerken' : 'Daily collaboration', icon: Users },
-                  { nr: 5, title: isNL ? 'Gemotiveerde teams' : 'Motivated teams', icon: Zap },
-                  { nr: 6, title: isNL ? 'Face-to-face' : 'Face-to-face', icon: MessageSquare },
-                  { nr: 7, title: isNL ? 'Werkende software' : 'Working software', icon: CheckCircle2 },
-                  { nr: 8, title: isNL ? 'Duurzaam tempo' : 'Sustainable pace', icon: TrendingUp },
-                  { nr: 9, title: isNL ? 'Technische kwaliteit' : 'Technical excellence', icon: Star },
-                  { nr: 10, title: isNL ? 'Eenvoud' : 'Simplicity', icon: Sparkles },
-                  { nr: 11, title: isNL ? 'Zelforganisatie' : 'Self-organizing', icon: Award },
-                  { nr: 12, title: isNL ? 'Reflectie' : 'Reflection', icon: Lightbulb },
-                ].map((principle, i) => (
-                  <div key={i} className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg p-4 border-2 border-blue-200 hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-md">
-                        {principle.nr}
-                      </div>
-                      <div className="flex-1">
-                        <principle.icon className="w-8 h-8 text-blue-600 mb-1" />
-                        <h4 className="font-semibold text-sm">{principle.title}</h4>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-);
-
-// Methodologies Template
-const renderMethodologiesTemplate = () => (
-  <Card className="border-2 mb-6 overflow-hidden">
-    <CardHeader className="bg-gradient-to-r from-orange-50 via-yellow-50 to-amber-50 dark:from-orange-950/20 dark:via-yellow-950/20 dark:to-amber-950/20">
-              <CardTitle className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg">
-                  <Briefcase className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">{isNL ? 'Project Management Methodologieën' : 'Project Management Methodologies'}</h3>
-                  <p className="text-xs text-muted-foreground">{isNL ? 'Verschillende aanpakken' : 'Different approaches'}</p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Waterfall */}
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-lg p-5 border-2 border-blue-200">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center">
-                      <TrendingUp className="w-5 h-5 text-white" />
-                    </div>
-                    <h4 className="font-bold">Waterfall</h4>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    {isNL ? 'Sequentiële fasen, vooraf planning' : 'Sequential phases, upfront planning'}
-                  </p>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3 h-3 text-green-600" />
-                      <span>{isNL ? 'Duidelijke structuur' : 'Clear structure'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="w-3 h-3 text-orange-600" />
-                      <span>{isNL ? 'Weinig flexibiliteit' : 'Low flexibility'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Agile */}
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg p-5 border-2 border-green-200">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
-                      <Repeat className="w-5 h-5 text-white" />
-                    </div>
-                    <h4 className="font-bold">Agile</h4>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    {isNL ? 'Iteratief, adaptief, klantgericht' : 'Iterative, adaptive, customer-focused'}
-                  </p>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3 h-3 text-green-600" />
-                      <span>{isNL ? 'Flexibel' : 'Flexible'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3 h-3 text-green-600" />
-                      <span>{isNL ? 'Snelle delivery' : 'Fast delivery'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Scrum */}
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg p-5 border-2 border-purple-200">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-purple-500 flex items-center justify-center">
-                      <Users className="w-5 h-5 text-white" />
-                    </div>
-                    <h4 className="font-bold">Scrum</h4>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    {isNL ? 'Agile framework met sprints' : 'Agile framework with sprints'}
-                  </p>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3 h-3 text-green-600" />
-                      <span>{isNL ? 'Teamwork' : 'Teamwork'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3 h-3 text-green-600" />
-                      <span>{isNL ? '2-4 week sprints' : '2-4 week sprints'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* PRINCE2 */}
-                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20 rounded-lg p-5 border-2 border-indigo-200">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-indigo-500 flex items-center justify-center">
-                      <Award className="w-5 h-5 text-white" />
-                    </div>
-                    <h4 className="font-bold">PRINCE2</h4>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    {isNL ? 'Gestructureerd, governance-focused' : 'Structured, governance-focused'}
-                  </p>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3 h-3 text-green-600" />
-                      <span>{isNL ? 'Gedocumenteerd' : 'Documented'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3 h-3 text-green-600" />
-                      <span>{isNL ? 'Best practices' : 'Best practices'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Lean */}
-                <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 rounded-lg p-5 border-2 border-yellow-200">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-yellow-500 flex items-center justify-center">
-                      <Zap className="w-5 h-5 text-white" />
-                    </div>
-                    <h4 className="font-bold">Lean</h4>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    {isNL ? 'Verspilling elimineren, waarde maximaliseren' : 'Eliminate waste, maximize value'}
-                  </p>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3 h-3 text-green-600" />
-                      <span>{isNL ? 'Efficiënt' : 'Efficient'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3 h-3 text-green-600" />
-                      <span>{isNL ? 'Continue verbetering' : 'Continuous improvement'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Kanban */}
-                <div className="bg-gradient-to-br from-rose-50 to-red-50 dark:from-rose-950/20 dark:to-red-950/20 rounded-lg p-5 border-2 border-rose-200">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-rose-500 flex items-center justify-center">
-                      <BarChart3 className="w-5 h-5 text-white" />
-                    </div>
-                    <h4 className="font-bold">Kanban</h4>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    {isNL ? 'Visualiseer workflow, limiteer WIP' : 'Visualize workflow, limit WIP'}
-                  </p>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3 h-3 text-green-600" />
-                      <span>{isNL ? 'Flow optimalisatie' : 'Flow optimization'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3 h-3 text-green-600" />
-                      <span>{isNL ? 'Visueel bord' : 'Visual board'}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 rounded-lg p-4 border-2 border-orange-200">
-                <div className="flex items-start gap-3">
-                  <Lightbulb className="w-5 h-5 text-orange-600 mt-1" />
-                  <div>
-                    <h4 className="font-bold mb-1">{isNL ? 'Welke kiezen?' : 'Which to choose?'}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {isNL 
-                        ? 'De keuze hangt af van: projectcomplexiteit, team ervaring, klant betrokkenheid, en mate van onzekerheid.'
-                        : 'The choice depends on: project complexity, team experience, customer involvement, and degree of uncertainty.'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-);
-
-const renderDefaultTemplate = () => {
-  const isNL = language === 'nl';
-  
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 border-blue-200">
-        <CardContent className="p-6 text-center">
-          <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
-            <Target className="w-8 h-8 text-white" />
-          </div>
-          <h3 className="font-bold mb-2">{isNL ? 'Leerdoel' : 'Learning Goal'}</h3>
-          <p className="text-sm text-muted-foreground">{isNL ? 'Beheer projecten effectief' : 'Manage projects effectively'}</p>
-        </CardContent>
-      </Card>
-      
-      <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200">
-        <CardContent className="p-6 text-center">
-          <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
-            <Clock className="w-8 h-8 text-white" />
-          </div>
-          <h3 className="font-bold mb-2">{isNL ? 'Tijdsduur' : 'Duration'}</h3>
-          <p className="text-sm text-muted-foreground">10-15 min</p>
-        </CardContent>
-      </Card>
-      
-      <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200">
-        <CardContent className="p-6 text-center">
-          <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-            <Award className="w-8 h-8 text-white" />
-          </div>
-          <h3 className="font-bold mb-2">{isNL ? 'Niveau' : 'Level'}</h3>
-          <p className="text-sm text-muted-foreground">{isNL ? 'Beginner' : 'Beginner'}</p>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-// Project Definition Template
-const renderProjectDefinitionTemplate = () => (
-  <Card className="border-2 mb-6">
-    <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
-      <CardTitle className="flex items-center gap-2">
-        <Lightbulb className="w-5 h-5 text-blue-600" />
-        {isNL ? 'Wat is een Project?' : 'What is a Project?'}
-      </CardTitle>
-      <CardDescription>
-        {isNL ? 'De drie kernkenmerken van elk project' : 'The three core characteristics of every project'}
-      </CardDescription>
-    </CardHeader>
-    <CardContent className="pt-6">
-      <div className="grid md:grid-cols-3 gap-6">
-        {/* Card 1: Tijdelijk */}
-        <div className="flex flex-col items-center text-center p-6 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
-          <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mb-4">
-            <Clock className="w-8 h-8 text-white" />
-          </div>
-          <h3 className="font-bold text-lg mb-2 text-blue-900 dark:text-blue-100">
-            {isNL ? 'Tijdelijk' : 'Temporary'}
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {isNL 
-              ? 'Een project heeft een duidelijk begin en eind. Het is geen doorlopend proces.'
-              : 'A project has a clear beginning and end. It is not an ongoing process.'}
-          </p>
-        </div>
-        {/* Card 2: Uniek */}
-        <div className="flex flex-col items-center text-center p-6 bg-cyan-50 dark:bg-cyan-950/20 rounded-lg border-2 border-cyan-200 dark:border-cyan-800">
-          <div className="w-16 h-16 bg-cyan-600 rounded-full flex items-center justify-center mb-4">
-            <Sparkles className="w-8 h-8 text-white" />
-          </div>
-          <h3 className="font-bold text-lg mb-2 text-cyan-900 dark:text-cyan-100">
-            {isNL ? 'Uniek' : 'Unique'}
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {isNL 
-              ? 'Elk project levert een uniek product, dienst of resultaat op dat nog niet eerder is gemaakt.'
-              : 'Each project delivers a unique product, service or result that has not been created before.'}
-          </p>
-        </div>
-        {/* Card 3: Resultaatgericht */}
-        <div className="flex flex-col items-center text-center p-6 bg-indigo-50 dark:bg-indigo-950/20 rounded-lg border-2 border-indigo-200 dark:border-indigo-800">
-          <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mb-4">
-            <Target className="w-8 h-8 text-white" />
-          </div>
-          <h3 className="font-bold text-lg mb-2 text-indigo-900 dark:text-indigo-100">
-            {isNL ? 'Resultaatgericht' : 'Result-Oriented'}
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {isNL 
-              ? 'Projecten hebben een specifiek doel en leveren concrete resultaten op binnen bepaalde randvoorwaarden.'
-              : 'Projects have a specific goal and deliver concrete results within certain constraints.'}
-          </p>
-        </div>
-      </div>
-      {/* Extra Info */}
-      <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-          <div className="text-sm text-muted-foreground">
-            {isNL 
-              ? 'Deze drie kenmerken onderscheiden een project van reguliere bedrijfsactiviteiten. Zonder deze eigenschappen is het geen project, maar een operationeel proces.'
-              : 'These three characteristics distinguish a project from regular business activities. Without these properties, it is not a project but an operational process.'}
-          </div>
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-);
-  const [savingPractice, setSavingPractice] = useState(false);
-  
-  // Feature 3: AI Feedback
-  const [aiFeedbackLoading, setAiFeedbackLoading] = useState(false);
-  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
-  const [currentFeedback, setCurrentFeedback] = useState('');
-  
-  // Feature 4: Achievements
-  const [achievements, setAchievements] = useState<Achievement[]>([
-    {
-      id: 'first-lesson',
-      title: language === 'nl' ? '🎓 Eerste Les' : '🎓 First Lesson',
-      description: language === 'nl' ? 'Voltooi je eerste les' : 'Complete your first lesson',
-      icon: GraduationCap,
-      color: 'from-blue-500 to-cyan-500',
-      unlocked: false,
-    },
-    {
-      id: 'perfect-score',
-      title: language === 'nl' ? '💯 Perfect Score' : '💯 Perfect Score',
-      description: language === 'nl' ? '3 simulaties perfect beantwoord' : '3 simulations answered perfectly',
-      icon: Trophy,
-      color: 'from-yellow-500 to-orange-500',
-      unlocked: false,
-      progress: 0,
-      maxProgress: 3,
-    },
-    {
-      id: 'practice-master',
-      title: language === 'nl' ? '📝 Practice Master' : '📝 Practice Master',
-      description: language === 'nl' ? '5 praktijkopdrachten ingediend' : '5 practice assignments submitted',
-      icon: Award,
-      color: 'from-purple-500 to-pink-500',
-      unlocked: false,
-      progress: 0,
-      maxProgress: 5,
-    },
-    {
-      id: 'speed-learner',
-      title: language === 'nl' ? '⚡ Speed Learner' : '⚡ Speed Learner',
-      description: language === 'nl' ? 'Voltooi 5 lessen in één dag' : 'Complete 5 lessons in one day',
-      icon: Zap,
-      color: 'from-green-500 to-emerald-500',
-      unlocked: false,
-      progress: 0,
-      maxProgress: 5,
-    },
-    {
-      id: 'streak-week',
-      title: language === 'nl' ? '🔥 Week Streak' : '🔥 Week Streak',
-      description: language === 'nl' ? '7 dagen achtereen geleerd' : 'Learned 7 days in a row',
-      icon: Flame,
-      color: 'from-red-500 to-orange-500',
-      unlocked: false,
-      progress: 0,
-      maxProgress: 7,
-    },
-  ]);
-  const [showAchievementDialog, setShowAchievementDialog] = useState(false);
-  const [unlockedAchievement, setUnlockedAchievement] = useState<Achievement | null>(null);
-  const course = getCourseData(slug || '', isNL);
-  
-  // Get all lessons flat
-  const allLessons = course.modules.flatMap(m => m.lessons);
-  
-  // Initialize lesson from URL param
-  useEffect(() => {
-    const lessonParam = searchParams.get('lesson');
-    if (lessonParam && allLessons.some(l => l.id === lessonParam)) {
-      setCurrentLessonId(lessonParam);
-    }
-  }, [searchParams]);
-  // Reset slide when lesson changes
-  useEffect(() => {
-  setContentSlide(0);
-}, [currentLessonId]);
-  
-  // Find current lesson
-  const currentLesson = allLessons.find(l => l.id === currentLessonId) || allLessons[0];
-  const currentLessonIndex = allLessons.findIndex(l => l.id === currentLessonId);
-  const currentModuleIndex = course.modules.findIndex(m => m.lessons.some(l => l.id === currentLessonId));
-  const currentModule = course.modules[currentModuleIndex];
-  // ============================================
-// CONTENT PARSING HELPERS
-// ============================================
-const getIconForSection = (index: number, hasTripleConstraint: boolean, hasLifecycle: boolean) => {
-  const icons = [
-    <div className="relative group">
-      <Target className="w-8 h-8 text-white group-hover:scale-110 transition-transform" />
-      <div className="absolute inset-0 bg-white/20 rounded-full blur-md group-hover:blur-lg transition-all" />
-    </div>,
-    <div className="relative group">
-      <Triangle className="w-8 h-8 text-white group-hover:rotate-180 transition-transform duration-500" />
-      <div className="absolute inset-0 bg-white/20 rounded-full blur-md group-hover:blur-lg transition-all" />
-    </div>,
-    <div className="relative group">
-      <GitCompare className="w-8 h-8 text-white group-hover:scale-110 transition-transform" />
-      <div className="absolute inset-0 bg-white/20 rounded-full blur-md group-hover:blur-lg transition-all" />
-    </div>,
-    <div className="relative group">
-      <Users className="w-8 h-8 text-white group-hover:scale-110 transition-transform" />
-      <div className="absolute inset-0 bg-white/20 rounded-full blur-md group-hover:blur-lg transition-all" />
-    </div>
-  ];
-  return icons[index % icons.length];
-};
-const getColorForSection = (index: number) => {
-  const colors = [
-    'bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500 shadow-xl shadow-blue-500/20',
-    'bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 shadow-xl shadow-orange-500/20',
-    'bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 shadow-xl shadow-green-500/20',
-    'bg-gradient-to-br from-purple-500 via-pink-500 to-rose-600 shadow-xl shadow-purple-500/20'
-  ];
-  return colors[index % colors.length];
-};
-const extractKeyPoints = (text: string, isNL: boolean): string[] => {
-  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 20);
-  
-  // Look for sentences with emphasis words
-  const emphasisWords = isNL 
-    ? ['belangrijk', 'essentieel', 'cruciaal', 'definitie', 'kenmerk', 'verschil', 'moet', 'altijd']
-    : ['important', 'essential', 'crucial', 'definition', 'characteristic', 'difference', 'must', 'always'];
-  
-  const keyPoints = sentences
-    .filter(s => emphasisWords.some(word => s.toLowerCase().includes(word)))
-    .slice(0, 3)
-    .map(s => s.trim());
-  
-  return keyPoints.length > 0 ? keyPoints : sentences.slice(0, 3).map(s => s.trim());
-};
-const parseTranscriptIntoSections = (transcript: string, isNL: boolean) => {
-  // Split by double newlines or by length
-  const rawParagraphs = transcript.split(/\n\n+/).filter(p => p.trim().length > 100);
-  
-  // If we have multiple paragraphs, use them
-  if (rawParagraphs.length >= 3) {
-    return rawParagraphs.slice(0, 4);
-  }
-  
-  // Otherwise split by length (every ~500 chars)
-  const sections: string[] = [];
-  let currentSection = '';
-  const words = transcript.split(/\s+/);
-  
-  for (const word of words) {
-    currentSection += word + ' ';
-    if (currentSection.length > 500) {
-      sections.push(currentSection.trim());
-      currentSection = '';
-    }
-  }
-  
-  if (currentSection.trim()) {
-    sections.push(currentSection.trim());
-  }
-  
-  return sections.slice(0, 4);
-};
-const getSectionTitleFromContent = (content: string, index: number, isNL: boolean): { title: string; subtitle: string } => {
-  const lower = content.toLowerCase();
-  
-  // Detect common PM topics
-  if (lower.includes('triple constraint') || (lower.includes('tijd') && lower.includes('budget') && lower.includes('kwaliteit'))) {
-    return {
-      title: isNL ? 'De Triple Constraint' : 'The Triple Constraint',
-      subtitle: isNL ? 'Tijd, Kwaliteit en Budget in balans' : 'Time, Quality and Budget in balance'
-    };
-  }
-  
-  if (lower.includes('project') && (lower.includes('definitie') || lower.includes('definition') || lower.includes('wat is'))) {
-    return {
-      title: isNL ? 'Wat is een Project?' : 'What is a Project?',
-      subtitle: isNL ? 'De kernkenmerken van een project' : 'Core characteristics of a project'
-    };
-  }
-  
-  if (lower.includes('projectmanager') || lower.includes('pm') || lower.includes('rol')) {
-    return {
-      title: isNL ? 'De Rol van de PM' : 'The Role of the PM',
-      subtitle: isNL ? 'Wat doet een projectmanager?' : 'What does a PM do?'
-    };
-  }
-  
-  if (lower.includes('operatie') || lower.includes('operation') || lower.includes('verschil')) {
-    return {
-      title: isNL ? 'Project vs. Operatie' : 'Project vs. Operation',
-      subtitle: isNL ? 'Het verschil begrijpen' : 'Understanding the difference'
-    };
-  }
-  
-  // Fallback: use first sentence as title
-  const firstSentence = content.split(/[.!?]/)[0]?.trim() || '';
-  return {
-    title: firstSentence.substring(0, 50) + (firstSentence.length > 50 ? '...' : ''),
-    subtitle: isNL ? `Deel ${index + 1}` : `Part ${index + 1}`
-  };
-};
-  // ============================================
-// CONTENT SECTION HELPERS
-// ============================================
-const parseContent = (text: string) => {
-  // Split into sections (every ~400 chars)
-  const sections: string[] = [];
-  const sentences = text.split(/(?<=[.!?])\s+/);
-  let current = '';
-  
-  for (const sentence of sentences) {
-    current += sentence + ' ';
-    if (current.length > 400) {
-      sections.push(current.trim());
-      current = '';
-    }
-  }
-  if (current.trim()) sections.push(current.trim());
-  
-  return sections.slice(0, 4); // Max 4 sections
-};
-const detectTitle = (content: string, index: number) => {
-  const lower = content.toLowerCase();
-  
-  if (lower.includes('triple constraint') || (lower.includes('tijd') && lower.includes('budget'))) {
-    return isNL ? 'De Triple Constraint' : 'The Triple Constraint';
-  }
-  if (lower.includes('definitie') || lower.includes('wat is')) {
-    return isNL ? 'Wat is een Project?' : 'What is a Project?';
-  }
-  if (lower.includes('projectmanager') || lower.includes('pm')) {
-    return isNL ? 'De Rol van de PM' : 'The Role of the PM';
-  }
-  if (lower.includes('operatie') || lower.includes('verschil')) {
-    return isNL ? 'Project vs. Operatie' : 'Project vs. Operation';
-  }
-  
-  return `${isNL ? 'Deel' : 'Part'} ${index + 1}`;
-};
-const getIconForIndex = (i: number) => {
-  const icons = [
-    <Target className="w-8 h-8 text-white" />,
-    <Triangle className="w-8 h-8 text-white" />,
-    <GitCompare className="w-8 h-8 text-white" />,
-    <Users className="w-8 h-8 text-white" />
-  ];
-  return icons[i % 4];
-};
-const getColorForIndex = (i: number) => {
-  const colors = [
-    'bg-gradient-to-br from-blue-600 to-cyan-600 shadow-lg',
-    'bg-gradient-to-br from-orange-600 to-red-600 shadow-lg',
-    'bg-gradient-to-br from-green-600 to-emerald-600 shadow-lg',
-    'bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg'
-  ];
-  return colors[i % 4];
-};
-// ============================================
-// VISUAL CONTENT SYSTEM - DYNAMIC TEMPLATES
-// ============================================
+// Legacy detectTopicType kept as stub for any remaining references
 const detectTopicType = (text: string): 'project_def' | 'triple_constraint' | 'pm_role' | 'comparison' | 'lifecycle' | 'stakeholder' | 'risk' | 'generic' => {
   const lower = text.toLowerCase();
   
@@ -3767,27 +848,39 @@ const renderGenericContent = (content: string, isNL: boolean, index: number) => 
   `;
 };
 // ============================================
-// MAIN CONTENT SECTIONS
+// MAIN CONTENT SECTIONS — API-driven + dynamic fallback
+// Uses VisualTemplateRenderer React components
 // ============================================
 const contentSections = useMemo(() => {
   const fullContent = currentLesson?.transcript || currentLesson?.content || '';
-  
+
   if (!fullContent) {
     return [{
       title: isNL ? 'Lesinhoud' : 'Lesson Content',
       subtitle: '',
       icon: <BookOpen className="w-8 h-8 text-white" />,
       color: 'bg-gradient-to-br from-blue-600 to-cyan-600 shadow-xl',
-      content: '<p class="text-center py-12 text-gray-500">' + (isNL ? 'Geen inhoud beschikbaar' : 'No content available') + '</p>',
-      keyPoints: []
+      content: '',
+      reactContent: (
+        <p className="text-center py-12 text-gray-500">
+          {isNL ? 'Geen inhoud beschikbaar' : 'No content available'}
+        </p>
+      ),
+      keyPoints: [] as string[],
     }];
   }
-  
+
+  // Get visual config — merge API data with any fetched LessonVisual data
+  const apiVisualType = (currentLesson as any)?.visual_type || 'auto';
+  const lessonVisualData = (currentLesson as any)?.visual_data || null;
+  // approvedVisualData from LessonVisual fetch takes priority (has preview_image_url etc.)
+  const apiVisualData = approvedVisualData || lessonVisualData;
+
   // Split content into sections (~500 chars each)
   const rawSections: string[] = [];
   const sentences = fullContent.split(/(?<=[.!?])\s+/);
   let currentSection = '';
-  
+
   for (const sentence of sentences) {
     currentSection += sentence + ' ';
     if (currentSection.length > 500) {
@@ -3796,72 +889,80 @@ const contentSections = useMemo(() => {
     }
   }
   if (currentSection.trim()) rawSections.push(currentSection.trim());
-  
-  // Limit to 4 sections max
+
   const sections = rawSections.slice(0, 4);
-  
+
+  const icons = [
+    <Target className="w-8 h-8 text-white" />,
+    <Triangle className="w-8 h-8 text-white" />,
+    <GitCompare className="w-8 h-8 text-white" />,
+    <Users className="w-8 h-8 text-white" />,
+  ];
+
+  const colors = [
+    'bg-gradient-to-br from-blue-600 to-cyan-600 shadow-xl',
+    'bg-gradient-to-br from-orange-600 to-red-600 shadow-xl',
+    'bg-gradient-to-br from-green-600 to-emerald-600 shadow-xl',
+    'bg-gradient-to-br from-purple-600 to-pink-600 shadow-xl',
+  ];
+
   return sections.map((sectionText, index) => {
-    const topicType = detectTopicType(sectionText);
-    
-    // Determine title based on content
+    // Use API visual type for the first section, auto-detect for subsequent
+    const visualType = index === 0 && apiVisualType !== 'auto' ? apiVisualType : 'auto';
+    const visualData = index === 0 ? apiVisualData : null;
+
+    // Get topic type for title/subtitle (either from API or auto-detected)
+    const resolvedType = visualType !== 'auto' ? visualType : detectTopicType(sectionText);
+
     let title = '';
     let subtitle = '';
-    
-    const lower = sectionText.toLowerCase();
-    if (topicType === 'project_def') {
+
+    if (resolvedType === 'project_def') {
       title = isNL ? 'Wat is een Project?' : 'What is a Project?';
       subtitle = isNL ? 'De 3 kernkenmerken' : 'The 3 core characteristics';
-    } else if (topicType === 'triple_constraint') {
+    } else if (resolvedType === 'triple_constraint') {
       title = isNL ? 'De Triple Constraint' : 'The Triple Constraint';
       subtitle = isNL ? 'Tijd, Budget & Scope' : 'Time, Budget & Scope';
-    } else if (topicType === 'pm_role') {
+    } else if (resolvedType === 'pm_role') {
       title = isNL ? 'De Rol van de PM' : 'The Role of the PM';
       subtitle = isNL ? 'Verantwoordelijkheden' : 'Responsibilities';
-    } else if (topicType === 'comparison') {
+    } else if (resolvedType === 'comparison') {
       title = isNL ? 'Project vs. Operatie' : 'Project vs. Operation';
       subtitle = isNL ? 'Ken het verschil' : 'Know the difference';
+    } else if (resolvedType === 'lifecycle') {
+      title = isNL ? 'Projectlevenscyclus' : 'Project Lifecycle';
+      subtitle = isNL ? 'De fasen van een project' : 'The phases of a project';
+    } else if (resolvedType === 'stakeholder') {
+      title = isNL ? 'Stakeholder Management' : 'Stakeholder Management';
+      subtitle = isNL ? 'Belanghebbenden in kaart' : 'Mapping stakeholders';
+    } else if (resolvedType === 'risk') {
+      title = isNL ? 'Risicomanagement' : 'Risk Management';
+      subtitle = isNL ? 'Identificeer & beheers risico\'s' : 'Identify & manage risks';
     } else {
-      // Generic: use first sentence as title
       const firstSentence = sectionText.split(/[.!?]/)[0]?.trim() || '';
       title = firstSentence.length > 60 ? firstSentence.substring(0, 60) + '...' : firstSentence;
       subtitle = `${isNL ? 'Deel' : 'Part'} ${index + 1}`;
     }
-    
-    // Get icon based on topic or index
-    const icons = [
-      <Target className="w-8 h-8 text-white" />,
-      <Triangle className="w-8 h-8 text-white" />,
-      <GitCompare className="w-8 h-8 text-white" />,
-      <Users className="w-8 h-8 text-white" />
-    ];
-    
-    const colors = [
-      'bg-gradient-to-br from-blue-600 to-cyan-600 shadow-xl',
-      'bg-gradient-to-br from-orange-600 to-red-600 shadow-xl',
-      'bg-gradient-to-br from-green-600 to-emerald-600 shadow-xl',
-      'bg-gradient-to-br from-purple-600 to-pink-600 shadow-xl'
-    ];
-    
-    // Render appropriate visual template
-    let renderedContent = '';
-    if (topicType === 'project_def') {
-      renderedContent = renderProjectDefinitionVisual(sectionText, isNL);
-    } else if (topicType === 'triple_constraint') {
-      renderedContent = renderTripleConstraintVisual(sectionText, isNL);
-    } else {
-      renderedContent = renderGenericContent(sectionText, isNL, index);
-    }
-    
+
     return {
       title,
       subtitle,
       icon: icons[index % 4],
       color: colors[index % 4],
-      content: renderedContent,
-      keyPoints: [] // Already included in visual templates
+      content: '', // No longer using HTML strings
+      reactContent: (
+        <VisualTemplateRenderer
+          visualType={visualType}
+          visualData={visualData}
+          content={sectionText}
+          isNL={isNL}
+          index={index}
+        />
+      ),
+      keyPoints: [] as string[],
     };
   });
-}, [currentLesson, isNL]);
+}, [currentLesson, isNL, approvedVisualData]);
   // Get interactive slides
   const slides = generateInteractiveSlides(currentLesson, isNL);
   
@@ -4055,49 +1156,48 @@ Realistic examples and scenarios
       { name: isNL ? 'Werkblad Template' : 'Worksheet Template', type: 'XLSX', size: '156 KB' },
     ],
   };
-// Visual Loading useEffect
+// Visual Loading useEffect — fetches LessonVisual and merges into lesson data
 useEffect(() => {
   const loadVisual = async () => {
     if (!currentLesson) return;
-    
+
     try {
-      console.log('🎯 Checking database for approved visual...');
-      
-      const numericId = typeof currentLesson.id === 'number' 
-        ? currentLesson.id 
-        : parseInt(String(currentLesson.id).replace(/\D/g, ''), 10);
-      console.log('🔍 Fetching visual for numeric ID:', numericId);
-      const approvedVisual = await visualService.getApprovedVisual(numericId.toString());
-      
-      if (approvedVisual && approvedVisual.visual_id) {
-        console.log('✅ Using approved visual from database:', approvedVisual.visual_id);
-        setPrimaryKeyword(approvedVisual.visual_id);
-        setApprovedVisualData(approvedVisual);
+      // If lesson already has visual_data with preview_image_url from API, skip fetch
+      const existingData = (currentLesson as any)?.visual_data;
+      if (existingData?.preview_image_url) {
+        console.log('✅ Lesson already has visual_data from API');
+        setPrimaryKeyword(existingData.visual_id || 'lifecycle');
+        setApprovedVisualData(existingData);
         return;
       }
 
-      console.log('⚠️ No approved visual found, using AI...');
-      const visualId = await analyzeContent(
-        course.title,
-        currentModule?.title || '',
-        currentLesson.title,
-        currentLesson.content || '',
-        (course as any).methodology || 'generic_pm',
-        currentModuleIndex,
-        currentLessonIndex,
-        course.modules.length,
-        currentModule?.lessons?.length || 0
-      );
+      console.log('🎯 Checking LessonVisual for approved visual...');
+      const numericId = typeof currentLesson.id === 'number'
+        ? currentLesson.id
+        : parseInt(String(currentLesson.id).replace(/\D/g, ''), 10);
 
-      setPrimaryKeyword(visualId);
+      if (!isNaN(numericId)) {
+        const approvedVisual = await visualService.getApprovedVisual(numericId.toString());
+
+        if (approvedVisual && approvedVisual.visual_id) {
+          console.log('✅ Found approved visual:', approvedVisual.visual_id);
+          setPrimaryKeyword(approvedVisual.visual_id);
+          // Merge into lesson's visual_data so contentSections picks it up
+          setApprovedVisualData(approvedVisual);
+          return;
+        }
+      }
+
+      console.log('⚠️ No approved visual found, using auto-detect...');
+      setPrimaryKeyword('auto');
       setApprovedVisualData(null);
     } catch (error) {
       console.error('Failed to load visual:', error);
-      setPrimaryKeyword('lifecycle');
+      setPrimaryKeyword('auto');
       setApprovedVisualData(null);
     }
   };
-  
+
   loadVisual();
 }, [currentLessonId, currentLesson?.title]);
 // Load saved notes and practice work
@@ -4789,15 +1889,9 @@ switch (activeTab) {
 if (!currentScenario || JSON.stringify(currentScenario) !== JSON.stringify(generatedScenario)) {
   setCurrentScenario(generatedScenario);
 }
-// ✅ DEBUG - VOOR return statement (wordt WEL uitgevoerd!)
-console.log('🔍🔍🔍 BEFORE RETURN - Has content?', !!currentLesson?.content);
-console.log('📏📏📏 BEFORE RETURN - Content length:', currentLesson?.content?.length);
-console.log('📄📄📄 BEFORE RETURN - Content preview:', currentLesson?.content?.substring(0, 100));
-console.log('🎯🎯🎯 BEFORE RETURN - currentLesson object:', currentLesson);
 return (
   <>
-    {/* Lifecycle/Visual Diagram */}
-    {renderVisual(approvedVisualData || { visual_id: primaryKeyword })}
+    {/* Visual + Content are now unified inside contentSections via VisualTemplateRenderer */}
 {/* ==================== INTERACTIVE LESSON CONTENT SLIDER ==================== */}
 {(currentLesson?.content || currentLesson?.transcript) && (
   <Card className="mb-6 border-2 border-purple-200 dark:border-purple-800 overflow-hidden shadow-xl">
@@ -4867,9 +1961,13 @@ return (
                 )}
               </div>
             </div>
-            {/* Section Content */}
+            {/* Section Content — React Visual Templates */}
             <div className="prose prose-lg max-w-none dark:prose-invert">
-              <div dangerouslySetInnerHTML={{ __html: contentSections[contentSlide].content }} />
+              {(contentSections[contentSlide] as any).reactContent || (
+                contentSections[contentSlide].content
+                  ? <div dangerouslySetInnerHTML={{ __html: contentSections[contentSlide].content }} />
+                  : null
+              )}
             </div>
             {/* Interactive Elements */}
             {contentSections[contentSlide].interactive && (
@@ -5073,13 +2171,49 @@ return (
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="space-y-4">
-                            <p className="text-muted-foreground">
-                              {isNL ? 'Voltooi alle lessen om het examen te ontgrendelen.' : 'Complete all lessons to unlock the exam.'}
-                            </p>
-                            <Button disabled className="w-full">
-                              <Clock className="w-4 h-4 mr-2" />
-                              {isNL ? 'Examen Starten' : 'Start Exam'}
-                            </Button>
+                            {progress < 100 ? (
+                              <>
+                                <div className="bg-purple-50 dark:bg-purple-950/20 rounded-lg p-6 text-center">
+                                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-4 opacity-50">
+                                    <GraduationCap className="w-8 h-8 text-white" />
+                                  </div>
+                                  <h3 className="font-bold text-lg mb-2">{isNL ? 'Examen Vergrendeld' : 'Exam Locked'}</h3>
+                                  <p className="text-muted-foreground mb-4">
+                                    {isNL ? `Voltooi alle lessen om het examen te ontgrendelen. Voortgang: ${progress}%` : `Complete all lessons to unlock the exam. Progress: ${progress}%`}
+                                  </p>
+                                  <Progress value={progress} className="h-3 mb-2" />
+                                </div>
+                                <Button disabled className="w-full">
+                                  <Clock className="w-4 h-4 mr-2" />
+                                  {isNL ? 'Examen Starten' : 'Start Exam'}
+                                </Button>
+                              </>
+                            ) : (
+                              <div className="space-y-4">
+                                <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg p-6 text-center">
+                                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-4">
+                                    <GraduationCap className="w-8 h-8 text-white" />
+                                  </div>
+                                  <h3 className="font-bold text-lg mb-2">{isNL ? 'Examen Beschikbaar!' : 'Exam Available!'}</h3>
+                                  <p className="text-muted-foreground mb-4">
+                                    {isNL ? 'Je hebt alle lessen voltooid. Start het examen om je certificaat te behalen.' : 'You have completed all lessons. Start the exam to earn your certificate.'}
+                                  </p>
+                                </div>
+                                <QuizEngine
+                                  lessonId={`exam-${course.id}`}
+                                  courseSlug={slug || ''}
+                                  apiBase="/api/v1"
+                                  language={isNL ? 'nl' : 'en'}
+                                  timeLimit={60}
+                                  onComplete={(passed) => {
+                                    if (passed) {
+                                      awardSkillPoints(currentLessonId, 'exam_pass', 2.0);
+                                      toast({ title: isNL ? 'Examen gehaald! Je certificaat is beschikbaar.' : 'Exam passed! Your certificate is available.' });
+                                    }
+                                  }}
+                                />
+                              </div>
+                            )}
                           </CardContent>
                         </Card>
                       );
@@ -5094,15 +2228,64 @@ return (
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="space-y-4">
-                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-lg border">
-                              <p className="text-sm text-muted-foreground mb-4">
-                                {isNL ? 'Voltooiingspercentage: 0%' : 'Completion: 0%'}
-                              </p>
+                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-6 rounded-lg border">
+                              <div className="flex items-center gap-3 mb-3">
+                                <Progress value={progress} className="flex-1 h-3" />
+                                <span className="text-sm font-bold">{progress}%</span>
+                              </div>
                               <p className="text-muted-foreground text-sm">
-                                {isNL ? 'Voltooi de cursus en slaag voor het examen om je certificaat te ontvangen.' : 'Complete the course and pass the exam to receive your certificate.'}
+                                {progress === 100
+                                  ? (isNL ? 'Je hebt de cursus voltooid! Download je certificaat hieronder.' : 'You have completed the course! Download your certificate below.')
+                                  : (isNL ? 'Voltooi de cursus en slaag voor het examen om je certificaat te ontvangen.' : 'Complete the course and pass the exam to receive your certificate.')}
                               </p>
                             </div>
-                            <Button disabled className="w-full">
+                            {progress === 100 && (
+                              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 p-6 rounded-lg border-2 border-yellow-300 text-center">
+                                <Award className="w-16 h-16 text-yellow-500 mx-auto mb-3" />
+                                <h3 className="font-bold text-lg mb-1">{isNL ? 'Gefeliciteerd!' : 'Congratulations!'}</h3>
+                                <p className="text-sm text-muted-foreground mb-1">
+                                  {isNL ? `Je hebt "${course.titleNL || course.title}" voltooid` : `You completed "${course.title}"`}
+                                </p>
+                                <p className="text-xs text-muted-foreground">{user?.name || user?.email || 'Student'}</p>
+                              </div>
+                            )}
+                            <Button
+                              disabled={progress < 100}
+                              className={progress === 100 ? "w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white" : "w-full"}
+                              onClick={() => {
+                                if (progress < 100) return;
+                                try {
+                                  const token = localStorage.getItem('access_token');
+                                  const certUrl = `${import.meta.env.VITE_BACKEND_URL || '/api/v1'}/academy/certificates/generate/?course_id=${course.id}`;
+                                  fetch(certUrl, {
+                                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                                  })
+                                    .then(res => {
+                                      if (res.ok) return res.blob();
+                                      throw new Error('Certificate not available');
+                                    })
+                                    .then(blob => {
+                                      const url = URL.createObjectURL(blob);
+                                      const a = document.createElement('a');
+                                      a.href = url;
+                                      a.download = `certificate-${course.id}.pdf`;
+                                      a.click();
+                                      URL.revokeObjectURL(url);
+                                    })
+                                    .catch(() => {
+                                      toast({
+                                        title: isNL ? 'Certificaat wordt gegenereerd' : 'Certificate being generated',
+                                        description: isNL ? 'Je ontvangt je certificaat binnenkort per e-mail.' : 'You will receive your certificate by email shortly.',
+                                      });
+                                    });
+                                } catch {
+                                  toast({
+                                    title: isNL ? 'Certificaat wordt gegenereerd' : 'Certificate being generated',
+                                    description: isNL ? 'Je ontvangt je certificaat binnenkort per e-mail.' : 'You will receive your certificate by email shortly.',
+                                  });
+                                }
+                              }}
+                            >
                               <Download className="w-4 h-4 mr-2" />
                               {isNL ? 'Certificaat Downloaden' : 'Download Certificate'}
                             </Button>
@@ -5171,6 +2354,7 @@ return (
                             language={isNL ? 'nl' : 'en'}
                             onComplete={(passed) => {
                               if (passed) {
+                                awardSkillPoints(currentLessonId, 'quiz_pass');
                                 completeLesson(course.id, currentLessonId, allLessons.length);
                                 toast({ title: isNL ? 'Quiz voltooid!' : 'Quiz completed!' });
                               }
