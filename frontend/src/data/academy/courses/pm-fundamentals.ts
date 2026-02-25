@@ -1733,6 +1733,12 @@ Effectief teamleiderschap:
 - Hanteert flexibele conflictstijlen
 - Past aan voor virtuele context`,
       keyTakeaways: [
+        'Teams go through phases: Forming, Storming, Norming, Performing',
+        'Intrinsic motivation (autonomy, purpose, recognition) works better than extrinsic',
+        'Conflict styles must fit the situation',
+        'Virtual teams require extra attention to communication',
+      ],
+      keyTakeawaysNL: [
         'Teams doorlopen fasen: Forming, Storming, Norming, Performing',
         'Intrinsieke motivatie (autonomie, purpose, erkenning) werkt beter dan extrinsieke',
         'Conflictstijlen moeten passen bij de situatie',
@@ -1895,6 +1901,12 @@ Effectieve stakeholder communicatie:
 - Brengt moeilijke boodschappen eerlijk
 - Luistert evenveel als zendt`,
       keyTakeaways: [
+        'PMs spend 90% of their time on communication',
+        'A communication plan defines who-what-when-how',
+        'Adapt your style per stakeholder type',
+        'Deliver bad news honestly, with a plan',
+      ],
+      keyTakeawaysNL: [
         'PM\'s besteden 90% van hun tijd aan communicatie',
         'Een communicatieplan definieert wie-wat-wanneer-hoe',
         'Pas je stijl aan per stakeholder type',
@@ -2053,6 +2065,12 @@ Earned Value Management:
 - CV/CPI meet cost performance
 - Forecasting voorspelt eindresultaat`,
       keyTakeaways: [
+        'EVM combines scope, time and costs in one objective measurement',
+        'EV = what you have earned, not what you have spent',
+        'CPI < 1 means you are spending more than planned per unit of work',
+        'EAC predicts total costs if the trend continues',
+      ],
+      keyTakeawaysNL: [
         'EVM combineert scope, tijd en kosten in één objectieve meting',
         'EV = wat je hebt verdiend, niet wat je hebt uitgegeven',
         'CPI < 1 betekent dat je meer uitgeeft dan gepland per eenheid werk',

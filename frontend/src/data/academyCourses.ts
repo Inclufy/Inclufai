@@ -1145,6 +1145,12 @@ Score interpretatie:
 - Risico triggers monitoren
 - Nieuwe risico's identificeren`,
           keyTakeaways: [
+            'Risks have probability and impact - assess both',
+            'Four response strategies: avoid, transfer, mitigate, accept',
+            'The risk register is the central document',
+            'Risk management is continuous, not a one-time activity',
+          ],
+          keyTakeawaysNL: [
             'Risico\'s hebben kans én impact - beide beoordelen',
             'Vier response strategieën: vermijden, overdragen, mitigeren, accepteren',
             'Het risicoregister is het centrale document',
@@ -1162,12 +1168,12 @@ Score interpretatie:
     // ==========================================
     {
       id: 'pm-m4',
-      title: 'Module 4: Uitvoering & Monitoring',
+      title: 'Module 4: Execution & Monitoring',
       description: 'Teamleiderschap, communicatie, Earned Value en change control.',
       lessons: [
         {
           id: 'pm-l16',
-          title: 'Teams leiden en motiveren',
+          title: 'Leading and motivating teams',
           duration: '18:00',
           type: 'video',
           transcript: `De beste planning ter wereld faalt als je team niet gemotiveerd is. In deze les leer je hoe je teams leidt naar high performance.
@@ -1206,6 +1212,12 @@ Score interpretatie:
 - **Compromising**: Half-half, bij tijdsdruk
 - **Collaborating**: Win-win, voor belangrijke issues met tijd`,
           keyTakeaways: [
+            'Teams go through phases: Forming, Storming, Norming, Performing',
+            'Intrinsic motivation works better than extrinsic',
+            'Conflict styles must match the situation',
+            'Virtual teams require extra attention to communication',
+          ],
+          keyTakeawaysNL: [
             'Teams doorlopen fasen: Forming, Storming, Norming, Performing',
             'Intrinsieke motivatie werkt beter dan extrinsieke',
             'Conflictstijlen moeten passen bij de situatie',
