@@ -510,7 +510,7 @@ Factoren om te overwegen:
         },
         {
           id: 'pm-l4',
-          title: 'De projectlevenscyclus',
+          title: 'The project life cycle',
           duration: '14:00',
           type: 'video',
           transcript: `Elk project doorloopt een levenscyclus - een reeks fasen van begin tot eind. Het begrijpen van deze fasen is essentieel voor effectief projectmanagement.
@@ -553,6 +553,12 @@ Factoren om te overwegen:
 
 Tussen fasen zitten vaak "gates" - beslismomenten waar wordt bepaald of het project mag doorgaan.`,
           keyTakeaways: [
+            'Five phases: Initiation, Planning, Execution, Monitoring, Closure',
+            'The planning phase largely determines project success',
+            'Monitoring runs parallel to execution',
+            'Closure is crucial but is often neglected',
+          ],
+          keyTakeawaysNL: [
             'Vijf fasen: Initiatie, Planning, Uitvoering, Monitoring, Afsluiting',
             'De planningsfase bepaalt grotendeels het projectsucces',
             'Monitoring loopt parallel aan uitvoering',
@@ -561,7 +567,7 @@ Tussen fasen zitten vaak "gates" - beslismomenten waar wordt bepaald of het proj
         },
         {
           id: 'pm-l5',
-          title: 'Quiz: Basisconcepten',
+          title: 'Quiz: Basic concepts',
           duration: '15:00',
           type: 'quiz',
           quiz: [
@@ -644,12 +650,12 @@ Tussen fasen zitten vaak "gates" - beslismomenten waar wordt bepaald of het proj
     // ==========================================
     {
       id: 'pm-m2',
-      title: 'Module 2: Project Initiatie',
+      title: 'Module 2: Project Initiation',
       description: 'Hoe start je een project goed? Van stakeholder analyse tot business case.',
       lessons: [
         {
           id: 'pm-l6',
-          title: 'Het projectcharter opstellen',
+          title: 'Creating the project charter',
           duration: '16:00',
           type: 'video',
           transcript: `Het projectcharter is het formele document dat een project autoriseert en de projectmanager de bevoegdheid geeft om resources in te zetten.

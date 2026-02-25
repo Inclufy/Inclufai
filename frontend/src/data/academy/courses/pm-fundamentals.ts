@@ -2582,7 +2582,7 @@ Lessons learned:
     },
     {
       id: 'pm-l24',
-      title: 'Administratieve afsluiting en archivering',
+      title: 'Administrative closure and archiving',
       titleNL: 'Administratieve afsluiting en archivering',
       duration: '10:00',
       type: 'video',
@@ -2712,7 +2712,7 @@ Administratieve afsluiting:
     },
     {
       id: 'pm-l25',
-      title: 'Eindexamen: Project Management Fundamentals',
+      title: 'Final exam: Project Management Fundamentals',
       titleNL: 'Eindexamen: Project Management Fundamentals',
       duration: '45:00',
       type: 'exam',
@@ -2737,7 +2737,7 @@ Succes!`,
     },
     {
       id: 'pm-l26',
-      title: 'Certificaat en Vervolgstappen',
+      title: 'Certificate and Next Steps',
       titleNL: 'Certificaat en Vervolgstappen',
       duration: '5:00',
       type: 'certificate',

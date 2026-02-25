@@ -1955,6 +1955,12 @@ Closing a Project:
 - Stelt benefits review plan op
 - Vraagt Board om formele sluiting`,
       keyTakeaways: [
+        'CP is mandatory, even when stopping prematurely',
+        'End Project Report evaluates the entire project',
+        'Benefits Review Plan ensures post-project benefits measurement',
+        'Lessons Report documents lessons learned',
+      ],
+      keyTakeawaysNL: [
         'CP is verplicht, ook bij voortijdig stoppen',
         'End Project Report evalueert het hele project',
         'Benefits Review Plan zorgt voor post-project benefits meting',
@@ -1969,7 +1975,7 @@ Closing a Project:
 // ============================================
 const module4: Module = {
   id: 'p2-m4',
-  title: 'Module 4: Tailoring & Examen Voorbereiding',
+  title: 'Module 4: Tailoring & Exam Preparation',
   titleNL: 'Module 4: Tailoring & Examen Voorbereiding',
   description: 'Tailoring PRINCE2 and exam preparation.',
   descriptionNL: 'PRINCE2 aanpassen en examenvoorbereiding.',
@@ -2072,6 +2078,12 @@ Tailoring:
 - Wordt gedocumenteerd en goedgekeurd
 - Maakt PRINCE2 toepasbaar voor elk project`,
       keyTakeaways: [
+        'Tailoring is a principle, not an option',
+        'Processes, themes, and roles may be adapted',
+        'The 7 principles are non-negotiable',
+        'Document and get tailoring approved',
+      ],
+      keyTakeawaysNL: [
         'Tailoring is een principe, geen optie',
         'Processen, thema\'s en rollen mogen worden aangepast',
         'De 7 principes zijn niet onderhandelbaar',
@@ -2080,7 +2092,7 @@ Tailoring:
     },
     {
       id: 'p2-l18',
-      title: 'Quiz: Processen',
+      title: 'Quiz: Processes',
       titleNL: 'Quiz: Processen',
       duration: '15:00',
       type: 'quiz',
