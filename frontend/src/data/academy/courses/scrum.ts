@@ -14,14 +14,14 @@ import { instructors } from '../instructors';
 // ============================================
 const module1: Module = {
   id: 'scrum-m1',
-  title: 'Module 1: Scrum Fundamenten',
+  title: 'Module 1: Scrum Fundamentals',
   titleNL: 'Module 1: Scrum Fundamenten',
   description: 'The foundation: empiricism, values, pillars, and the framework.',
   descriptionNL: 'De basis van Scrum: geschiedenis, waarden, principes en het framework.',
   lessons: [
     {
       id: 'scrum-l1',
-      title: 'De oorsprong en essentie van Scrum',
+      title: 'The Origin and Essence of Scrum',
       titleNL: 'De oorsprong en essentie van Scrum',
       duration: '18:00',
       type: 'video',
@@ -158,7 +158,7 @@ Scrum:
     },
     {
       id: 'scrum-l2',
-      title: 'De Scrum Rollen (Accountabilities)',
+      title: 'The Scrum Roles (Accountabilities)',
       titleNL: 'De Scrum Rollen (Accountabilities)',
       duration: '22:00',
       type: 'video',
@@ -309,7 +309,7 @@ Samen vormen ze een cross-functional, self-managing team.`,
     },
     {
       id: 'scrum-l3',
-      title: 'De Scrum Events',
+      title: 'The Scrum Events',
       titleNL: 'De Scrum Events',
       duration: '25:00',
       type: 'video',
@@ -494,7 +494,7 @@ Skip geen events - elk heeft een cruciale functie!`,
     },
     {
       id: 'scrum-l4',
-      title: 'De Scrum Artefacten',
+      title: 'The Scrum Artifacts',
       titleNL: 'De Scrum Artefacten',
       duration: '18:00',
       type: 'video',
@@ -650,7 +650,7 @@ Transparantie is key - als artefacten niet transparant zijn, falen inspectie en 
     },
     {
       id: 'scrum-l5',
-      title: 'Quiz: Scrum Fundamenten',
+      title: 'Quiz: Scrum Fundamentals',
       titleNL: 'Quiz: Scrum Fundamenten',
       duration: '15:00',
       type: 'quiz',
@@ -705,7 +705,7 @@ Transparantie is key - als artefacten niet transparant zijn, falen inspectie en 
 // ============================================
 const module2: Module = {
   id: 'scrum-m2',
-  title: 'Module 2: De Rol van de Scrum Master',
+  title: 'Module 2: The Role of the Scrum Master',
   titleNL: 'Module 2: De Rol van de Scrum Master',
   description: 'Deep dive into the Scrum Master role: servant leadership, coaching, and facilitation.',
   descriptionNL: 'Diepgaande behandeling van de Scrum Master rol: servant leadership, coaching en facilitatie.',
@@ -816,7 +816,7 @@ De Scrum Master als servant-leader:
     },
     {
       id: 'scrum-l7',
-      title: 'Impediments Oplossen',
+      title: 'Resolving Impediments',
       titleNL: 'Impediments Oplossen',
       duration: '18:00',
       type: 'video',
@@ -929,7 +929,7 @@ Impediments oplossen:
     },
     {
       id: 'scrum-l8',
-      title: 'Events Faciliteren',
+      title: 'Facilitating Events',
       titleNL: 'Events Faciliteren',
       duration: '22:00',
       type: 'video',
@@ -1072,7 +1072,7 @@ Events faciliteren:
 // ============================================
 const module3: Module = {
   id: 'scrum-m3',
-  title: 'Module 3: Scrum in de Praktijk',
+  title: 'Module 3: Scrum in Practice',
   titleNL: 'Module 3: Scrum in de Praktijk',
   description: 'Practical application of Scrum: metrics, scaling, and common challenges.',
   descriptionNL: 'Praktische toepassing van Scrum: metrics, scaling en veelvoorkomende uitdagingen.',

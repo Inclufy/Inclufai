@@ -14,14 +14,14 @@ import { instructors } from '../instructors';
 // ============================================
 const module1: Module = {
   id: 'p2-m1',
-  title: 'Module 1: PRINCE2 Introductie & Principes',
+  title: 'Module 1: PRINCE2 Introduction & Principles',
   titleNL: 'Module 1: PRINCE2 Introductie & Principes',
   description: 'Introduction to PRINCE2 and the 7 non-negotiable principles.',
   descriptionNL: 'Kennismaking met PRINCE2 en de 7 ononderhandelbare principes.',
   lessons: [
     {
       id: 'p2-l1',
-      title: 'Wat is PRINCE2?',
+      title: 'What is PRINCE2?',
       titleNL: 'Wat is PRINCE2?',
       duration: '15:00',
       type: 'video',
@@ -114,6 +114,12 @@ We behandelen:
 Laten we beginnen met de 7 principes - de fundamenten van PRINCE2!`,
       keyTakeaways: [
         'PRINCE2 = PRojects IN Controlled Environments',
+        'Consists of 7 principles, 7 themes, 7 processes',
+        'The most widely used PM methodology worldwide',
+        'Two certification levels: Foundation and Practitioner',
+      ],
+      keyTakeawaysNL: [
+        'PRINCE2 = PRojects IN Controlled Environments',
         'Bestaat uit 7 principes, 7 thema\'s, 7 processen',
         'Wereldwijd de meest gebruikte PM-methode',
         'Twee certificeringsniveaus: Foundation en Practitioner',
@@ -129,7 +135,7 @@ Laten we beginnen met de 7 principes - de fundamenten van PRINCE2!`,
     },
     {
       id: 'p2-l2',
-      title: 'De 7 Principes van PRINCE2',
+      title: 'The 7 Principles of PRINCE2',
       titleNL: 'De 7 Principes van PRINCE2',
       duration: '25:00',
       type: 'video',
@@ -267,6 +273,12 @@ Wat kun je NIET tailoren?
 6. Focus on Products - Focus op producten
 7. Tailor to Suit the Project Environment - Aanpassen aan de context`,
       keyTakeaways: [
+        'The 7 principles are mandatory - otherwise it is not PRINCE2',
+        'Business justification must remain valid throughout the entire project',
+        'Manage by Exception gives the PM freedom within tolerances',
+        'Tailoring is essential but the principles remain intact',
+      ],
+      keyTakeawaysNL: [
         'De 7 principes zijn verplicht - anders is het geen PRINCE2',
         'Business justification moet gedurende heel het project geldig blijven',
         'Manage by Exception geeft PM ruimte binnen toleranties',
@@ -283,7 +295,7 @@ Wat kun je NIET tailoren?
     },
     {
       id: 'p2-l3',
-      title: 'De 7 Thema\'s - Overzicht',
+      title: 'The 7 Themes - Overview',
       titleNL: 'De 7 Thema\'s - Overzicht',
       duration: '20:00',
       type: 'video',

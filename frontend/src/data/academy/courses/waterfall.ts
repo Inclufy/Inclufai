@@ -14,14 +14,14 @@ import { instructors } from '../instructors';
 // ============================================
 const module1: Module = {
   id: 'wf-m1',
-  title: 'Module 1: Waterfall Fundamenten',
+  title: 'Module 1: Waterfall Fundamentals',
   titleNL: 'Module 1: Waterfall Fundamenten',
   description: 'The foundation of Waterfall: phases, when to use, and trade-offs.',
   descriptionNL: 'De basis van Waterfall: oorsprong, principes en wanneer te gebruiken.',
   lessons: [
     {
       id: 'wf-l1',
-      title: 'Wat is Waterfall?',
+      title: 'What is Waterfall?',
       titleNL: 'Wat is Waterfall?',
       duration: '15:00',
       type: 'video',
@@ -177,7 +177,7 @@ Waterfall:
     },
     {
       id: 'wf-l2',
-      title: 'Requirements Fase',
+      title: 'Requirements Phase',
       titleNL: 'Requirements Fase',
       duration: '22:00',
       type: 'video',
@@ -737,7 +737,7 @@ De uitvoerende fasen:
 // ============================================
 const module2: Module = {
   id: 'wf-m2',
-  title: 'Module 2: Waterfall in de Praktijk',
+  title: 'Module 2: Waterfall in Practice',
   titleNL: 'Module 2: Waterfall in de Praktijk',
   description: 'Practical application of Waterfall: gate reviews, change control, and hybrid approaches.',
   descriptionNL: 'Praktische toepassing van Waterfall: gate reviews, change control en hybride aanpakken.',

@@ -221,7 +221,7 @@ const getCourseData = (id: string, isNL: boolean): CourseData => {
           type: les.type as any,
           transcript: les.transcript,
           content: les.content,
-          keyTakeaways: les.keyTakeaways,
+          keyTakeaways: isNL && les.keyTakeawaysNL?.length ? les.keyTakeawaysNL : les.keyTakeaways,
           videoUrl: les.videoUrl || undefined,
           resources: les.type === 'video' ? [
             { name: isNL ? 'Presentatie Slides' : 'Presentation Slides', type: 'PDF', size: '2.4 MB' },

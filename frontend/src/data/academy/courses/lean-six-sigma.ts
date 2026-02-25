@@ -14,14 +14,14 @@ import { instructors } from '../instructors';
 // ============================================
 const module1: Module = {
   id: 'lss-m1',
-  title: 'Module 1: Introductie & Define',
+  title: 'Module 1: Introduction & Define',
   titleNL: 'Module 1: Introductie & Define',
   description: 'The fundamentals of Lean Six Sigma and the Define phase.',
   descriptionNL: 'De fundamenten van Lean Six Sigma en de Define fase.',
   lessons: [
     {
       id: 'lss-l1',
-      title: 'Wat is Lean Six Sigma?',
+      title: 'What is Lean Six Sigma?',
       titleNL: 'Wat is Lean Six Sigma?',
       duration: '20:00',
       type: 'video',
@@ -183,7 +183,7 @@ Lean Six Sigma:
     },
     {
       id: 'lss-l2',
-      title: 'De Define Fase',
+      title: 'The Define Phase',
       titleNL: 'De Define Fase',
       duration: '25:00',
       type: 'video',
@@ -352,7 +352,7 @@ De Define fase:
     },
     {
       id: 'lss-l3',
-      title: 'Quiz: Define Fase',
+      title: 'Quiz: Define Phase',
       titleNL: 'Quiz: Define Fase',
       duration: '10:00',
       type: 'quiz',
@@ -410,7 +410,7 @@ const module2: Module = {
   lessons: [
     {
       id: 'lss-l4',
-      title: 'De Measure Fase',
+      title: 'The Measure Phase',
       titleNL: 'De Measure Fase',
       duration: '28:00',
       type: 'video',

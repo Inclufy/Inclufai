@@ -14,14 +14,14 @@ import { instructors } from '../instructors';
 // ============================================
 const module1: Module = {
   id: 'ag-m1',
-  title: 'Module 1: De Agile Mindset',
+  title: 'Module 1: The Agile Mindset',
   titleNL: 'Module 1: De Agile Mindset',
   description: 'The foundation: values, principles, and the fundamental mindshift.',
   descriptionNL: 'Het fundament: waarden, principes en de mindset achter Agile.',
   lessons: [
     {
       id: 'ag-l1',
-      title: 'Het Agile Manifesto',
+      title: 'The Agile Manifesto',
       titleNL: 'Het Agile Manifesto',
       duration: '18:00',
       type: 'video',
@@ -177,7 +177,7 @@ Het Agile Manifesto:
     },
     {
       id: 'ag-l2',
-      title: 'De 12 Principes',
+      title: 'The 12 Principles',
       titleNL: 'De 12 Principes',
       duration: '25:00',
       type: 'video',
@@ -397,7 +397,7 @@ De 12 principes:
     },
     {
       id: 'ag-l3',
-      title: 'Agile vs. Traditioneel',
+      title: 'Agile vs. Traditional',
       titleNL: 'Agile vs. Traditioneel',
       duration: '20:00',
       type: 'video',
@@ -541,7 +541,7 @@ Agile vs. Traditioneel:
     },
     {
       id: 'ag-l4',
-      title: 'Agile Frameworks Overzicht',
+      title: 'Agile Frameworks Overview',
       titleNL: 'Agile Frameworks Overzicht',
       duration: '22:00',
       type: 'video',
@@ -783,14 +783,14 @@ Agile frameworks:
 // ============================================
 const module2: Module = {
   id: 'ag-m2',
-  title: 'Module 2: Agile in de Praktijk',
+  title: 'Module 2: Agile in Practice',
   titleNL: 'Module 2: Agile in de Praktijk',
   description: 'Practical application: user stories, estimation, and Agile transformation.',
   descriptionNL: 'Praktische toepassing: user stories, schattingen en Agile transformatie.',
   lessons: [
     {
       id: 'ag-l6',
-      title: 'User Stories en Backlog Management',
+      title: 'User Stories and Backlog Management',
       titleNL: 'User Stories en Backlog Management',
       duration: '18:00',
       type: 'video',
@@ -876,7 +876,7 @@ User Stories:
     },
     {
       id: 'ag-l7',
-      title: 'Agile Schatten',
+      title: 'Agile Estimation',
       titleNL: 'Agile Schatten',
       duration: '16:00',
       type: 'video',
@@ -963,7 +963,7 @@ Agile schatten:
     },
     {
       id: 'ag-l8',
-      title: 'Agile Transformatie',
+      title: 'Agile Transformation',
       titleNL: 'Agile Transformatie',
       duration: '20:00',
       type: 'video',
@@ -1033,7 +1033,7 @@ Agile transformatie:
     },
     {
       id: 'ag-l9',
-      title: 'Eindexamen',
+      title: 'Final Exam',
       titleNL: 'Eindexamen',
       duration: '30:00',
       type: 'exam',

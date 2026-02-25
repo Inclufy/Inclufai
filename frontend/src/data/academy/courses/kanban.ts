@@ -14,14 +14,14 @@ import { instructors } from '../instructors';
 // ============================================
 const module1: Module = {
   id: 'kb-m1',
-  title: 'Module 1: Kanban Fundamenten',
+  title: 'Module 1: Kanban Fundamentals',
   titleNL: 'Module 1: Kanban Fundamenten',
   description: 'The foundation: principles, practices, and the Kanban board.',
   descriptionNL: 'De basis van Kanban: oorsprong, principes en het Kanban systeem.',
   lessons: [
     {
       id: 'kb-l1',
-      title: 'Wat is Kanban?',
+      title: 'What is Kanban?',
       titleNL: 'Wat is Kanban?',
       duration: '15:00',
       type: 'video',
@@ -154,7 +154,7 @@ Kanban:
     },
     {
       id: 'kb-l2',
-      title: 'Het Kanban Bord Ontwerpen',
+      title: 'Designing the Kanban Board',
       titleNL: 'Het Kanban Bord Ontwerpen',
       duration: '20:00',
       type: 'video',
@@ -322,7 +322,7 @@ Een goed Kanban bord:
     },
     {
       id: 'kb-l3',
-      title: 'WIP Limieten',
+      title: 'WIP Limits',
       titleNL: 'WIP Limieten',
       duration: '18:00',
       type: 'video',
@@ -657,7 +657,7 @@ Flow metrics:
     },
     {
       id: 'kb-l5',
-      title: 'Quiz: Kanban Fundamenten',
+      title: 'Quiz: Kanban Fundamentals',
       titleNL: 'Quiz: Kanban Fundamenten',
       duration: '15:00',
       type: 'quiz',
@@ -727,14 +727,14 @@ Flow metrics:
 // ============================================
 const module2: Module = {
   id: 'kb-m2',
-  title: 'Module 2: Kanban in de Praktijk',
+  title: 'Module 2: Kanban in Practice',
   titleNL: 'Module 2: Kanban in de Praktijk',
   description: 'Practical application: cadences, policies, and continuous improvement.',
   descriptionNL: 'Praktische toepassing: cadansen, policies en continue verbetering.',
   lessons: [
     {
       id: 'kb-l6',
-      title: 'Kanban Cadansen',
+      title: 'Kanban Cadences',
       titleNL: 'Kanban Cadansen',
       duration: '18:00',
       type: 'video',
@@ -815,7 +815,7 @@ Kanban cadansen:
     },
     {
       id: 'kb-l7',
-      title: 'Policies en Service Level Expectations',
+      title: 'Policies and Service Level Expectations',
       titleNL: 'Policies en Service Level Expectations',
       duration: '16:00',
       type: 'video',
@@ -909,7 +909,7 @@ Expliciete policies:
     },
     {
       id: 'kb-l8',
-      title: 'Continue Verbetering',
+      title: 'Continuous Improvement',
       titleNL: 'Continue Verbetering',
       duration: '18:00',
       type: 'video',
@@ -979,7 +979,7 @@ Continue verbetering:
     },
     {
       id: 'kb-l9',
-      title: 'Eindexamen',
+      title: 'Final Exam',
       titleNL: 'Eindexamen',
       duration: '30:00',
       type: 'exam',
