@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from .methodology_service import apply_methodology_template
+from datetime import datetime
 from .methodology_service import apply_methodology_template
 
 from rest_framework import viewsets
@@ -161,13 +161,23 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
-        project = serializer.save(company=self.request.user.company, created_by=self.request.user)
+        user = self.request.user
+        if not getattr(user, "company", None):
+            raise serializers.ValidationError(
+                {"company": "Je account is niet gekoppeld aan een bedrijf. Neem contact op met je beheerder."}
+            )
+        project = serializer.save(company=user.company, created_by=user)
         # Apply methodology template if set
         if project.methodology:
             apply_methodology_template(project)
 
     def perform_update(self, serializer):
-        serializer.save(company=self.request.user.company)
+        user = self.request.user
+        if not getattr(user, "company", None):
+            raise serializers.ValidationError(
+                {"company": "Je account is niet gekoppeld aan een bedrijf. Neem contact op met je beheerder."}
+            )
+        serializer.save(company=user.company)
 
     def destroy(self, request, *args, **kwargs):
         """Delete a project with proper handling of related records."""
@@ -2105,6 +2115,5 @@ class BudgetOverviewViewSet(viewsets.ViewSet):
 # ============================================
 
 from rest_framework.decorators import api_view
-from datetime import datetime
 
 
