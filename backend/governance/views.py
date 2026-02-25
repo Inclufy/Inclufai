@@ -149,8 +149,8 @@ def ai_generate_text(request):
         return Response({"error": "prompt is required"}, status=http_status.HTTP_400_BAD_REQUEST)
 
     api_key = getattr(settings, 'OPENAI_API_KEY', None)
-    if not api_key or api_key.startswith('sk-test') or len(api_key) < 20:
-        logger.warning("OPENAI_API_KEY is not configured or is a test key")
+    if not api_key or api_key.startswith('sk-test') or api_key.startswith('sk-your') or len(api_key) < 20:
+        logger.warning(f"OPENAI_API_KEY is not configured or is a test/placeholder key: {api_key[:10] if api_key else 'None'}...")
         return Response(
             {"error": "AI service is not configured. Please set a valid OPENAI_API_KEY."},
             status=http_status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -165,8 +165,8 @@ def ai_generate_text(request):
         response = llm.invoke(prompt)
         return Response({"response": response.content.strip()})
     except Exception as e:
-        logger.error(f"AI generation failed: {e}")
+        logger.error(f"AI generate failed: {e}")
         return Response(
-            {"error": "AI service temporarily unavailable. Please try again later."},
+            {"error": f"AI service unavailable: {type(e).__name__}"},
             status=http_status.HTTP_503_SERVICE_UNAVAILABLE,
         )
