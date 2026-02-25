@@ -1,74 +1,69 @@
-import React, { useEffect, useState } from 'react';
+/**
+ * LessonPlayerScreen - Connected to backend API
+ */
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Dimensions,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  ActivityIndicator, Dimensions, RefreshControl,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
 import { WebView } from 'react-native-webview';
-import api from '../../services/api';
+import { COLORS } from '../../constants/colors';
+import { coursesService, Lesson, LessonResource } from '../../services/coursesService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const VIDEO_HEIGHT = (SCREEN_WIDTH * 9) / 16;
 
-interface LessonData {
-  id: number;
-  title: string;
-  content: string;
-  video_url?: string;
-  duration_minutes: number;
-  order: number;
-  completed: boolean;
-  resources: Array<{ id: number; title: string; url: string; type: string }>;
-  next_lesson?: { id: number; title: string };
-  previous_lesson?: { id: number; title: string };
-}
+type TabId = 'content' | 'resources' | 'takeaways';
+
+const TABS: { id: TabId; name: string; icon: string }[] = [
+  { id: 'content', name: 'Inhoud', icon: 'document-text' },
+  { id: 'resources', name: 'Bronnen', icon: 'folder-open' },
+  { id: 'takeaways', name: 'Kernpunten', icon: 'bulb' },
+];
 
 export function LessonPlayerScreen({ route, navigation }: any) {
-  const { courseId, courseSlug, moduleId, lessonId, lessonTitle } = route.params;
-  const { t } = useTranslation();
-  const [lesson, setLesson] = useState<LessonData | null>(null);
+  const { courseId, lessonId } = route.params;
+  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [resources, setResources] = useState<LessonResource[]>([]);
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
-  const [activeTab, setActiveTab] = useState<'content' | 'resources'>('content');
+  const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>('content');
 
-  useEffect(() => {
-    loadLesson();
-  }, [lessonId]);
-
-  async function loadLesson() {
-    setLoading(true);
+  const loadLesson = useCallback(async () => {
     try {
-      const slug = courseSlug || courseId;
-      const res = await api.get(
-        `/academy/courses/${slug}/modules/${moduleId}/lessons/${lessonId}/`
-      );
-      setLesson(res.data);
-    } catch {
+      const data = await coursesService.getLesson(courseId, lessonId);
+      setLesson(data);
       try {
-        const res = await api.get(`/academy/lessons/${lessonId}/`);
-        setLesson(res.data);
+        const res = await coursesService.getLessonResources(courseId, lessonId);
+        setResources(res);
       } catch {
-        // handle error
+        // resources optional
       }
+    } catch {
+      // handle error
     } finally {
       setLoading(false);
     }
-  }
+  }, [courseId, lessonId]);
+
+  useEffect(() => {
+    loadLesson();
+  }, [loadLesson]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadLesson();
+    setRefreshing(false);
+  }, [loadLesson]);
 
   async function markComplete() {
     if (!lesson || lesson.completed) return;
     setCompleting(true);
     try {
-      const slug = courseSlug || courseId;
-      await api.post(
-        `/academy/courses/${slug}/modules/${moduleId}/lessons/${lessonId}/complete/`
-      );
+      await coursesService.completeLesson(courseId, lessonId);
       setLesson((prev) => (prev ? { ...prev, completed: true } : prev));
     } catch {
       // silent
@@ -77,20 +72,10 @@ export function LessonPlayerScreen({ route, navigation }: any) {
     }
   }
 
-  function goToLesson(nextLessonId: number, title: string) {
-    navigation.replace('LessonPlayer', {
-      courseId,
-      courseSlug,
-      moduleId,
-      lessonId: nextLessonId,
-      lessonTitle: title,
-    });
-  }
-
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#7C3AED" />
+        <ActivityIndicator size="large" color={COLORS.purple} />
       </View>
     );
   }
@@ -98,9 +83,10 @@ export function LessonPlayerScreen({ route, navigation }: any) {
   if (!lesson) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>Lesson not found</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.link}>{t('common.back')}</Text>
+        <Ionicons name="alert-circle-outline" size={48} color={COLORS.gray[500]} />
+        <Text style={styles.errorText}>Les niet gevonden</Text>
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Text style={styles.backBtnText}>Terug</Text>
         </TouchableOpacity>
       </View>
     );
@@ -108,6 +94,7 @@ export function LessonPlayerScreen({ route, navigation }: any) {
 
   return (
     <View style={styles.container}>
+      {/* Video / Header */}
       {lesson.video_url ? (
         <View style={styles.videoContainer}>
           <WebView
@@ -118,108 +105,178 @@ export function LessonPlayerScreen({ route, navigation }: any) {
           />
         </View>
       ) : (
-        <View style={styles.noVideo}>
-          <Ionicons name="document-text" size={48} color="#818CF8" />
-          <Text style={styles.noVideoText}>Text Lesson</Text>
+        <LinearGradient
+          colors={COLORS.primaryGradient as unknown as string[]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.headerGradient}
+        >
+          <Ionicons
+            name={
+              lesson.content_type === 'quiz' ? 'help-circle' :
+              lesson.content_type === 'assignment' ? 'create' :
+              lesson.content_type === 'exam' ? 'school' :
+              'document-text'
+            }
+            size={48}
+            color={COLORS.white}
+          />
+          <Text style={styles.headerTitle}>{lesson.title}</Text>
+          <Text style={styles.headerSubtitle}>
+            {lesson.content_type?.charAt(0).toUpperCase() + lesson.content_type?.slice(1)} · {lesson.duration_minutes || 0} min
+          </Text>
+        </LinearGradient>
+      )}
+
+      {/* Completion Badge */}
+      {lesson.completed && (
+        <View style={styles.completedBanner}>
+          <Ionicons name="checkmark-circle" size={16} color={COLORS.green} />
+          <Text style={styles.completedText}>Voltooid</Text>
         </View>
       )}
 
+      {/* Tabs */}
       <View style={styles.tabs}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'content' && styles.activeTab]}
-          onPress={() => setActiveTab('content')}
-        >
-          <Text style={[styles.tabText, activeTab === 'content' && styles.activeTabText]}>
-            Content
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'resources' && styles.activeTab]}
-          onPress={() => setActiveTab('resources')}
-        >
-          <Text style={[styles.tabText, activeTab === 'resources' && styles.activeTabText]}>
-            Resources ({lesson.resources?.length || 0})
-          </Text>
-        </TouchableOpacity>
+        {TABS.map((tab) => (
+          <TouchableOpacity
+            key={tab.id}
+            style={[styles.tab, activeTab === tab.id && styles.activeTab]}
+            onPress={() => setActiveTab(tab.id)}
+          >
+            <Ionicons
+              name={tab.icon as any}
+              size={16}
+              color={activeTab === tab.id ? COLORS.purple : COLORS.gray[400]}
+            />
+            <Text style={[styles.tabText, activeTab === tab.id && styles.activeTabText]}>
+              {tab.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
-      <ScrollView style={styles.content}>
-        {activeTab === 'content' ? (
-          <View style={styles.lessonContent}>
-            <Text style={styles.lessonTitle}>{lesson.title}</Text>
-            <View style={styles.lessonMeta}>
-              <Ionicons name="time" size={14} color="#9CA3AF" />
-              <Text style={styles.metaText}>{lesson.duration_minutes} min</Text>
-              {lesson.completed && (
-                <>
-                  <Ionicons name="checkmark-circle" size={14} color="#34D399" />
-                  <Text style={[styles.metaText, { color: '#34D399' }]}>
-                    {t('academy.completed')}
-                  </Text>
-                </>
-              )}
-            </View>
-            <Text style={styles.bodyText}>{lesson.content}</Text>
+      {/* Content */}
+      <ScrollView
+        style={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.purple} />
+        }
+      >
+        {activeTab === 'content' && (
+          <View style={styles.section}>
+            {lesson.video_url && (
+              <Text style={styles.lessonTitle}>{lesson.title}</Text>
+            )}
+            {lesson.description ? (
+              <Text style={styles.description}>{lesson.description}</Text>
+            ) : null}
+            {lesson.content ? (
+              <Text style={styles.bodyText}>{lesson.content}</Text>
+            ) : (
+              <View style={styles.emptyState}>
+                <Ionicons name="document-text-outline" size={40} color={COLORS.gray[600]} />
+                <Text style={styles.emptyText}>Geen tekstinhoud beschikbaar</Text>
+              </View>
+            )}
+            {lesson.transcript ? (
+              <View style={styles.transcriptSection}>
+                <Text style={styles.sectionLabel}>Transcript</Text>
+                <Text style={styles.transcriptText}>{lesson.transcript}</Text>
+              </View>
+            ) : null}
           </View>
-        ) : (
-          <View style={styles.resourcesList}>
-            {lesson.resources?.length > 0 ? (
-              lesson.resources.map((resource) => (
-                <View key={resource.id} style={styles.resourceRow}>
-                  <Ionicons
-                    name={resource.type === 'pdf' ? 'document' : 'link'}
-                    size={18}
-                    color="#818CF8"
-                  />
-                  <Text style={styles.resourceTitle}>{resource.title}</Text>
-                </View>
+        )}
+
+        {activeTab === 'resources' && (
+          <View style={styles.section}>
+            {resources.length > 0 ? (
+              resources.map((resource) => (
+                <TouchableOpacity key={resource.id} style={styles.resourceRow}>
+                  <View style={styles.resourceIcon}>
+                    <Ionicons
+                      name={
+                        resource.type === 'pdf' ? 'document' :
+                        resource.type === 'video' ? 'videocam' :
+                        resource.type === 'link' ? 'link' :
+                        'document-attach'
+                      }
+                      size={20}
+                      color={COLORS.purple}
+                    />
+                  </View>
+                  <View style={styles.resourceInfo}>
+                    <Text style={styles.resourceTitle}>{resource.title}</Text>
+                    <Text style={styles.resourceType}>{resource.type?.toUpperCase()}</Text>
+                  </View>
+                  <Ionicons name="download-outline" size={20} color={COLORS.gray[400]} />
+                </TouchableOpacity>
               ))
             ) : (
-              <Text style={styles.emptyText}>No resources for this lesson</Text>
+              <View style={styles.emptyState}>
+                <Ionicons name="folder-open-outline" size={40} color={COLORS.gray[600]} />
+                <Text style={styles.emptyText}>Geen bronnen beschikbaar</Text>
+              </View>
             )}
           </View>
         )}
+
+        {activeTab === 'takeaways' && (
+          <View style={styles.section}>
+            {lesson.key_takeaways && lesson.key_takeaways.length > 0 ? (
+              lesson.key_takeaways.map((takeaway, index) => (
+                <View key={index} style={styles.takeawayRow}>
+                  <LinearGradient
+                    colors={COLORS.primaryGradient as unknown as string[]}
+                    style={styles.takeawayBullet}
+                  >
+                    <Text style={styles.takeawayNumber}>{index + 1}</Text>
+                  </LinearGradient>
+                  <Text style={styles.takeawayText}>{takeaway}</Text>
+                </View>
+              ))
+            ) : (
+              <View style={styles.emptyState}>
+                <Ionicons name="bulb-outline" size={40} color={COLORS.gray[600]} />
+                <Text style={styles.emptyText}>Geen kernpunten beschikbaar</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        <View style={{ height: 100 }} />
       </ScrollView>
 
+      {/* Footer Actions */}
       <View style={styles.footer}>
-        <View style={styles.navButtons}>
-          {lesson.previous_lesson ? (
-            <TouchableOpacity
-              style={styles.navBtn}
-              onPress={() => goToLesson(lesson.previous_lesson!.id, lesson.previous_lesson!.title)}
-            >
-              <Ionicons name="chevron-back" size={18} color="#A78BFA" />
-              <Text style={styles.navBtnText}>{t('academy.previousLesson')}</Text>
-            </TouchableOpacity>
-          ) : (
-            <View />
-          )}
-
-          {!lesson.completed ? (
-            <TouchableOpacity
-              style={[styles.completeBtn, completing && styles.btnDisabled]}
-              onPress={markComplete}
-              disabled={completing}
+        {!lesson.completed ? (
+          <TouchableOpacity
+            style={[styles.completeBtn, completing && styles.btnDisabled]}
+            onPress={markComplete}
+            disabled={completing}
+          >
+            <LinearGradient
+              colors={[COLORS.green, COLORS.emerald]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.completeBtnGradient}
             >
               {completing ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color={COLORS.white} />
               ) : (
                 <>
-                  <Ionicons name="checkmark" size={18} color="#fff" />
-                  <Text style={styles.completeBtnText}>{t('academy.markComplete')}</Text>
+                  <Ionicons name="checkmark-circle" size={20} color={COLORS.white} />
+                  <Text style={styles.completeBtnText}>Markeer als voltooid</Text>
                 </>
               )}
-            </TouchableOpacity>
-          ) : lesson.next_lesson ? (
-            <TouchableOpacity
-              style={styles.nextBtn}
-              onPress={() => goToLesson(lesson.next_lesson!.id, lesson.next_lesson!.title)}
-            >
-              <Text style={styles.nextBtnText}>{t('academy.nextLesson')}</Text>
-              <Ionicons name="chevron-forward" size={18} color="#fff" />
-            </TouchableOpacity>
-          ) : null}
-        </View>
+            </LinearGradient>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.completedFooter}>
+            <Ionicons name="checkmark-circle" size={20} color={COLORS.green} />
+            <Text style={styles.completedFooterText}>Les voltooid</Text>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -228,22 +285,30 @@ export function LessonPlayerScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#191A2E',
+    backgroundColor: COLORS.gray[900],
   },
   center: {
     flex: 1,
-    backgroundColor: '#191A2E',
+    backgroundColor: COLORS.gray[900],
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 12,
   },
   errorText: {
-    color: '#EF4444',
+    color: COLORS.gray[400],
     fontSize: 16,
-    marginBottom: 12,
   },
-  link: {
-    color: '#A78BFA',
+  backBtn: {
+    marginTop: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: COLORS.gray[800],
+  },
+  backBtnText: {
+    color: COLORS.purple,
     fontSize: 14,
+    fontWeight: '600',
   },
   videoContainer: {
     width: SCREEN_WIDTH,
@@ -253,138 +318,202 @@ const styles = StyleSheet.create({
   video: {
     flex: 1,
   },
-  noVideo: {
+  headerGradient: {
     width: SCREEN_WIDTH,
-    height: VIDEO_HEIGHT * 0.6,
-    backgroundColor: '#1F2037',
+    height: VIDEO_HEIGHT * 0.65,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
+    paddingHorizontal: 24,
   },
-  noVideoText: {
-    color: '#9CA3AF',
-    fontSize: 14,
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.white,
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.75)',
+  },
+  completedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  completedText: {
+    color: COLORS.green,
+    fontSize: 13,
+    fontWeight: '600',
   },
   tabs: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#374151',
+    borderBottomColor: COLORS.gray[700],
   },
   tab: {
     flex: 1,
-    paddingVertical: 14,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: '#7C3AED',
+    borderBottomColor: COLORS.purple,
   },
   tabText: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
+    color: COLORS.gray[400],
     fontWeight: '600',
   },
   activeTabText: {
-    color: '#A78BFA',
+    color: COLORS.purple,
   },
   content: {
     flex: 1,
   },
-  lessonContent: {
+  section: {
     padding: 20,
   },
   lessonTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#F3F4F6',
+    color: COLORS.gray[100],
+    marginBottom: 12,
   },
-  lessonMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 8,
-    marginBottom: 20,
-  },
-  metaText: {
-    fontSize: 13,
-    color: '#9CA3AF',
-    marginRight: 8,
+  description: {
+    fontSize: 14,
+    color: COLORS.gray[400],
+    lineHeight: 22,
+    marginBottom: 16,
   },
   bodyText: {
     fontSize: 15,
-    color: '#D1D5DB',
+    color: COLORS.gray[300],
     lineHeight: 24,
   },
-  resourcesList: {
-    padding: 20,
+  transcriptSection: {
+    marginTop: 24,
+    padding: 16,
+    backgroundColor: COLORS.gray[800],
+    borderRadius: 12,
+  },
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.gray[400],
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  transcriptText: {
+    fontSize: 13,
+    color: COLORS.gray[400],
+    lineHeight: 20,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    gap: 12,
+  },
+  emptyText: {
+    color: COLORS.gray[500],
+    fontSize: 14,
   },
   resourceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#292A40',
+    borderBottomColor: COLORS.gray[800],
+  },
+  resourceIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: `${COLORS.purple}15`,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  resourceInfo: {
+    flex: 1,
   },
   resourceTitle: {
     fontSize: 14,
-    color: '#D1D5DB',
+    fontWeight: '600',
+    color: COLORS.gray[200],
   },
-  emptyText: {
-    color: '#6B7280',
+  resourceType: {
+    fontSize: 11,
+    color: COLORS.gray[500],
+    marginTop: 2,
+  },
+  takeawayRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 16,
+  },
+  takeawayBullet: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  takeawayNumber: {
+    color: COLORS.white,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  takeawayText: {
+    flex: 1,
     fontSize: 14,
-    textAlign: 'center',
-    paddingTop: 20,
+    color: COLORS.gray[300],
+    lineHeight: 22,
+    paddingTop: 3,
   },
   footer: {
     borderTopWidth: 1,
-    borderTopColor: '#374151',
+    borderTopColor: COLORS.gray[700],
     padding: 16,
     paddingBottom: 32,
   },
-  navButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  navBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  navBtnText: {
-    color: '#A78BFA',
-    fontSize: 14,
-  },
   completeBtn: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  completeBtnGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#059669',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 10,
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
   },
   completeBtnText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  nextBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#7C3AED',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
-  nextBtnText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 14,
+    color: COLORS.white,
+    fontWeight: '700',
+    fontSize: 15,
   },
   btnDisabled: {
     opacity: 0.6,
+  },
+  completedFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+  },
+  completedFooterText: {
+    color: COLORS.green,
+    fontWeight: '600',
+    fontSize: 15,
   },
 });
