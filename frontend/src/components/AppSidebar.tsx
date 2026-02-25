@@ -1260,10 +1260,10 @@ export function AppSidebar() {
       return (
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
-            <a href="/academy">
+            <NavLink to="/academy">
               <GraduationCap className="h-4 w-4" />
               <span>Academy</span>
-            </a>
+            </NavLink>
           </SidebarMenuButton>
         </SidebarMenuItem>
       );
