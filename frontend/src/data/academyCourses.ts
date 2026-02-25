@@ -1666,6 +1666,12 @@ Kennisoverdracht:
 □ Final report geschreven
 □ Succes gevierd!`,
           keyTakeaways: [
+            'Financial closure prevents outstanding claims',
+            'Resources must be formally released',
+            'Archive documentation according to organizational policy',
+            'Don\'t forget to celebrate!',
+          ],
+          keyTakeawaysNL: [
             'Financiële afsluiting voorkomt openstaande claims',
             'Resources moeten formeel worden vrijgegeven',
             'Documentatie archiveren volgens organisatiebeleid',
@@ -1678,13 +1684,13 @@ Kennisoverdracht:
         },
         {
           id: 'pm-l25',
-          title: 'Eindexamen',
+          title: 'Final exam',
           duration: '45:00',
           type: 'exam',
         },
         {
           id: 'pm-l26',
-          title: 'Certificaat',
+          title: 'Certificate',
           duration: '5:00',
           type: 'certificate',
         },
