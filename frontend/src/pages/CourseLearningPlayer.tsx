@@ -488,6 +488,9 @@ const CourseLearningPlayer = () => {
   const [showAchievementDialog, setShowAchievementDialog] = useState(false);
   const [unlockedAchievement, setUnlockedAchievement] = useState<Achievement | null>(null);
   const [savingPractice, setSavingPractice] = useState(false);
+  const [aiFeedbackLoading, setAiFeedbackLoading] = useState(false);
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
+  const [currentFeedback, setCurrentFeedback] = useState('');
 
   // ============================================
   // VISUAL RENDERING — Unified in VisualTemplateRenderer
