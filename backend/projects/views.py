@@ -1689,22 +1689,6 @@ class TimeEntryViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     serializer_class = TimeEntrySerializer
     permission_classes = [IsAuthenticated]
 
-    # ADD THIS METHOD:
-    def list(self, request, *args, **kwargs):
-        print("🎯 TimeEntryViewSet.list() CALLED!")
-        print(f"User: {request.user}")
-        print(f"Company: {getattr(request.user, 'company', None)}")
-        print(f"Query params: {request.query_params}")
-        return super().list(request, *args, **kwargs)
-    
-    # ADD THIS:
-    def create(self, request, *args, **kwargs):
-        print("🎯 TimeEntryViewSet.create() CALLED!")
-        print(f"User: {request.user}")
-        print(f"Company: {getattr(request.user, 'company', None)}")
-        print(f"Data: {request.data}")
-        return super().create(request, *args, **kwargs)
-
     def get_permissions(self):
         if self.action in ["list", "retrieve", "summary", "my_entries"]:
             return [IsAuthenticated()]
@@ -2006,17 +1990,8 @@ class ProjectTeamRateViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         serializer = self.get_serializer(team_member)
         return Response(serializer.data)
 
-# Add to imports at top of file
 from .methodology_service import apply_methodology_template
-
-# ========================================
-# ADD THESE TO projects/views.py
-# ========================================
-
-from rest_framework import viewsets
 from core.ai_utils import RiskDetector, BudgetForecaster, ProjectHealthScorer
-from rest_framework.decorators import action
-from rest_framework.response import Response
 from .models import BudgetCategory, BudgetItem, ProjectBudget
 from .serializers import (
     BudgetCategorySerializer,

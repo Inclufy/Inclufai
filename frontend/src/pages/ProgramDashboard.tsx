@@ -192,8 +192,8 @@ const ProgramDashboard = () => {
 
   // Filter upcoming milestones
   const upcomingMilestones = milestones
-    .filter((m: any) => new Date(m.due_date) >= new Date())
-    .sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+    .filter((m: any) => new Date(m.target_date || m.due_date) >= new Date())
+    .sort((a: any, b: any) => new Date(a.target_date || a.due_date).getTime() - new Date(b.target_date || b.due_date).getTime())
     .slice(0, 5);
 
   const getHealthColor = (health: string) => {
@@ -468,7 +468,7 @@ const ProgramDashboard = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm">{formatDate(ms.due_date)}</span>
+                      <span className="text-sm">{formatDate(ms.target_date || ms.due_date)}</span>
                       <Badge className={
                         ms.status === 'completed' ? 'bg-green-500' : 
                         ms.status === 'at_risk' ? 'bg-yellow-500' : 'bg-blue-500'

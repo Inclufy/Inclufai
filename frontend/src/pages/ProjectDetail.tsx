@@ -407,7 +407,7 @@ const ProgramDetail = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">{pt("Sponsor")}</p>
-                    <p className="font-medium">{program.sponsor_name || 'Not specified'}</p>
+                    <p className="font-medium">{program.executive_sponsor_name || program.sponsor_name || 'Not specified'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">{pt("Start Date")}</p>
