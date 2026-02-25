@@ -1538,6 +1538,12 @@ Kennisoverdracht:
 - Walkthrough van architectuur
 - Hypercare periode`,
           keyTakeaways: [
+            'Acceptance criteria must be defined in advance',
+            'Acceptance is formal with sign-off',
+            'Handover includes product, documentation and knowledge',
+            'Schedule acceptance - it takes time',
+          ],
+          keyTakeawaysNL: [
             'Acceptatiecriteria moeten vooraf zijn gedefinieerd',
             'Acceptatie is formeel met handtekening',
             'Overdracht omvat product, documentatie en kennis',
@@ -1600,6 +1606,12 @@ Kennisoverdracht:
 - Oorzaak: Waarom?
 - Aanbeveling: Wat te doen in de toekomst?`,
           keyTakeaways: [
+            'Collect lessons learned during and at the end of the project',
+            'Create a blame-free environment',
+            'Good lessons are specific with context and recommendation',
+            'Lessons are worthless if they are not used',
+          ],
+          keyTakeawaysNL: [
             'Verzamel lessons learned tijdens én aan het einde',
             'Creëer een blame-free omgeving',
             'Goede lessons zijn specifiek met context en aanbeveling',
@@ -1612,7 +1624,7 @@ Kennisoverdracht:
         },
         {
           id: 'pm-l24',
-          title: 'Administratieve afsluiting',
+          title: 'Administrative closure',
           duration: '10:00',
           type: 'video',
           transcript: `De administratieve afsluiting is het "schoonmaken" na het project.
