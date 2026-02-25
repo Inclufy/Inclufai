@@ -1739,12 +1739,12 @@ export const prince2Course: Course = {
   modules: [
     {
       id: 'p2-m1',
-      title: 'Module 1: PRINCE2 Introductie & Principes',
+      title: 'Module 1: PRINCE2 Introduction & Principles',
       description: 'Kennismaking met PRINCE2 en de 7 ononderhandelbare principes.',
       lessons: [
         {
           id: 'p2-l1',
-          title: 'Wat is PRINCE2?',
+          title: 'What is PRINCE2?',
           duration: '15:00',
           type: 'video',
           transcript: `PRINCE2 = PRojects IN Controlled Environments. Het is een procesgebaseerde methodologie voor projectmanagement, oorspronkelijk ontwikkeld door de Britse overheid.
@@ -1761,6 +1761,12 @@ export const prince2Course: Course = {
 PRINCE2 is bijzonder geschikt voor projecten waar governance, controle en duidelijke beslisstructuren belangrijk zijn.`,
           keyTakeaways: [
             'PRINCE2 = PRojects IN Controlled Environments',
+            'Consists of 7 principles, 7 themes, 7 processes',
+            'The most widely used PM method worldwide',
+            'Two certification levels: Foundation and Practitioner',
+          ],
+          keyTakeawaysNL: [
+            'PRINCE2 = PRojects IN Controlled Environments',
             'Bestaat uit 7 principes, 7 thema\'s, 7 processen',
             'Wereldwijd de meest gebruikte PM-methode',
             'Twee certificeringsniveaus: Foundation en Practitioner',
@@ -1768,7 +1774,7 @@ PRINCE2 is bijzonder geschikt voor projecten waar governance, controle en duidel
         },
         {
           id: 'p2-l2',
-          title: 'De 7 Principes',
+          title: 'The 7 Principles',
           duration: '25:00',
           type: 'video',
           transcript: `De principes zijn niet onderhandelbaar - als je ze niet volgt, doe je geen PRINCE2.
@@ -1794,6 +1800,12 @@ Het project is gericht op het definiëren en opleveren van producten. Product De
 **7. Tailor to Suit the Project**
 Pas PRINCE2 aan op de grootte, complexiteit en risico van het project. Geen one-size-fits-all.`,
           keyTakeaways: [
+            'The 7 principles are mandatory - otherwise it is not PRINCE2',
+            'Business justification must apply throughout the entire project',
+            'Manage by Exception gives the PM room within tolerances',
+            'Tailoring is essential but principles remain intact',
+          ],
+          keyTakeawaysNL: [
             'De 7 principes zijn verplicht - anders is het geen PRINCE2',
             'Business justification moet gedurende heel het project gelden',
             'Manage by Exception geeft PM ruimte binnen toleranties',
