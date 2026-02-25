@@ -10,7 +10,7 @@ import { BRAND } from '../brand';
 import { instructors } from '../instructors';
 
 // ============================================
-// MODULE 1: WATERFALL FUNDAMENTEN
+// MODULE 1: WATERFALL FUNDAMENTALS
 // ============================================
 const module1: Module = {
   id: 'wf-m1',
@@ -663,6 +663,12 @@ De uitvoerende fasen:
 - **Deployment**: Zorgvuldige uitrol met rollback plan
 - **Maintenance**: Ongoing support en doorontwikkeling`,
       keyTakeaways: [
+        'Development follows the design specs meticulously',
+        'Testing occurs at multiple levels with formal UAT sign-off',
+        'Deployment requires planning, procedures, and a rollback plan',
+        'Maintenance includes corrective, adaptive, perfective, and preventive',
+      ],
+      keyTakeawaysNL: [
         'Development volgt de design specs nauwgezet',
         'Testing gebeurt op meerdere niveaus met formele UAT sign-off',
         'Deployment vereist planning, procedures en rollback plan',
@@ -751,7 +757,7 @@ De uitvoerende fasen:
 };
 
 // ============================================
-// MODULE 2: WATERFALL IN DE PRAKTIJK
+// MODULE 2: WATERFALL IN PRACTICE
 // ============================================
 const module2: Module = {
   id: 'wf-m2',
@@ -886,6 +892,12 @@ Gate Reviews:
 - Vereisen duidelijke criteria en objectieve evaluatie
 - Resulteren in go/no-go beslissingen`,
       keyTakeaways: [
+        'Gate Reviews are formal checkpoints between phases',
+        'Each gate has entrance and exit criteria',
+        'Go/No-Go/Conditional Go are the possible outcomes',
+        'Quality Gates focus on technical metrics',
+      ],
+      keyTakeawaysNL: [
         'Gate Reviews zijn formele checkpoints tussen fasen',
         'Elke gate heeft entrance en exit criteria',
         'Go/No-Go/Conditional Go zijn de mogelijke uitkomsten',
@@ -1003,6 +1015,12 @@ Change Control:
 - Wordt beslist door het Change Control Board
 - Zorgt dat wijzigingen bewust en gecontroleerd worden doorgevoerd`,
       keyTakeaways: [
+        'Change Control starts after requirements sign-off',
+        'Every change goes through a formal process',
+        'The CCB decides on significant changes',
+        'Documentation and traceability are crucial',
+      ],
+      keyTakeawaysNL: [
         'Change Control start na requirements sign-off',
         'Elke wijziging doorloopt een formeel proces',
         'De CCB beslist over significante wijzigingen',
@@ -1100,6 +1118,12 @@ Hybride aanpakken:
 - Vereisen bewuste keuzes per fase/context
 - Moeten consistent worden toegepast`,
       keyTakeaways: [
+        'Pure Waterfall or Agile is rare - hybrid is the norm',
+        'Water-Scrum-Fall combines Waterfall for planning and Agile for development',
+        'Governance (gates) can be maintained with Agile elements within',
+        'Consciously choose what works best per phase/context',
+      ],
+      keyTakeawaysNL: [
         'Zuivere Waterfall of Agile is zeldzaam - hybride is de norm',
         'Water-Scrum-Fall combineert Waterfall voor planning en Agile voor development',
         'Governance (gates) kan behouden blijven met Agile elementen erin',

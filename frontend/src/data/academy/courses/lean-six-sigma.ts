@@ -1086,6 +1086,12 @@ De Control fase:
 - Traint medewerkers
 - Draagt over aan Process Owner`,
       keyTakeaways: [
+        'Control charts detect out-of-control conditions early',
+        'Special cause variation requires investigation and correction',
+        'The Control Plan describes who measures what and what to do when deviations occur',
+        'Handover to Process Owner ensures long-term success',
+      ],
+      keyTakeawaysNL: [
         'Control charts detecteren out-of-control condities vroeg',
         'Special cause variation vereist onderzoek en correctie',
         'Het Control Plan beschrijft wie wat meet en wat te doen bij afwijking',
@@ -1204,6 +1210,12 @@ Project closure:
 - Kennis wordt gedeeld
 - Succes wordt gevierd`,
       keyTakeaways: [
+        'Tollgate review confirms that all deliverables are complete',
+        'Finance validation gives credibility to savings',
+        'Benefits tracking ensures long-term monitoring',
+        'Knowledge sharing builds organizational capability',
+      ],
+      keyTakeawaysNL: [
         'Tollgate review bevestigt dat alle deliverables compleet zijn',
         'Finance validatie geeft credibiliteit aan besparingen',
         'Benefits tracking zorgt voor langdurige monitoring',

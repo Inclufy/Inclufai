@@ -832,6 +832,12 @@ De Scrum Master als servant-leader:
 - Coacht, faciliteert en onderwijst
 - Vertrouwt op het team`,
       keyTakeaways: [
+        'Servant leadership inverts the traditional pyramid',
+        'The SM serves the team, not the other way around',
+        'Listening, empathy, and persuasion are core skills',
+        'The SM is coach, facilitator, and teacher',
+      ],
+      keyTakeawaysNL: [
         'Servant leadership draait de traditionele piramide om',
         'De SM dient het team, niet andersom',
         'Luisteren, empathie en overtuigen zijn kernvaardigheden',
@@ -945,6 +951,12 @@ Impediments oplossen:
 - Soms is escaleren nodig
 - Een impediment backlog helpt bij tracking`,
       keyTakeaways: [
+        'Impediments are obstacles that hinder the team',
+        'Not everything is an impediment for the SM',
+        'Identify, prioritize, investigate, act, prevent',
+        'Escalating is not failure but working effectively',
+      ],
+      keyTakeawaysNL: [
         'Impediments zijn obstakels die het team hinderen',
         'Niet alles is een impediment voor de SM',
         'Identificeer, prioriteer, onderzoek, actie, voorkom',
@@ -1074,6 +1086,12 @@ Events faciliteren:
 - Vraagt om timemanagement en betrekken van iedereen
 - Elk event heeft zijn eigen dynamiek`,
       keyTakeaways: [
+        'Facilitating is helping the team collaborate effectively',
+        'The facilitator does not determine content but safeguards the process',
+        'Each Scrum event has its own facilitation approach',
+        'Timebox, engagement, and focus are key',
+      ],
+      keyTakeawaysNL: [
         'Faciliteren is het team helpen effectief samen te werken',
         'De facilitator bepaalt geen inhoud maar bewaakt het proces',
         'Elk Scrum event heeft zijn eigen facilitatie-aanpak',
@@ -1187,6 +1205,12 @@ Goede metrics:
 - Focus op trends, niet absolute waarden
 - Ondersteunen voorspelbaarheid`,
       keyTakeaways: [
+        'Velocity is for forecasting, not for comparing teams',
+        'Burndown/burnup charts visualize progress',
+        'Sprint Goal Success Rate measures predictability',
+        'Metrics are for the team, not for monitoring them',
+      ],
+      keyTakeawaysNL: [
         'Velocity is voor forecasting, niet voor vergelijking tussen teams',
         'Burndown/burnup charts visualiseren voortgang',
         'Sprint Goal Success Rate meet voorspelbaarheid',
@@ -1307,6 +1331,12 @@ Bij uitdagingen:
 - Experimenteer met oplossingen
 - Wees geduldig, verandering kost tijd`,
       keyTakeaways: [
+        'Many challenges are symptoms of deeper problems',
+        'Refinement solves many planning problems',
+        'Self-management requires the SM to step back',
+        'Experiment and learn, perfection does not exist',
+      ],
+      keyTakeawaysNL: [
         'Veel uitdagingen zijn symptomen van diepere problemen',
         'Refinement lost veel planning problemen op',
         'Self-management vereist dat de SM terugstapt',

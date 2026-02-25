@@ -42,6 +42,7 @@ export interface Lesson {
   type?: 'video' | 'quiz' | 'assignment' | 'exam' | 'certificate';
   transcript?: string;
   keyTakeaways?: string[];
+  keyTakeawaysNL?: string[];
   resources?: Resource[];
   quiz?: QuizQuestion[];
   assignment?: Assignment;
@@ -53,6 +54,7 @@ export interface Module {
   description: string;
   lessons: Lesson[];
   keyTakeaways?: string[];
+  keyTakeawaysNL?: string[];
 }
 
 export interface CourseInstructor {
@@ -322,12 +324,12 @@ export const projectManagementFundamentals: Course = {
     // ==========================================
     {
       id: 'pm-m1',
-      title: 'Module 1: Introductie Project Management',
+      title: 'Module 1: Introduction to Project Management',
       description: 'De fundamenten: wat zijn projecten, wie is de PM, en welke methodologieën bestaan er?',
       lessons: [
         {
           id: 'pm-l1',
-          title: 'Wat is een project?',
+          title: 'What is a project?',
           duration: '12:00',
           type: 'video',
           transcript: `Welkom bij de eerste les van de Project Management Fundamentals cursus! Vandaag gaan we het hebben over een fundamentele vraag: wat is eigenlijk een project?

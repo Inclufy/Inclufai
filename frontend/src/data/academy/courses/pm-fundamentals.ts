@@ -443,7 +443,7 @@ De afgelopen jaren zien we een duidelijke trend:
     },
     {
       id: 'pm-l4',
-      title: 'De projectlevenscyclus',
+      title: 'The project lifecycle',
       titleNL: 'De projectlevenscyclus',
       duration: '14:00',
       type: 'video',
@@ -606,7 +606,7 @@ De vijf fasen van een project:
     },
     {
       id: 'pm-l5',
-      title: 'Quiz: Basisconcepten',
+      title: 'Quiz: Basic concepts',
       titleNL: 'Quiz: Basisconcepten',
       duration: '15:00',
       type: 'quiz',
@@ -748,7 +748,7 @@ const module2: Module = {
   lessons: [
     {
       id: 'pm-l6',
-      title: 'Het projectcharter opstellen',
+      title: 'Creating the project charter',
       titleNL: 'Het projectcharter opstellen',
       duration: '16:00',
       type: 'video',
@@ -893,7 +893,7 @@ Het projectcharter:
     },
     {
       id: 'pm-l7',
-      title: 'Stakeholder analyse',
+      title: 'Stakeholder analysis',
       titleNL: 'Stakeholder analyse',
       duration: '14:00',
       type: 'video',
@@ -1059,7 +1059,7 @@ Effectief stakeholder management:
     },
     {
       id: 'pm-l8',
-      title: 'Business case ontwikkelen',
+      title: 'Developing a business case',
       titleNL: 'Business case ontwikkelen',
       duration: '15:00',
       type: 'video',
@@ -1209,7 +1209,7 @@ Een goede business case:
     },
     {
       id: 'pm-l9',
-      title: 'Scope definitie',
+      title: 'Scope definition',
       titleNL: 'Scope definitie',
       duration: '12:00',
       type: 'video',
@@ -1351,7 +1351,7 @@ Goede scope definitie:
     },
     {
       id: 'pm-l10',
-      title: 'Praktijkopdracht: Project Charter',
+      title: 'Practical assignment: Project Charter',
       titleNL: 'Praktijkopdracht: Project Charter',
       duration: '45:00',
       type: 'assignment',
@@ -1431,7 +1431,7 @@ const module3: Module = {
     },
     {
       id: 'pm-l12',
-      title: 'Gantt charts maken',
+      title: 'Creating Gantt charts',
       titleNL: 'Gantt charts maken',
       duration: '20:00',
       type: 'video',
@@ -1463,7 +1463,7 @@ const module3: Module = {
     },
     {
       id: 'pm-l14',
-      title: 'Budget en kostenraming',
+      title: 'Budget and cost estimation',
       titleNL: 'Budget en kostenraming',
       duration: '16:00',
       type: 'video',

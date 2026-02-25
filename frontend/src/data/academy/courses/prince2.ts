@@ -918,7 +918,7 @@ Het Quality thema:
     },
     {
       id: 'p2-l8',
-      title: 'Plans Thema',
+      title: 'Plans Theme',
       titleNL: 'Plans Thema',
       duration: '18:00',
       type: 'video',
@@ -1011,6 +1011,12 @@ Het Plans thema:
 - Past rolling wave planning toe
 - Heeft Exception Plans voor afwijkingen`,
       keyTakeaways: [
+        'Three planning levels: Project, Stage, Team',
+        'Product-based planning focuses on WHAT, not HOW',
+        'PBS and Product Flow Diagram are core techniques',
+        'Exception Plans for when tolerances are exceeded',
+      ],
+      keyTakeawaysNL: [
         'Drie planningsniveaus: Project, Stage, Team',
         'Product-based planning focust op WAT, niet HOE',
         'PBS en Product Flow Diagram zijn kerntechnieken',
@@ -1019,7 +1025,7 @@ Het Plans thema:
     },
     {
       id: 'p2-l9',
-      title: 'Risk, Change & Progress Thema\'s',
+      title: 'Risk, Change & Progress Themes',
       titleNL: 'Risk, Change & Progress Thema\'s',
       duration: '20:00',
       type: 'video',
@@ -1128,6 +1134,12 @@ De drie thema's werken samen:
 Alle drie gebruiken registers en rapportages om de Board geïnformeerd te houden.`,
       keyTakeaways: [
         'Risk management: Identify → Assess → Plan → Implement → Communicate',
+        'Three issue types: Request for Change, Off-Spec, Problem/Concern',
+        'Progress works with tolerances and management by exception',
+        'Checkpoint, Highlight, and Exception Reports inform different levels',
+      ],
+      keyTakeawaysNL: [
+        'Risk management: Identify → Assess → Plan → Implement → Communicate',
         'Drie issue types: Request for Change, Off-Spec, Problem/Concern',
         'Progress werkt met toleranties en management by exception',
         'Checkpoint, Highlight en Exception Reports informeren verschillende niveaus',
@@ -1141,7 +1153,7 @@ Alle drie gebruiken registers en rapportages om de Board geïnformeerd te houden
 // ============================================
 const module3: Module = {
   id: 'p2-m3',
-  title: 'Module 3: De 7 Processen',
+  title: 'Module 3: The 7 Processes',
   titleNL: 'Module 3: De 7 Processen',
   description: 'The complete PRINCE2 processes from start to finish.',
   descriptionNL: 'De complete PRINCE2 processen van start tot finish.',
@@ -1258,6 +1270,12 @@ Starting Up a Project:
 - Levert het Project Brief op
 - Eindigt met een beslissing: Initiëren of niet?`,
       keyTakeaways: [
+        'SU is a short pre-project process',
+        'The Project Brief is the main product',
+        'The Project Board is assembled during SU',
+        'SU prevents unnecessary initiation of non-viable projects',
+      ],
+      keyTakeawaysNL: [
         'SU is een kort pre-project proces',
         'Het Project Brief is het hoofdproduct',
         'De Project Board wordt samengesteld in SU',

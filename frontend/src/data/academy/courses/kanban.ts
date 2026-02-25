@@ -1007,6 +1007,12 @@ Continue verbetering:
 - Analyseert root causes met 5 Whys
 - Ontwerpt experimenten met duidelijke hypotheses`,
       keyTakeaways: [
+        'PDCA cycle: Plan, Do, Check, Act',
+        'Kaizen = continuous small improvements',
+        '5 Whys helps find root causes',
+        'Experiments need a hypothesis, measurement, and timebox',
+      ],
+      keyTakeawaysNL: [
         'PDCA cyclus: Plan, Do, Check, Act',
         'Kaizen = continue kleine verbeteringen',
         '5 Whys helpt root causes te vinden',
