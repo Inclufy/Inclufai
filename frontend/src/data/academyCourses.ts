@@ -1226,7 +1226,7 @@ Score interpretatie:
         },
         {
           id: 'pm-l17',
-          title: 'Stakeholder communicatie',
+          title: 'Stakeholder communication',
           duration: '16:00',
           type: 'video',
           transcript: `PM's besteden tot 90% van hun tijd aan communicatie. Effectieve communicatie is cruciaal.
@@ -1262,6 +1262,12 @@ Voor elke stakeholder(groep) bepalen:
 4. Face-to-face voor belangrijk nieuws
 5. Geef ruimte voor reacties`,
           keyTakeaways: [
+            'PMs spend 90% of their time on communication',
+            'A communication plan defines who-what-when-how',
+            'Adapt your style per stakeholder type',
+            'Deliver bad news honestly, with a plan',
+          ],
+          keyTakeawaysNL: [
             'PM\'s besteden 90% van hun tijd aan communicatie',
             'Een communicatieplan definieert wie-wat-wanneer-hoe',
             'Pas je stijl aan per stakeholder type',
@@ -1315,6 +1321,12 @@ Voor elke stakeholder(groep) bepalen:
 **EAC (Estimate at Completion)** = BAC / CPI
 Voorspelde totale kosten als huidige trend doorzet.`,
           keyTakeaways: [
+            'EVM combines scope, time and cost in one measurement',
+            'EV = what you have earned, not what you have spent',
+            'CPI < 1 means over budget per unit of work',
+            'EAC predicts total costs if the trend continues',
+          ],
+          keyTakeawaysNL: [
             'EVM combineert scope, tijd en kosten in één meting',
             'EV = wat je hebt verdiend, niet wat je hebt uitgegeven',
             'CPI < 1 betekent over budget per eenheid werk',
@@ -1369,6 +1381,12 @@ Dit is net zo schadelijk als scope creep:
 
 Regel: Niets toevoegen zonder formeel verzoek.`,
           keyTakeaways: [
+            'Change control is protection, not bureaucracy',
+            'Every change goes through: request, analysis, decision, implementation',
+            'The Change Control Board decides on significant changes',
+            'Gold plating is just as harmful as scope creep',
+          ],
+          keyTakeawaysNL: [
             'Change control is bescherming, niet bureaucratie',
             'Elke wijziging doorloopt: request, analyse, beslissing, implementatie',
             'Het Change Control Board beslist over significante wijzigingen',

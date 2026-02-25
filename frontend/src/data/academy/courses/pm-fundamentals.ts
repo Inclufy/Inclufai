@@ -2214,6 +2214,12 @@ Effectief change control:
 - Voorkomt scope creep en gold plating
 - Is proportioneel aan projectgrootte`,
       keyTakeaways: [
+        'Change control is protection, not bureaucracy',
+        'Every change goes through: request, analysis, decision, implementation, verification',
+        'The Change Control Board decides on significant changes',
+        'Gold plating (unsolicited extras) is just as harmful as scope creep',
+      ],
+      keyTakeawaysNL: [
         'Change control is bescherming, niet bureaucratie',
         'Elke wijziging doorloopt: request, analyse, beslissing, implementatie, verificatie',
         'Het Change Control Board beslist over significante wijzigingen',
@@ -2399,6 +2405,12 @@ Projectafsluiting:
 - Zorgt voor goede relaties
 - Is ook nodig bij voortijdig stoppen`,
       keyTakeaways: [
+        'Closure is often neglected but is crucial',
+        'Zombie projects consume resources and cause confusion',
+        'Lessons learned prevent repetition of mistakes',
+        'Even cancelled projects must be properly closed',
+      ],
+      keyTakeawaysNL: [
         'Afsluiting wordt vaak verwaarloosd maar is cruciaal',
         'Zombie projecten kosten resources en veroorzaken verwarring',
         'Lessons learned voorkomen herhaling van fouten',
@@ -2508,6 +2520,12 @@ Formele acceptatie:
 - Kan volledig, conditioneel of afgewezen zijn
 - Wordt gevolgd door overdracht naar operations`,
       keyTakeaways: [
+        'Acceptance criteria must be defined in advance',
+        'Acceptance is formal with signature from an authorized person',
+        'Handover includes product, documentation and knowledge',
+        'Plan for acceptance - it takes time',
+      ],
+      keyTakeawaysNL: [
         'Acceptatiecriteria moeten vooraf zijn gedefinieerd',
         'Acceptatie is formeel met handtekening van bevoegde persoon',
         'Overdracht omvat product, documentatie en kennis',
@@ -2656,6 +2674,12 @@ Lessons learned:
 - Moet specifiek en actionable zijn
 - Is alleen waardevol als het wordt gebruikt`,
       keyTakeaways: [
+        'Collect lessons learned during and at the end of the project',
+        'Create a blame-free environment for honest feedback',
+        'Good lessons are specific with context, cause and recommendation',
+        'Lessons learned are worthless if they are not used',
+      ],
+      keyTakeawaysNL: [
         'Verzamel lessons learned tijdens én aan het einde van het project',
         'Creëer een blame-free omgeving voor eerlijke feedback',
         'Goede lessons zijn specifiek met context, oorzaak en aanbeveling',
