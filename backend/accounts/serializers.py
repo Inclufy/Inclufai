@@ -8,6 +8,8 @@ from django.utils import timezone
 
 # Registration serializer with verification token
 class CustomUserSerializer(serializers.ModelSerializer):
+    company_name = serializers.CharField(source='company.name', read_only=True, default=None)
+
     class Meta:
         model = CustomUser
         # Include role and is_superuser so the frontend can authorize securely
@@ -18,6 +20,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "image",
             "role",
             "is_superuser",
+            "company",
+            "company_name",
         ]
 
 
@@ -75,6 +79,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
             "id": user.id,
             "email": user.email,
             "first_name": user.first_name,
+            "company": user.company_id,
+            "company_name": user.company.name if getattr(user, "company", None) else None,
             "is_subscribed": (
                 user.company.is_subscribed if getattr(user, "company", None) else False
             ),
