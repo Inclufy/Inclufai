@@ -2151,12 +2151,12 @@ export const scrumCourse: Course = {
   modules: [
     {
       id: 'scrum-m1',
-      title: 'Module 1: Scrum Fundamenten',
+      title: 'Module 1: Scrum Fundamentals',
       description: 'De basis: empirisme, waarden, pijlers en het framework.',
       lessons: [
         {
           id: 'scrum-l1',
-          title: 'De essentie van Scrum',
+          title: 'The essence of Scrum',
           duration: '18:00',
           type: 'video',
           transcript: `Scrum is een lichtgewicht framework dat teams helpt waarde te genereren door adaptieve oplossingen voor complexe problemen.
@@ -2183,6 +2183,12 @@ Scrum is gebaseerd op empirisme: kennis komt voort uit ervaring en beslissingen 
 
 Deze waarden geven richting aan werk, acties en gedrag van het Scrum Team.`,
           keyTakeaways: [
+            'Scrum is based on empiricism: learning through experience',
+            'Three pillars: Transparency, Inspection, Adaptation',
+            'Five values: Commitment, Focus, Openness, Respect, Courage',
+            'The values and pillars are the foundation of everything in Scrum',
+          ],
+          keyTakeawaysNL: [
             'Scrum is gebaseerd op empirisme: leren door ervaring',
             'Drie pijlers: Transparantie, Inspectie, Adaptatie',
             'Vijf waarden: Commitment, Focus, Openness, Respect, Courage',
