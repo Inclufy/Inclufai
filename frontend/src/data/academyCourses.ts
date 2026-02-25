@@ -1814,7 +1814,7 @@ Pas PRINCE2 aan op de grootte, complexiteit en risico van het project. Geen one-
         },
         {
           id: 'p2-l3',
-          title: 'De 7 Thema\'s',
+          title: 'The 7 Themes',
           duration: '20:00',
           type: 'video',
           transcript: `Thema's zijn aspecten van projectmanagement die continu aandacht nodig hebben gedurende het project.
@@ -1840,6 +1840,12 @@ Issue en change management. Configuration management.
 **7. Progress** - Waar staan we?
 Monitoren en controleren. Toleranties, rapportages, reviews.`,
           keyTakeaways: [
+            'Themes are aspects that need continuous attention',
+            'Business Case answers "why", Organization answers "who"',
+            'All 7 themes are integrated and work together',
+            'The depth depends on tailoring',
+          ],
+          keyTakeawaysNL: [
             'Thema\'s zijn aspecten die continu aandacht nodig hebben',
             'Business Case beantwoordt "waarom", Organization "wie"',
             'Alle 7 thema\'s zijn geïntegreerd en werken samen',
@@ -1850,7 +1856,7 @@ Monitoren en controleren. Toleranties, rapportages, reviews.`,
     },
     {
       id: 'p2-m2',
-      title: 'Module 2: De 7 Processen',
+      title: 'Module 2: The 7 Processes',
       description: 'De complete PRINCE2 processen van start tot finish.',
       lessons: [
         {
@@ -1872,6 +1878,12 @@ Monitoren en controleren. Toleranties, rapportages, reviews.`,
 
 SU voorkomt dat we tijd en geld verspillen aan projecten die nooit hadden moeten starten.`,
           keyTakeaways: [
+            'SU is a short pre-project process',
+            'The Project Brief is the main product',
+            'The Project Board is assembled during SU',
+            'SU prevents unnecessary initiation of bad projects',
+          ],
+          keyTakeawaysNL: [
             'SU is een kort pre-project proces',
             'Het Project Brief is het hoofdproduct',
             'De Project Board wordt samengesteld in SU',
