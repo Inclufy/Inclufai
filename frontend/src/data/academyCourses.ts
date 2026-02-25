@@ -1033,6 +1033,12 @@ Visuele weergave van resource-inzet over tijd:
 - 80% is een realistische planningsnorm
 - Betrek teamleden bij schattingen`,
           keyTakeaways: [
+            'Resource planning matches required with available capacity',
+            'Resource leveling resolves overallocation by shifting tasks',
+            'The RACI matrix clarifies responsibilities',
+            'Plan at 80% - keep buffer for the unexpected',
+          ],
+          keyTakeawaysNL: [
             'Resource planning matcht benodigde met beschikbare capaciteit',
             'Resource leveling lost overbelasting op door taken te schuiven',
             'De RACI matrix verduidelijkt verantwoordelijkheden',
@@ -1044,7 +1050,7 @@ Visuele weergave van resource-inzet over tijd:
         },
         {
           id: 'pm-l14',
-          title: 'Budget en kostenraming',
+          title: 'Budget and cost estimation',
           duration: '16:00',
           type: 'video',
           transcript: `**Methoden voor Kostenraming:**
@@ -1077,6 +1083,12 @@ PERT: (Optimistisch + 4×Meest Waarschijnlijk + Pessimistisch) / 6
 6. **Contingency** (5-15% voor bekende risico's)
 7. **Management Reserve** (5-10% voor onbekende risico's)`,
           keyTakeaways: [
+            'Bottom-up is the most accurate but most time-consuming',
+            'Build in contingency and management reserve',
+            'Earned Value Management measures costs and progress',
+            'Always document your assumptions',
+          ],
+          keyTakeawaysNL: [
             'Bottom-up is het nauwkeurigst maar meest tijdrovend',
             'Bouw contingency en management reserve in',
             'Earned Value Management meet kosten én voortgang',
@@ -1088,7 +1100,7 @@ PERT: (Optimistisch + 4×Meest Waarschijnlijk + Pessimistisch) / 6
         },
         {
           id: 'pm-l15',
-          title: 'Risicomanagement',
+          title: 'Risk management',
           duration: '22:00',
           type: 'video',
           transcript: `**Het Risicomanagement Proces:**

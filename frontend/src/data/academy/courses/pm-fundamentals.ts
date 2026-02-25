@@ -1512,6 +1512,12 @@ const module3: Module = {
       duration: '14:00',
       type: 'video',
       keyTakeaways: [
+        'Resource planning matches required with available capacity',
+        'Resource leveling resolves overallocation',
+        'The RACI matrix clarifies responsibilities',
+        'Plan at 80% - keep buffer for the unexpected',
+      ],
+      keyTakeawaysNL: [
         'Resource planning matcht benodigde met beschikbare capaciteit',
         'Resource leveling lost overbelasting op',
         'De RACI matrix verduidelijkt verantwoordelijkheden',
@@ -1528,6 +1534,12 @@ const module3: Module = {
       duration: '16:00',
       type: 'video',
       keyTakeaways: [
+        'Bottom-up is the most accurate but time-consuming',
+        'Build in contingency and management reserve',
+        'Earned Value Management measures both costs and progress',
+        'Always document your assumptions',
+      ],
+      keyTakeawaysNL: [
         'Bottom-up is het nauwkeurigst maar tijdrovend',
         'Bouw contingency en management reserve in',
         'Earned Value Management meet kosten én voortgang',
@@ -1544,6 +1556,12 @@ const module3: Module = {
       duration: '22:00',
       type: 'video',
       keyTakeaways: [
+        'Risks have both probability and impact - assess both',
+        'Four response strategies: avoid, transfer, mitigate, accept',
+        'The risk register is the central document',
+        'Risk management is continuous, not a one-time activity',
+      ],
+      keyTakeawaysNL: [
         'Risico\'s hebben kans én impact - beide beoordelen',
         'Vier response strategieën: vermijden, overdragen, mitigeren, accepteren',
         'Het risicoregister is het centrale document',
