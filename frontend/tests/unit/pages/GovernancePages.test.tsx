@@ -176,7 +176,7 @@ describe('Governance Boards Page', () => {
     expect(screen.getByText('Steering Committee')).toBeInTheDocument()
     expect(screen.getByText('Program Board')).toBeInTheDocument()
     expect(screen.getByText('Alice Johnson')).toBeInTheDocument()
-    expect(screen.getByText('Meeting Frequency')).toBeInTheDocument()
+    expect(screen.getAllByText('Meeting Frequency')).toHaveLength(2)
   })
 
   it('shows empty state when no boards exist', () => {

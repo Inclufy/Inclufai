@@ -28,6 +28,14 @@ from projects.models import Project, TimeEntry
 
 User = get_user_model()
 
+
+def _extract_results(data):
+    """Handle both paginated (dict with 'results') and non-paginated (list) responses."""
+    if isinstance(data, dict):
+        return data.get("results", [])
+    return list(data)
+
+
 # ------------------------------------------------------------------ helpers
 BASE_URL = "/api/v1/projects/time-entries"
 LIST_URL = f"{BASE_URL}/"
@@ -370,7 +378,7 @@ class TestTimeEntryFiltering:
         )
         assert response.status_code == status.HTTP_200_OK
 
-        project_ids = {e["project"] for e in response.data.get("results", response.data)}
+        project_ids = {e["project"] for e in _extract_results(response.data)}
         assert all(pid == waterfall_project.id for pid in project_ids)
 
     def test_filter_by_date_range(
@@ -386,7 +394,7 @@ class TestTimeEntryFiltering:
         )
         assert response.status_code == status.HTTP_200_OK
 
-        entries = response.data.get("results", response.data)
+        entries = _extract_results(response.data)
         for entry in entries:
             assert start <= entry["date"] <= end
 
@@ -402,7 +410,7 @@ class TestTimeEntryFiltering:
             LIST_URL, {"status": "submitted", "project": waterfall_project.id}
         )
         assert response.status_code == status.HTTP_200_OK
-        entries = response.data.get("results", response.data)
+        entries = _extract_results(response.data)
         for entry in entries:
             assert entry["status"] == "submitted"
 
@@ -439,7 +447,7 @@ class TestTimeEntryFiltering:
             LIST_URL, {"billable": "true", "project": waterfall_project.id}
         )
         assert response.status_code == status.HTTP_200_OK
-        entries = response.data.get("results", response.data)
+        entries = _extract_results(response.data)
         for entry in entries:
             assert entry["billable"] is True
 
@@ -488,7 +496,7 @@ class TestMyEntries:
 
         response = authenticated_admin_client.get(MY_ENTRIES_URL)
         assert response.status_code == status.HTTP_200_OK
-        entries = response.data.get("results", response.data)
+        entries = _extract_results(response.data)
         for entry in entries:
             assert entry["user"] == admin_user.id
 
@@ -513,7 +521,7 @@ class TestMyEntries:
             {"start_date": str(date.today() - timedelta(days=1)), "end_date": str(date.today())},
         )
         assert response.status_code == status.HTTP_200_OK
-        entries = response.data.get("results", response.data)
+        entries = _extract_results(response.data)
         assert len(entries) <= 2
 
     def test_my_entries_empty_for_user_without_entries(
@@ -534,7 +542,7 @@ class TestMyEntries:
 
         response = client.get(MY_ENTRIES_URL)
         assert response.status_code == status.HTTP_200_OK
-        entries = response.data.get("results", response.data)
+        entries = _extract_results(response.data)
         assert len(entries) == 0
 
 

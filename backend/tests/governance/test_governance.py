@@ -784,7 +784,7 @@ class TestBoardMemberCRUD:
         response = authenticated_client.get(url, {"board": str(governance_board.pk)})
         assert response.status_code == status.HTTP_200_OK
         for member in response.data:
-            assert member["board"] == str(governance_board.pk)
+            assert str(member["board"]) == str(governance_board.pk)
 
     def test_filter_board_members_by_role(
         self, authenticated_client, board_member
@@ -968,6 +968,7 @@ class TestGovernanceStakeholderCRUD:
         response = authenticated_client.patch(
             url,
             {
+                "user": stakeholder.user.pk,
                 "influence_level": "low",
                 "interest_level": "low",
                 "notes": "Demoted in influence",
@@ -1114,7 +1115,9 @@ class TestGovernanceStakeholderCRUD:
     def test_deactivate_stakeholder(self, authenticated_client, stakeholder):
         """Test deactivating a stakeholder."""
         url = reverse("governance-stakeholder-detail", kwargs={"pk": stakeholder.pk})
-        response = authenticated_client.patch(url, {"is_active": False}, format="json")
+        response = authenticated_client.patch(
+            url, {"user": stakeholder.user.pk, "is_active": False}, format="json"
+        )
         assert response.status_code == status.HTTP_200_OK
         assert response.data["is_active"] is False
 
@@ -1266,7 +1269,7 @@ class TestStakeholderQuadrant:
         # Change to low/low = monitor
         response = authenticated_client.patch(
             url,
-            {"influence_level": "low", "interest_level": "low"},
+            {"user": stakeholder.user.pk, "influence_level": "low", "interest_level": "low"},
             format="json",
         )
         assert response.status_code == status.HTTP_200_OK

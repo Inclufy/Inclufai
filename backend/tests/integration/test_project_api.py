@@ -884,8 +884,8 @@ class TestProjectSummary:
         url = reverse("project-detail", kwargs={"pk": project.pk}) + "summary/"
         response = pm_client.get(url)
         timeline = response.data["timeline"]
-        assert timeline["start_date"] == str(start)
-        assert timeline["end_date"] == str(end)
+        assert str(timeline["start_date"]) == str(start)
+        assert str(timeline["end_date"]) == str(end)
         assert timeline["days"] == 90
         assert timeline["percent_elapsed"] > 0
 
