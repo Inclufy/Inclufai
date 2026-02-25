@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Download, TrendingUp, TrendingDown, Minus, AlertTriangle, Lightbulb } from "lucide-react";
 
@@ -80,7 +80,7 @@ const ReportModal: React.FC<ReportModalProps> = ({ open, onClose, report, loadin
                   <Download className="w-4 h-4 mr-2" /> Download PDF
                 </Button>
               </div>
-              <p className="text-sm text-gray-500">Generated: {new Date().toLocaleDateString()}</p>
+              <DialogDescription>Generated: {new Date().toLocaleDateString()}</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-6 mt-4">
