@@ -398,6 +398,41 @@ class CurrentUserView(APIView):
                 pass
         return Response(data)
 
+    def post(self, request):
+        """SuperAdmin: link current user to a company (create if needed)."""
+        if getattr(request.user, "role", None) != "superadmin":
+            return Response(
+                {"error": "Only SuperAdmins can link themselves to a company."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        company_name = request.data.get("company_name", "").strip()
+        if not company_name:
+            return Response(
+                {"error": "company_name is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from accounts.models import Company
+
+        company, created = Company.objects.get_or_create(
+            name=company_name.lower(),
+            defaults={"description": f"Company: {company_name}"},
+        )
+
+        request.user.company = company
+        request.user.save(update_fields=["company"])
+
+        return Response(
+            {
+                "message": f"User linked to company '{company.name}'.",
+                "company_id": company.id,
+                "company_name": company.name,
+                "created": created,
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
 # Public admin registration: creates company + admin user
 class PublicAdminRegisterView(generics.CreateAPIView):
