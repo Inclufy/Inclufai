@@ -138,6 +138,12 @@ Kanban:
 - Werkt voor alle soorten kenniswerk
 - Kan gecombineerd worden met andere methoden`,
       keyTakeaways: [
+        'Kanban = visual signal, focus on flow and pull',
+        'Start where you are - no major reorganization needed',
+        '6 core practices: visualize, limit WIP, manage flow, etc.',
+        'Kanban is complementary to Scrum, not a replacement',
+      ],
+      keyTakeawaysNL: [
         'Kanban = visueel signaal, focus op flow en pull',
         'Start waar je bent - geen grote reorganisatie nodig',
         '6 core practices: visualize, limit WIP, manage flow, etc.',
@@ -306,6 +312,12 @@ Een goed Kanban bord:
 - Laat blokkades schreeuwen
 - Evolueert met je inzichten`,
       keyTakeaways: [
+        'Start by mapping your actual workflow',
+        'Split columns into Doing/Done to reveal wait time',
+        'Make blockers explicitly visible',
+        'Start simple and evolve the board based on insights',
+      ],
+      keyTakeawaysNL: [
         'Begin met je werkelijke workflow te mappen',
         'Split kolommen in Doing/Done om wachttijd te onthullen',
         'Maak blokkades expliciet zichtbaar',
@@ -463,6 +475,12 @@ WIP limieten:
 - Moeten evolutionair worden bepaald
 - Zijn bedoeld om te knellen`,
       keyTakeaways: [
+        'Little\'s Law: Lead Time = WIP / Throughput',
+        'Context switching costs 15-20 minutes per switch',
+        'Stop starting, start finishing!',
+        'The pain of WIP limits reveals problems',
+      ],
+      keyTakeawaysNL: [
         'Little\'s Law: Lead Time = WIP / Throughput',
         'Context switching kost 15-20 minuten per switch',
         'Stop starting, start finishing!',
@@ -636,6 +654,12 @@ Flow metrics:
 - Flow efficiency toont waar waarde verloren gaat`,
       keyTakeaways: [
         'Lead Time = WIP / Throughput (Little\'s Law)',
+        'CFD visualizes WIP, lead time, throughput, and bottlenecks',
+        'Use the 85th percentile for reliable predictions',
+        'Flow efficiency in knowledge work is typically 5-15%',
+      ],
+      keyTakeawaysNL: [
+        'Lead Time = WIP / Throughput (Little\'s Law)',
         'CFD visualiseert WIP, lead time, throughput en bottlenecks',
         'Gebruik 85e percentiel voor betrouwbare voorspellingen',
         'Flow efficiency in kenniswerk is typisch 5-15%',
@@ -807,6 +831,12 @@ Kanban cadansen:
 - Beginnen met dagelijkse standup en replenishment
 - Worden toegevoegd naar behoefte`,
       keyTakeaways: [
+        'Cadences are regular feedback moments',
+        'Walk the board from right to left in standups',
+        'Start with standup and replenishment, add more as needed',
+        'Cadences are optional but strongly recommended',
+      ],
+      keyTakeawaysNL: [
         'Cadansen zijn regelmatige feedbackmomenten',
         'Walk the board van rechts naar links in standups',
         'Start met standup en replenishment, voeg toe naar behoefte',
@@ -901,6 +931,12 @@ Expliciete policies:
 - Differentiëren werk met classes of service
 - Communiceren expectations via SLE's`,
       keyTakeaways: [
+        'Policies make agreements explicit and visible',
+        'Definition of Ready determines when work may start',
+        'Definition of Done determines when work is complete',
+        'Service Level Expectations provide predictability',
+      ],
+      keyTakeawaysNL: [
         'Policies maken afspraken expliciet en zichtbaar',
         'Definition of Ready bepaalt wanneer werk mag starten',
         'Definition of Done bepaalt wanneer werk af is',
@@ -1004,7 +1040,7 @@ Succes!`,
     },
     {
       id: 'kb-l10',
-      title: 'Certificaat',
+      title: 'Certificate',
       titleNL: 'Certificaat',
       duration: '5:00',
       type: 'certificate',

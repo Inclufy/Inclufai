@@ -142,6 +142,12 @@ Scrum:
 - Bestaat uit rollen, events en artefacten
 - Is een framework, geen complete methode`,
       keyTakeaways: [
+        'Scrum is based on empiricism: learning through experience',
+        'Three pillars: transparency, inspection, adaptation',
+        'Five values: commitment, focus, openness, respect, courage',
+        'Scrum is a framework, not a complete methodology',
+      ],
+      keyTakeawaysNL: [
         'Scrum is gebaseerd op empirisme: leren door ervaring',
         'Drie pijlers: transparantie, inspectie, adaptatie',
         'Vijf waarden: commitment, focus, openness, respect, courage',
@@ -293,6 +299,12 @@ De drie accountabilities:
 
 Samen vormen ze een cross-functional, self-managing team.`,
       keyTakeaways: [
+        'Three accountabilities: Product Owner, Scrum Master, Developers',
+        'Product Owner maximizes value and manages the backlog',
+        'Scrum Master is servant-leader, coach, and facilitator',
+        'Developers are all people who work on the product',
+      ],
+      keyTakeawaysNL: [
         'Drie accountabilities: Product Owner, Scrum Master, Developers',
         'Product Owner maximaliseert waarde en beheert de backlog',
         'Scrum Master is servant-leader, coach en facilitator',
@@ -472,6 +484,12 @@ De events creëren een inspect-adapt ritme:
 
 Skip geen events - elk heeft een cruciale functie!`,
       keyTakeaways: [
+        'The Sprint is the container for all other events (max 4 weeks)',
+        'Sprint Planning defines the Sprint Goal and selects work',
+        'Daily Scrum is max 15 min for daily synchronization',
+        'Sprint Review showcases the Increment; Retrospective improves the process',
+      ],
+      keyTakeawaysNL: [
         'De Sprint is de container voor alle andere events (max 4 weken)',
         'Sprint Planning definieert het Sprint Goal en selecteert werk',
         'Daily Scrum is max 15 min voor dagelijkse synchronisatie',
@@ -634,6 +652,12 @@ De drie artefacten:
 
 Transparantie is key - als artefacten niet transparant zijn, falen inspectie en adaptatie.`,
       keyTakeaways: [
+        'Each artifact has a commitment that provides focus',
+        'Product Backlog is ordered and owned by the Product Owner',
+        'Sprint Backlog is owned by the Developers and evolves',
+        'Definition of Done determines when work is truly "Done"',
+      ],
+      keyTakeawaysNL: [
         'Elk artefact heeft een commitment dat focus geeft',
         'Product Backlog is geordend en eigendom van de Product Owner',
         'Sprint Backlog is eigendom van de Developers en evolueert',
@@ -1079,7 +1103,7 @@ const module3: Module = {
   lessons: [
     {
       id: 'scrum-l9',
-      title: 'Scrum Metrics & Voorspelbaarheid',
+      title: 'Scrum Metrics & Predictability',
       titleNL: 'Scrum Metrics & Voorspelbaarheid',
       duration: '18:00',
       type: 'video',
@@ -1171,7 +1195,7 @@ Goede metrics:
     },
     {
       id: 'scrum-l10',
-      title: 'Veelvoorkomende Uitdagingen',
+      title: 'Common Challenges',
       titleNL: 'Veelvoorkomende Uitdagingen',
       duration: '20:00',
       type: 'video',
@@ -1291,7 +1315,7 @@ Bij uitdagingen:
     },
     {
       id: 'scrum-l11',
-      title: 'Quiz: Scrum Master Rol & Praktijk',
+      title: 'Quiz: Scrum Master Role & Practice',
       titleNL: 'Quiz: Scrum Master Rol & Praktijk',
       duration: '15:00',
       type: 'quiz',
@@ -1355,7 +1379,7 @@ Bij uitdagingen:
     },
     {
       id: 'scrum-l12',
-      title: 'Eindexamen',
+      title: 'Final Exam',
       titleNL: 'Eindexamen',
       duration: '45:00',
       type: 'exam',
@@ -1381,7 +1405,7 @@ Succes!`,
     },
     {
       id: 'scrum-l13',
-      title: 'Certificaat',
+      title: 'Certificate',
       titleNL: 'Certificaat',
       duration: '5:00',
       type: 'certificate',

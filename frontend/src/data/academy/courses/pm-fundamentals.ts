@@ -14,14 +14,14 @@ import { instructors } from '../instructors';
 // ============================================
 const module1: Module = {
   id: 'pm-m1',
-  title: 'Module 1: Introductie Project Management',
+  title: 'Module 1: Introduction to Project Management',
   titleNL: 'Module 1: Introductie Project Management',
   description: 'The fundamentals: what are projects, who is the PM, and which methodologies exist?',
   descriptionNL: 'De fundamenten: wat zijn projecten, wie is de PM, en welke methodologieën bestaan er?',
   lessons: [
     {
       id: 'pm-l1',
-      title: 'Wat is een project?',
+      title: 'What is a project?',
       titleNL: 'Wat is een project?',
       duration: '12:00',
       type: 'video',
@@ -137,7 +137,7 @@ en wat maakt iemand een goede PM?`,
     },
     {
       id: 'pm-l2',
-      title: 'De rol van de projectmanager',
+      title: 'The role of the project manager',
       titleNL: 'De rol van de projectmanager',
       duration: '15:00',
       type: 'video',
@@ -290,7 +290,7 @@ Dit geeft je een framework waarbinnen je deze PM-vaardigheden kunt toepassen.`,
     },
     {
       id: 'pm-l3',
-      title: 'Projectmanagement methodologieën',
+      title: 'Project management methodologies',
       titleNL: 'Projectmanagement methodologieën',
       duration: '18:00',
       type: 'video',
@@ -741,7 +741,7 @@ De vijf fasen van een project:
 // ============================================
 const module2: Module = {
   id: 'pm-m2',
-  title: 'Module 2: Project Initiatie',
+  title: 'Module 2: Project Initiation',
   titleNL: 'Module 2: Project Initiatie',
   description: 'How to start a project well? From stakeholder analysis to business case.',
   descriptionNL: 'Hoe start je een project goed? Van stakeholder analyse tot business case.',
@@ -1501,7 +1501,7 @@ const module3: Module = {
 // ============================================
 const module4: Module = {
   id: 'pm-m4',
-  title: 'Module 4: Uitvoering & Monitoring',
+  title: 'Module 4: Execution & Monitoring',
   titleNL: 'Module 4: Uitvoering & Monitoring',
   description: 'Team leadership, communication, Earned Value and change control.',
   descriptionNL: 'Teamleiderschap, communicatie, Earned Value en change control.',
@@ -2215,7 +2215,7 @@ Effectief change control:
 // ============================================
 const module5: Module = {
   id: 'pm-m5',
-  title: 'Module 5: Afsluiting',
+  title: 'Module 5: Closure',
   titleNL: 'Module 5: Afsluiting',
   description: 'Formal acceptance, lessons learned and administrative closure.',
   descriptionNL: 'Formele acceptatie, lessons learned en administratieve afsluiting.',

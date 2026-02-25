@@ -161,6 +161,12 @@ Waterfall:
 - Is minder geschikt voor innovatieve of onzekere projecten
 - Wordt nog steeds breed toegepast in specifieke industrieën`,
       keyTakeaways: [
+        'Waterfall is sequential: each phase must be completed before the next one starts',
+        'Ideal for stable requirements and compliance-intensive projects',
+        'Offers predictability but is inflexible for changes',
+        'Still relevant in construction, hardware, enterprise IT, and regulated industries',
+      ],
+      keyTakeawaysNL: [
         'Waterfall is sequentieel: elke fase moet af voor de volgende start',
         'Ideaal voor stabiele requirements en compliance-intensieve projecten',
         'Biedt voorspelbaarheid maar is inflexibel voor wijzigingen',
@@ -336,6 +342,12 @@ De Requirements fase:
 - Eindigt met formele review en sign-off
 - Activeert change control voor alle toekomstige wijzigingen`,
       keyTakeaways: [
+        'Requirements errors are the most expensive to fix',
+        'Use multiple techniques: interviews, workshops, observation',
+        'Good requirements are SMART and testable',
+        'Formal sign-off activates change control',
+      ],
+      keyTakeawaysNL: [
         'Requirements fouten zijn de duurste om te fixen',
         'Gebruik meerdere technieken: interviews, workshops, observatie',
         'Goede requirements zijn SMART en toetsbaar',
@@ -358,7 +370,7 @@ De Requirements fase:
     },
     {
       id: 'wf-l3',
-      title: 'Design Fase',
+      title: 'Design Phase',
       titleNL: 'Design Fase',
       duration: '20:00',
       type: 'video',
@@ -467,6 +479,12 @@ De Design fase:
 - Produceert documenten die developers kunnen implementeren
 - Eindigt met formele review en goedkeuring`,
       keyTakeaways: [
+        'Design translates WHAT (requirements) into HOW (technical)',
+        'High-level design for the big picture, low-level for detail',
+        'Design reviews prevent costly errors in development',
+        'Avoid both over-engineering and under-engineering',
+      ],
+      keyTakeawaysNL: [
         'Design vertaalt WAT (requirements) naar HOE (technisch)',
         'High-level design voor het big picture, low-level voor detail',
         'Design reviews voorkomen dure fouten in development',
@@ -667,7 +685,7 @@ De uitvoerende fasen:
     },
     {
       id: 'wf-l5',
-      title: 'Quiz: Waterfall Fundamenten',
+      title: 'Quiz: Waterfall Fundamentals',
       titleNL: 'Quiz: Waterfall Fundamenten',
       duration: '15:00',
       type: 'quiz',
@@ -744,7 +762,7 @@ const module2: Module = {
   lessons: [
     {
       id: 'wf-l6',
-      title: 'Gate Reviews en Quality Gates',
+      title: 'Gate Reviews and Quality Gates',
       titleNL: 'Gate Reviews en Quality Gates',
       duration: '18:00',
       type: 'video',
@@ -993,7 +1011,7 @@ Change Control:
     },
     {
       id: 'wf-l8',
-      title: 'Waterfall en Agile Combineren',
+      title: 'Combining Waterfall and Agile',
       titleNL: 'Waterfall en Agile Combineren',
       duration: '18:00',
       type: 'video',
@@ -1090,7 +1108,7 @@ Hybride aanpakken:
     },
     {
       id: 'wf-l9',
-      title: 'Eindexamen',
+      title: 'Final Exam',
       titleNL: 'Eindexamen',
       duration: '30:00',
       type: 'exam',
@@ -1115,7 +1133,7 @@ Succes!`,
     },
     {
       id: 'wf-l10',
-      title: 'Certificaat',
+      title: 'Certificate',
       titleNL: 'Certificaat',
       duration: '5:00',
       type: 'certificate',

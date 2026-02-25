@@ -161,6 +161,12 @@ Lean Six Sigma:
 - Levert meetbare, duurzame resultaten
 - Heeft een belt-structuur voor verschillende expertiseniveaus`,
       keyTakeaways: [
+        'Lean focuses on waste, Six Sigma on variation',
+        'DMAIC = Define, Measure, Analyze, Improve, Control',
+        '8 wastes: TIMWOODS',
+        'Six Sigma = 3.4 defects per million opportunities',
+      ],
+      keyTakeawaysNL: [
         'Lean focust op verspilling, Six Sigma op variatie',
         'DMAIC = Define, Measure, Analyze, Improve, Control',
         '8 verspillingen: TIMWOODS',
@@ -330,6 +336,12 @@ De Define fase:
 - Identificeert stakeholders
 - Resulteert in een goedgekeurde Project Charter`,
       keyTakeaways: [
+        'A good problem statement contains no causes or solutions',
+        'VOC → Needs → CTQs form the basis for measurements',
+        'SIPOC provides high-level process insight',
+        'Define ends with an approved Project Charter',
+      ],
+      keyTakeawaysNL: [
         'Een goede problem statement bevat geen oorzaken of oplossingen',
         'VOC → Needs → CTQ\'s vormen de basis voor metingen',
         'SIPOC geeft high-level procesinzicht',
@@ -551,6 +563,12 @@ De Measure fase:
 - Kwantificeert de huidige prestatie (baseline)
 - Bereidt voor op root cause analyse`,
       keyTakeaways: [
+        'Operational definitions are crucial for reliable data',
+        'Validate the measurement system with MSA before drawing conclusions',
+        'Value-add analysis reveals where waste exists',
+        'Baseline metrics provide the starting point for improvement',
+      ],
+      keyTakeawaysNL: [
         'Operational definitions zijn cruciaal voor betrouwbare data',
         'Valideer het meetsysteem met MSA voordat je conclusies trekt',
         'Value-add analysis onthult waar verspilling zit',
@@ -734,6 +752,12 @@ Root cause analysis:
 - Hypothesetesten voor verificatie
 - Regression voor kwantificering`,
       keyTakeaways: [
+        '5 Whys repeatedly asks "why" until the root cause is found',
+        'Fishbone organizes causes into categories (6Ms or 6Ps)',
+        'Pareto identifies the "vital few" causes (80/20)',
+        'Hypothesis testing verifies whether causes are statistically significant',
+      ],
+      keyTakeawaysNL: [
         '5 Whys vraagt herhaaldelijk "waarom" tot de root cause',
         'Fishbone organiseert oorzaken in categorieën (6M\'s of 6P\'s)',
         'Pareto identificeert de "vital few" oorzaken (80/20)',
@@ -892,6 +916,12 @@ De Improve fase:
 - Plant implementatie zorgvuldig
 - Beheert de menselijke kant van verandering`,
       keyTakeaways: [
+        'Brainstorming generates options; matrices select the best',
+        'FMEA identifies risks of solutions',
+        'Pilots test solutions on a small scale',
+        'Change management is essential for adoption',
+      ],
+      keyTakeawaysNL: [
         'Brainstorm genereert opties; matrices selecteren de beste',
         'FMEA identificeert risico\'s van oplossingen',
         'Pilots testen oplossingen op kleine schaal',
@@ -1196,7 +1226,7 @@ Project closure:
     },
     {
       id: 'lss-l9',
-      title: 'Eindexamen',
+      title: 'Final Exam',
       titleNL: 'Eindexamen',
       duration: '60:00',
       type: 'exam',
@@ -1223,7 +1253,7 @@ Succes!`,
     },
     {
       id: 'lss-l10',
-      title: 'Certificaat',
+      title: 'Certificate',
       titleNL: 'Certificaat',
       duration: '5:00',
       type: 'certificate',

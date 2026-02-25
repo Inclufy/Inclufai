@@ -448,6 +448,12 @@ De thema's zijn geïntegreerd:
 
 In de volgende lessen gaan we dieper in op elk thema.`,
       keyTakeaways: [
+        'Themes are aspects that require continuous attention',
+        'Business Case answers "why", Organization answers "who", etc.',
+        'All themes are integrated and influence each other',
+        'The depth of each theme depends on tailoring',
+      ],
+      keyTakeawaysNL: [
         'Thema\'s zijn aspecten die continu aandacht nodig hebben',
         'Business Case beantwoordt "waarom", Organization "wie", etc.',
         'Alle thema\'s zijn geïntegreerd en beïnvloeden elkaar',
@@ -464,7 +470,7 @@ In de volgende lessen gaan we dieper in op elk thema.`,
     },
     {
       id: 'p2-l4',
-      title: 'Quiz: Principes & Thema\'s',
+      title: 'Quiz: Principles & Themes',
       titleNL: 'Quiz: Principes & Thema\'s',
       duration: '15:00',
       type: 'quiz',
@@ -519,14 +525,14 @@ In de volgende lessen gaan we dieper in op elk thema.`,
 // ============================================
 const module2: Module = {
   id: 'p2-m2',
-  title: 'Module 2: De 7 Thema\'s in Detail',
+  title: 'Module 2: The 7 Themes in Detail',
   titleNL: 'Module 2: De 7 Thema\'s in Detail',
   description: 'Deep dive into each PRINCE2 theme with practical examples.',
   descriptionNL: 'Diepgaande behandeling van elk PRINCE2 thema met praktijkvoorbeelden.',
   lessons: [
     {
       id: 'p2-l5',
-      title: 'Business Case Thema',
+      title: 'Business Case Theme',
       titleNL: 'Business Case Thema',
       duration: '18:00',
       type: 'video',
@@ -642,6 +648,12 @@ Het Business Case thema:
 - Is eigendom van de Executive
 - Koppelt aan benefits realization`,
       keyTakeaways: [
+        'The Business Case must remain valid throughout the entire project',
+        'The Executive is the owner of the Business Case',
+        'Benefits are often only realized after the project',
+        'The Business Case evolves from outline to detailed',
+      ],
+      keyTakeawaysNL: [
         'De Business Case moet gedurende het hele project geldig blijven',
         'Executive is eigenaar van de Business Case',
         'Benefits worden vaak pas na het project gerealiseerd',
@@ -650,7 +662,7 @@ Het Business Case thema:
     },
     {
       id: 'p2-l6',
-      title: 'Organization Thema',
+      title: 'Organization Theme',
       titleNL: 'Organization Thema',
       duration: '20:00',
       type: 'video',
@@ -780,6 +792,12 @@ Het Organization thema:
 - Scheidt directing van managing
 - Staat aanpassing toe voor projectgrootte`,
       keyTakeaways: [
+        'Three stakeholder interests: Business, User, Supplier',
+        'The Project Board directs, the Project Manager manages',
+        'The PM is not a member of the Project Board',
+        'Roles can be combined but not eliminated',
+      ],
+      keyTakeawaysNL: [
         'Drie stakeholder belangen: Business, User, Supplier',
         'Project Board bestuurt, Project Manager managed',
         'De PM is geen lid van de Project Board',
@@ -788,7 +806,7 @@ Het Organization thema:
     },
     {
       id: 'p2-l7',
-      title: 'Quality Thema',
+      title: 'Quality Theme',
       titleNL: 'Quality Thema',
       duration: '16:00',
       type: 'video',
@@ -886,6 +904,12 @@ Het Quality thema:
 - Houdt Quality Register bij
 - Is gericht op vooraf gedefinieerde criteria`,
       keyTakeaways: [
+        'Quality = fit for purpose, not perfection',
+        'Product Descriptions define quality criteria upfront',
+        'Quality Review Technique is the standard control method',
+        'Quality Register logs all quality activities',
+      ],
+      keyTakeawaysNL: [
         'Quality = fit for purpose, niet perfectie',
         'Product Descriptions definiëren kwaliteitscriteria vooraf',
         'Quality Review Technique is de standaard controlemethode',
