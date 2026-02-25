@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { formatBudgetDetailed, getCurrencyFromLanguage } from '@/lib/currencies';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,7 +30,7 @@ const CATEGORIES = ["Labor Cost", "Material Cost", "Software", "Hardware", "Trav
 
 const FoundationBudget = () => {
   const { pt } = usePageTranslations();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { id: projectId } = useParams<{ id: string }>();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [projectData, setProjectData] = useState<any>(null);
@@ -70,7 +71,7 @@ const FoundationBudget = () => {
   const remaining = totalBudget - totalSpent;
   const percentUsed = totalBudget > 0 ? Math.min(100, (totalSpent / totalBudget) * 100) : 0;
 
-  const formatCurrency = (val: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(val);
+  const formatCurrency = (val: number) => formatBudgetDetailed(val, getCurrencyFromLanguage(language));
 
   const openCreate = () => {
     setEditingExpense(null);

@@ -58,6 +58,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { formatBudgetDetailed, getCurrencyFromLanguage } from '@/lib/currencies';
 
 // API functions
 const fetchProgram = async (id: string) => {
@@ -118,7 +119,7 @@ const METHODOLOGY_CONFIG: Record<string, { icon: any; color: string; bgColor: st
 
 const ProgramDetail = () => {
   const { pt } = usePageTranslations();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -224,13 +225,7 @@ const ProgramDetail = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('nl-NL', {
-      style: 'currency',
-      currency: 'EUR',
-      maximumFractionDigits: 0,
-    }).format(amount || 0);
-  };
+  const formatCurrency = (amount: number) => formatBudgetDetailed(amount || 0, getCurrencyFromLanguage(language));
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';

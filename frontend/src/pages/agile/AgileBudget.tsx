@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { formatBudgetDetailed, getCurrencyFromLanguage } from "@/lib/currencies";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +17,7 @@ import { toast } from "sonner";
 
 const AgileBudget = () => {
   const { pt } = usePageTranslations();
+  const { language } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const [budget, setBudget] = useState<any>(null);
   const [budgetItems, setBudgetItems] = useState<any[]>([]);
@@ -62,6 +65,7 @@ const AgileBudget = () => {
   const totalSpent = budget?.total_spent || 0;
   const remaining = budget?.remaining || (totalBudget - totalSpent);
   const pct = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
+  const formatCurrency = (val: number) => formatBudgetDetailed(val, getCurrencyFromLanguage(language));
 
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
@@ -70,13 +74,13 @@ const AgileBudget = () => {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between"><div className="flex items-center gap-3"><DollarSign className="h-6 w-6 text-green-500" /><h1 className="text-2xl font-bold">{pt("Budget")}</h1></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add Item")}</Button></div>
         <div className="grid grid-cols-3 gap-4">
-          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Total Budget")}</p><p className="text-2xl font-bold">€{Number(totalBudget).toLocaleString()}</p></CardContent></Card>
-          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Spent")}</p><p className="text-2xl font-bold">€{Number(totalSpent).toLocaleString()}</p><Progress value={pct} className="h-2 mt-2" /></CardContent></Card>
-          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Remaining")}</p><p className={`text-2xl font-bold ${Number(remaining) < 0 ? "text-red-500" : "text-green-500"}`}>€{Number(remaining).toLocaleString()}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Total Budget")}</p><p className="text-2xl font-bold">{formatCurrency(Number(totalBudget))}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Spent")}</p><p className="text-2xl font-bold">{formatCurrency(Number(totalSpent))}</p><Progress value={pct} className="h-2 mt-2" /></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Remaining")}</p><p className={`text-2xl font-bold ${Number(remaining) < 0 ? "text-red-500" : "text-green-500"}`}>{formatCurrency(Number(remaining))}</p></CardContent></Card>
         </div>
         {budgetItems.length === 0 ? <Card className="p-8 text-center"><DollarSign className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No budget items yet")}</h3></Card> : (
           <Card><CardContent className="p-0"><div className="divide-y">{budgetItems.map(bi => (
-            <div key={bi.id} className="flex items-center justify-between p-4 hover:bg-muted/50"><div><p className="font-medium">{bi.description}</p><div className="flex gap-2 mt-1"><Badge variant="outline" className="text-xs">{bi.category_display || bi.category}</Badge>{bi.date && <Badge variant="secondary" className="text-xs">{bi.date}</Badge>}</div></div><div className="flex items-center gap-3"><div className="text-right text-sm"><p className="font-bold">€{Number(bi.planned_amount).toLocaleString()}</p>{Number(bi.actual_amount) > 0 && <p className="text-muted-foreground">€{Number(bi.actual_amount).toLocaleString()} actual</p>}</div><Button variant="ghost" size="sm" onClick={() => openEdit(bi)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(bi.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></div>
+            <div key={bi.id} className="flex items-center justify-between p-4 hover:bg-muted/50"><div><p className="font-medium">{bi.description}</p><div className="flex gap-2 mt-1"><Badge variant="outline" className="text-xs">{bi.category_display || bi.category}</Badge>{bi.date && <Badge variant="secondary" className="text-xs">{bi.date}</Badge>}</div></div><div className="flex items-center gap-3"><div className="text-right text-sm"><p className="font-bold">{formatCurrency(Number(bi.planned_amount))}</p>{Number(bi.actual_amount) > 0 && <p className="text-muted-foreground">{formatCurrency(Number(bi.actual_amount))} actual</p>}</div><Button variant="ghost" size="sm" onClick={() => openEdit(bi)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(bi.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></div>
           ))}</div></CardContent></Card>
         )}
       </div>
