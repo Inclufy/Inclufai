@@ -809,7 +809,7 @@ NPV > 0 = winstgevend project`,
         },
         {
           id: 'pm-l9',
-          title: 'Scope definitie',
+          title: 'Scope definition',
           duration: '12:00',
           type: 'video',
           transcript: `Scope is de totale omvang van het werk dat nodig is om de projectdoelen te bereiken.
@@ -839,6 +839,12 @@ Voorkomen door:
 - Regelmatige scope reviews
 - "Out of scope" discussies vastleggen`,
           keyTakeaways: [
+            'Scope = what is and is not part of the project',
+            'Distinguish product scope from project scope',
+            'Explicitly stating out-of-scope prevents scope creep',
+            'The scope statement is the formal documentation',
+          ],
+          keyTakeawaysNL: [
             'Scope = wat wel en niet tot het project behoort',
             'Onderscheid product scope van project scope',
             'Out-of-scope expliciet benoemen voorkomt scope creep',
@@ -847,7 +853,7 @@ Voorkomen door:
         },
         {
           id: 'pm-l10',
-          title: 'Praktijkopdracht: Project Charter',
+          title: 'Practical assignment: Project Charter',
           duration: '45:00',
           type: 'assignment',
           assignment: {
@@ -885,6 +891,7 @@ Huidige situatie:
       id: 'pm-m3',
       title: 'Module 3: Planning',
       description: 'WBS, Gantt charts, resource planning, budgettering en risicomanagement.',
+
       lessons: [
         {
           id: 'pm-l11',

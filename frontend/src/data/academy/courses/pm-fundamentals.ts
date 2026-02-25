@@ -602,6 +602,12 @@ De vijf fasen van een project:
 4. **Monitoring**: Controleren en bijsturen
 5. **Afsluiting**: Afronden, lessons learned, vieren`,
       keyTakeaways: [
+        'Every project has five phases: Initiation, Planning, Execution, Monitoring, Closure',
+        'The planning phase largely determines project success',
+        'Monitoring runs parallel to execution',
+        'Closure is crucial but is often neglected',
+      ],
+      keyTakeawaysNL: [
         'Elk project kent vijf fasen: Initiatie, Planning, Uitvoering, Monitoring, Afsluiting',
         'De planningsfase bepaalt grotendeels het projectsucces',
         'Monitoring loopt parallel aan uitvoering',
@@ -883,6 +889,12 @@ Het projectcharter:
 - Wordt goedgekeurd door de sponsor
 - Vormt de basis voor alle verdere planning`,
       keyTakeaways: [
+        'The project charter formally authorizes the project',
+        'Contains: goals, scope, budget, schedule, stakeholders, risks',
+        'Defining out-of-scope is just as important as in-scope',
+        'Keep it short: 2-5 pages is sufficient',
+      ],
+      keyTakeawaysNL: [
         'Het projectcharter autoriseert het project formeel',
         'Bevat: doelen, scope, budget, planning, stakeholders, risico\'s',
         'Out-of-scope definiëren is net zo belangrijk als in-scope',
@@ -1055,6 +1067,12 @@ Effectief stakeholder management:
 5. Documenteer in een stakeholder register
 6. Update regelmatig`,
       keyTakeaways: [
+        'Stakeholders can make or break your project',
+        'Analyze based on power, interest and attitude',
+        'The Power/Interest matrix helps with prioritization',
+        'Stakeholder analysis is dynamic - update regularly',
+      ],
+      keyTakeawaysNL: [
         'Stakeholders kunnen je project maken of breken',
         'Analyseer op macht, belang en houding',
         'De Power/Interest matrix helpt bij prioriteren',
@@ -1205,6 +1223,12 @@ Een goede business case:
 - Erkent risico's
 - Geeft een duidelijke aanbeveling`,
       keyTakeaways: [
+        'The business case justifies the investment',
+        'Always compare multiple options including "do nothing"',
+        'Use financial metrics: ROI, payback, NPV',
+        'Be realistic about costs and benefits',
+      ],
+      keyTakeawaysNL: [
         'De business case rechtvaardigt de investering',
         'Vergelijk altijd meerdere opties inclusief "niets doen"',
         'Gebruik financiële metrics: ROI, payback, NPV',
