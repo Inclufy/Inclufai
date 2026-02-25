@@ -140,18 +140,33 @@ def ai_generate_text(request):
     """Simple AI text generation endpoint."""
     from langchain_openai import ChatOpenAI
     from django.conf import settings
+    import logging
+
+    logger = logging.getLogger(__name__)
 
     prompt = request.data.get('prompt', '')
     if not prompt:
         return Response({"error": "prompt is required"}, status=http_status.HTTP_400_BAD_REQUEST)
 
+    api_key = getattr(settings, 'OPENAI_API_KEY', None)
+    if not api_key or api_key.startswith('sk-test') or len(api_key) < 20:
+        logger.warning("OPENAI_API_KEY is not configured or is a test key")
+        return Response(
+            {"error": "AI service is not configured. Please set a valid OPENAI_API_KEY."},
+            status=http_status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+
     try:
         llm = ChatOpenAI(
             temperature=0.7,
             model_name="gpt-4o",
-            openai_api_key=settings.OPENAI_API_KEY,
+            openai_api_key=api_key,
         )
         response = llm.invoke(prompt)
         return Response({"response": response.content.strip()})
     except Exception as e:
-        return Response({"error": str(e)}, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
+        logger.error(f"AI generation failed: {e}")
+        return Response(
+            {"error": "AI service temporarily unavailable. Please try again later."},
+            status=http_status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
