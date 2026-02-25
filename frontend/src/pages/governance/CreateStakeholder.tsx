@@ -15,7 +15,6 @@ const CreateStakeholder: React.FC = () => {
   const { pt } = usePageTranslations();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { pt } = usePageTranslations();
   const [loading, setLoading] = useState(false);
   const [portfolios, setPortfolios] = useState<any[]>([]);
   const [formData, setFormData] = useState({
