@@ -440,6 +440,31 @@ const CourseLearningPlayer = () => {
   // ============================================
   const isNL = language === "nl";
 
+  // Get course data
+  const course = getCourseData(slug || '', isNL);
+
+  // Get all lessons flat
+  const allLessons = course.modules.flatMap(m => m.lessons);
+
+  // Initialize lesson from URL param
+  useEffect(() => {
+    const lessonParam = searchParams.get('lesson');
+    if (lessonParam && allLessons.some(l => l.id === lessonParam)) {
+      setCurrentLessonId(lessonParam);
+    }
+  }, [searchParams]);
+
+  // Reset slide index when lesson changes
+  useEffect(() => {
+    setContentSlide(0);
+  }, [currentLessonId]);
+
+  // Find current lesson
+  const currentLesson = allLessons.find(l => l.id === currentLessonId) || allLessons[0];
+  const currentLessonIndex = allLessons.findIndex(l => l.id === currentLessonId);
+  const currentModuleIndex = course.modules.findIndex(m => m.lessons.some(l => l.id === currentLessonId));
+  const currentModule = course.modules[currentModuleIndex];
+
 // Legacy detectTopicType kept as stub for any remaining references
 const detectTopicType = (text: string): 'project_def' | 'triple_constraint' | 'pm_role' | 'comparison' | 'lifecycle' | 'stakeholder' | 'risk' | 'generic' => {
   const lower = text.toLowerCase();
