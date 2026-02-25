@@ -29,7 +29,7 @@ interface LessonData {
   previous_lesson?: { id: number; title: string };
 }
 
-export default function LessonPlayerScreen({ route, navigation }: any) {
+export function LessonPlayerScreen({ route, navigation }: any) {
   const { courseId, courseSlug, moduleId, lessonId, lessonTitle } = route.params;
   const { t } = useTranslation();
   const [lesson, setLesson] = useState<LessonData | null>(null);
@@ -50,12 +50,11 @@ export default function LessonPlayerScreen({ route, navigation }: any) {
       );
       setLesson(res.data);
     } catch {
-      // fallback: try direct endpoint
       try {
         const res = await api.get(`/academy/lessons/${lessonId}/`);
         setLesson(res.data);
       } catch {
-        // handle
+        // handle error
       }
     } finally {
       setLoading(false);
