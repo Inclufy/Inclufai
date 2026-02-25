@@ -225,5 +225,9 @@ CORS_ALLOWED_ORIGINS = [
     "https://projextpal.com",
     "http://www.projextpal.com",
     "https://www.projextpal.com",
+    "http://inclufy.co",
+    "https://inclufy.co",
+    "http://app.inclufy.co",
+    "https://app.inclufy.co",
 ]
 CORS_ALLOW_CREDENTIALS = True
