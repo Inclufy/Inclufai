@@ -147,39 +147,44 @@ const exampleQuestions = {
 // BUILD CONTEXT PROMPT
 // ============================================
 const buildContextPrompt = (query: string, programs: Program[], projects: Project[], isNL: boolean): string => {
-  const lang = isNL 
+  const lang = isNL
     ? "**BELANGRIJK: Antwoord ALTIJD in het Nederlands. Gebruik GEEN ** voor bold tekst, gebruik gewoon normale tekst. Gebruik - voor bullets.**"
     : "**IMPORTANT: Always respond in English. Do NOT use ** for bold text, use plain text. Use - for bullets.**";
 
-  const programSummary = programs.length > 0 
+  const noneLabel = isNL ? 'Geen' : 'None';
+
+  const programSummary = programs.length > 0
     ? programs.map(p => `- ${p.name}: Status=${p.status}, Health=${p.health_status}, Progress=${p.progress}%`).join('\n')
-    : 'Geen programma\'s';
+    : noneLabel;
 
   const projectSummary = projects.length > 0
     ? projects.map(p => `- ${p.name}: Status=${p.status}, Health=${p.health_status}, Progress=${p.progress}%`).join('\n')
-    : 'Geen projecten';
+    : noneLabel;
+
+  const programsLabel = isNL ? "programma's" : 'programs';
+  const projectsLabel = isNL ? 'projecten' : 'projects';
 
   return `${lang}
 
 ## Context
-- ${programs.length} programma's, ${projects.length} projecten
+- ${programs.length} ${programsLabel}, ${projects.length} ${projectsLabel}
 - At-risk: ${projects.filter(p => p.health_status === 'at_risk').length}
 
-### Programma's
+### ${isNL ? "Programma's" : 'Programs'}
 ${programSummary}
 
-### Projecten
+### ${isNL ? 'Projecten' : 'Projects'}
 ${projectSummary}
 
-## Vraag
+## ${isNL ? 'Vraag' : 'Question'}
 ${query}
 
-## Instructies
-- Geef specifiek, actionable advies
-- Gebruik headers met ## en bullets met -
-- GEEN ** gebruiken, gewoon normale tekst
-- Max 250 woorden
-- Eindig met concrete volgende stappen
+## ${isNL ? 'Instructies' : 'Instructions'}
+- ${isNL ? 'Geef specifiek, actionable advies' : 'Give specific, actionable advice'}
+- ${isNL ? 'Gebruik headers met ## en bullets met -' : 'Use headers with ## and bullets with -'}
+- ${isNL ? 'GEEN ** gebruiken, gewoon normale tekst' : 'Do NOT use ** for bold, use plain text'}
+- Max 250 ${isNL ? 'woorden' : 'words'}
+- ${isNL ? 'Eindig met concrete volgende stappen' : 'End with concrete next steps'}
 `;
 };
 
@@ -542,7 +547,7 @@ const AICommander = ({
                     <Brain className="h-4 w-4 text-white" />
                   </div>
                   <span className="font-bold text-gray-900 dark:text-white text-sm">AI Advisor</span>
-                  <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs">Gepersonaliseerd</Badge>
+                  <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs">{isNL ? 'Gepersonaliseerd' : 'Personalized'}</Badge>
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={copyResponse} className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-white dark:bg-gray-800 rounded-lg ring-1 ring-purple-100 hover:ring-purple-200 transition-all">
