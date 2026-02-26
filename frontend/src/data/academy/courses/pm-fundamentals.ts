@@ -1466,6 +1466,93 @@ const module3: Module = {
       titleNL: 'Work Breakdown Structure (WBS)',
       duration: '18:00',
       type: 'video',
+      transcript: `De Work Breakdown Structure, ofwel WBS, is een van de krachtigste tools in projectmanagement.
+Het is de basis voor vrijwel alles wat daarna komt: planning, budgettering, risicomanagement en
+voortgangsbewaking. Als je WBS niet klopt, klopt de rest ook niet.
+
+**Wat is een WBS?**
+
+Een Work Breakdown Structure is een hiërarchische ontleding van het totale werk dat het projectteam
+moet uitvoeren om de projectdoelstellingen te bereiken. Denk eraan als een boomstructuur die begint
+bij het eindresultaat en steeds verder opbreekt in kleinere, beheersbare stukken.
+
+De WBS is GEEN takenlijst. Het beschrijft WAT er opgeleverd moet worden (deliverables), niet HOE
+het werk gedaan wordt (activiteiten). Dit is een cruciaal verschil dat veel beginners over het hoofd zien.
+
+**De 100% Regel**
+
+De belangrijkste regel bij het maken van een WBS is de 100% regel: de WBS moet 100% van het werk
+bevatten dat nodig is om het project te voltooien. Elk niveau in de hiërarchie moet optellen tot 100%
+van het bovenliggende niveau.
+
+Als iets niet in de WBS staat, wordt het niet gedaan. Als iets wél in de WBS staat maar niet bij het
+project hoort, is je scope te groot. De WBS IS je scope.
+
+| Niveau | Beschrijving | Voorbeeld |
+|--------|-------------|-----------|
+| Niveau 0 | Het project zelf | Website Redesign |
+| Niveau 1 | Hoofddeliverables | Design, Development, Content |
+| Niveau 2 | Sub-deliverables | Homepage, Productpagina's |
+| Niveau 3 | Werkpakketten | Wireframe Homepage, Visual Design Homepage |
+
+**Werkpakketten**
+
+Het laagste niveau van de WBS noemen we werkpakketten (work packages). Dit zijn de kleinste eenheden
+die je kunt toewijzen, schatten en monitoren. Een goed werkpakket heeft deze kenmerken:
+
+1. **8-80 uur regel**: Een werkpakket kost minimaal 8 uur en maximaal 80 uur. Kleiner is te gedetailleerd
+voor projectniveau; groter is te vaag om te managen.
+2. **Eén eigenaar**: Elk werkpakket heeft één verantwoordelijke persoon.
+3. **Meetbaar**: Je kunt objectief vaststellen of het af is of niet.
+4. **Onafhankelijk**: Idealiter kan het los van andere werkpakketten worden uitgevoerd.
+
+**Hoe Maak je een WBS?**
+
+Er zijn twee benaderingen:
+
+**Top-down benadering** (aanbevolen):
+- Begin bij het eindresultaat
+- Breek het op in hoofdcomponenten
+- Breek elke component verder op
+- Ga door tot je bij werkpakketten bent
+
+**Bottom-up benadering**:
+- Brainstorm alle mogelijke taken
+- Groepeer ze in logische categorieën
+- Bouw de hiërarchie op
+
+In de praktijk gebruik je vaak een combinatie. Start top-down voor de structuur en vul bottom-up aan
+met details die je team aandraagt.
+
+**WBS Dictionary**
+
+Bij elke WBS hoort een WBS Dictionary: een document dat elk element beschrijft. Voor werkpakketten
+bevat dit typisch:
+
+- Beschrijving van het werk
+- Verantwoordelijke persoon
+- Geschatte duur en kosten
+- Acceptatiecriteria
+- Afhankelijkheden
+- Benodigde resources
+
+De WBS Dictionary voorkomt misverstanden over wat er precies verwacht wordt.
+
+**Veelgemaakte Fouten**
+
+1. **Activiteiten in plaats van deliverables**: "Programmeren" is een activiteit, "Werkende login-module"
+is een deliverable. Gebruik deliverables.
+2. **Te veel of te weinig detail**: Houd de 8-80 uur regel aan voor werkpakketten.
+3. **Niet alle werk opnemen**: Vergeet niet projectmanagement zelf, documentatie, testen en training.
+4. **Geen teamparticipatie**: De WBS maak je samen met het team, niet alleen achter je bureau.
+
+**Praktische Tips**
+
+- Gebruik sticky notes of digitale tools om te brainstormen
+- Laat het team de WBS valideren — zij weten wat er nodig is
+- Nummer elk element (1.0, 1.1, 1.1.1) voor eenduidige verwijzing
+- Review de WBS met de sponsor voordat je verder plant
+- De WBS is een levend document — update het bij scope changes`,
       keyTakeaways: [
         'The WBS is the foundation for all planning and control',
         'Follow the 100% rule: all work must be included',
@@ -1489,6 +1576,94 @@ const module3: Module = {
       titleNL: 'Gantt charts maken',
       duration: '20:00',
       type: 'video',
+      transcript: `In de vorige les hebben we de WBS gemaakt — we weten nu WAT er opgeleverd moet worden.
+Nu gaan we het WANNEER bepalen. En daarvoor gebruiken we een van de meest iconische tools in
+projectmanagement: het Gantt chart.
+
+**Wat is een Gantt Chart?**
+
+Een Gantt chart is een horizontaal staafdiagram dat de projectplanning visualiseert. Op de verticale
+as staan de taken (afgeleid van je WBS werkpakketten), op de horizontale as staat de tijd. Elke taak
+wordt weergegeven als een horizontale balk waarvan de lengte de duur aangeeft.
+
+Het Gantt chart is uitgevonden door Henry Gantt rond 1910 en wordt sindsdien wereldwijd gebruikt.
+Het is populair omdat het direct visueel inzicht geeft in:
+- Wanneer taken beginnen en eindigen
+- Welke taken parallel lopen
+- Waar afhankelijkheden zitten
+- Of het project op schema ligt
+
+**Van WBS naar Gantt Chart**
+
+De stappen om van je WBS naar een Gantt chart te komen:
+
+1. **Taken identificeren**: Neem de werkpakketten uit je WBS
+2. **Duur schatten**: Hoeveel tijd kost elk werkpakket?
+3. **Afhankelijkheden bepalen**: Welke taken moeten eerst af?
+4. **Resources toewijzen**: Wie doet wat?
+5. **Planning uitwerken**: Bereken start- en einddatums
+
+**Afhankelijkheden (Dependencies)**
+
+Er zijn vier soorten afhankelijkheden tussen taken:
+
+| Type | Naam | Beschrijving | Voorbeeld |
+|------|------|-------------|-----------|
+| FS | Finish-to-Start | B start als A klaar is | Fundament af → Muren bouwen |
+| SS | Start-to-Start | B start als A start | Design starten → Review starten |
+| FF | Finish-to-Finish | B eindigt als A eindigt | Testen eindigt met ontwikkeling |
+| SF | Start-to-Finish | B eindigt als A start | Nieuwe shift start → Oude shift eindigt |
+
+Finish-to-Start (FS) is veruit de meest voorkomende — ongeveer 90% van alle afhankelijkheden
+in projecten is FS.
+
+**Het Kritieke Pad (Critical Path)**
+
+Het kritieke pad is de langste reeks van afhankelijke taken door het project. Dit pad bepaalt de
+minimale projectduur. Kenmerken van het kritieke pad:
+
+- **Nul float**: Taken op het kritieke pad hebben geen speelruimte. Elke vertraging op het
+kritieke pad vertraagt het hele project.
+- **Langste pad**: Het is niet per se het pad met de meeste taken, maar het pad met de langste
+totale duur.
+- **Kan verschuiven**: Als er veranderingen optreden, kan een ander pad kritiek worden.
+
+**Float en Slack**
+
+Float (of slack) is de hoeveelheid tijd dat een taak kan worden uitgesteld zonder het project
+te vertragen:
+
+- **Total Float**: Hoeveel een taak kan schuiven zonder de einddatum te beïnvloeden
+- **Free Float**: Hoeveel een taak kan schuiven zonder de volgende taak te beïnvloeden
+
+Taken op het kritieke pad hebben per definitie een float van nul.
+
+**Milestones**
+
+Milestones zijn belangrijke punten in je planning — ze hebben geen duur (0 dagen) maar markeren
+een significante gebeurtenis of deliverable. Voorbeelden:
+- "Design goedgekeurd"
+- "Testfase afgerond"
+- "Go-live datum"
+
+Plaats milestones op strategische punten zodat stakeholders eenvoudig de voortgang kunnen volgen.
+
+**Praktische Tips voor Gantt Charts**
+
+1. **Houd het overzichtelijk**: Te veel detail maakt het chart onleesbaar. Gebruik samengevouwen
+groepen voor detail.
+2. **Update regelmatig**: Een Gantt chart is alleen nuttig als het actueel is. Plan wekelijkse updates.
+3. **Gebruik kleuren**: Markeer het kritieke pad, verschillende teams of statussen met kleuren.
+4. **Toon de baseline**: Bewaar de originele planning als baseline zodat je afwijkingen kunt zien.
+5. **Gebruik software**: Excel werkt voor kleine projecten, maar voor grotere projecten gebruik
+MS Project, Monday.com of vergelijkbare tools.
+
+**Veelgemaakte Fouten**
+
+- Te optimistisch schatten — voeg altijd buffer toe
+- Afhankelijkheden vergeten — elke taak moet minstens één voorganger hebben (behalve de eerste)
+- Resource-conflicten negeren — twee taken kunnen niet parallel als dezelfde persoon ze doet
+- Het chart niet updaten — een verouderd Gantt chart is erger dan geen chart`,
       keyTakeaways: [
         'Gantt charts visualize schedules and dependencies',
         'The critical path determines the minimum project duration',
@@ -1511,6 +1686,89 @@ const module3: Module = {
       titleNL: 'Resource planning',
       duration: '14:00',
       type: 'video',
+      transcript: `De beste planning ter wereld faalt als je niet de juiste mensen en middelen hebt om het
+werk uit te voeren. Resource planning is het proces van bepalen welke resources je nodig hebt,
+wanneer je ze nodig hebt, en hoe je ze optimaal inzet.
+
+**Wat zijn Resources?**
+
+In projectmanagement zijn resources alle middelen die je nodig hebt om het project uit te voeren:
+
+- **Mensen**: Teamleden, specialisten, externe consultants
+- **Materialen**: Grondstoffen, componenten, licenties
+- **Apparatuur**: Machines, servers, testomgevingen
+- **Faciliteiten**: Kantoorruimte, vergaderruimten, werkplaatsen
+- **Budget**: Financiële middelen (wordt apart behandeld in de volgende les)
+
+**Het Resource Planning Proces**
+
+Het proces bestaat uit drie hoofdstappen:
+
+1. **Resource identificatie**: Welke resources heb je nodig per werkpakket?
+2. **Resource schatting**: Hoeveel van elke resource heb je nodig?
+3. **Resource toewijzing**: Wie doet wat en wanneer?
+
+**De RACI Matrix**
+
+De RACI matrix is een essentieel hulpmiddel om verantwoordelijkheden te verduidelijken. RACI staat voor:
+
+| Letter | Betekenis | Beschrijving |
+|--------|-----------|-------------|
+| R | Responsible | Voert het werk uit |
+| A | Accountable | Eindverantwoordelijke (slechts één per taak) |
+| C | Consulted | Wordt geraadpleegd (tweerichtingscommunicatie) |
+| I | Informed | Wordt geïnformeerd (eenrichtingscommunicatie) |
+
+Regels voor de RACI matrix:
+- Elke taak heeft precies één A (Accountable)
+- Elke taak heeft minstens één R (Responsible)
+- Te veel C's en I's duidt op bureaucratie
+- Als iemand nergens R of A is, vraag je af of die persoon in het team hoort
+
+**Resource Leveling vs Resource Smoothing**
+
+**Resource Leveling**: Je past de planning aan om overbelasting op te lossen. Dit kan de
+projectduur verlengen, maar zorgt dat niemand meer dan 100% belast is.
+
+**Resource Smoothing**: Je verschuift taken binnen hun float om pieken af te vlakken, zonder
+de einddatum te wijzigen. Dit werkt alleen als er voldoende float beschikbaar is.
+
+| Aspect | Resource Leveling | Resource Smoothing |
+|--------|------------------|-------------------|
+| Doel | Overbelasting oplossen | Pieken afvlakken |
+| Effect op einddatum | Kan verlengen | Geen effect |
+| Gebruikt float? | Ja, en meer | Alleen beschikbare float |
+| Wanneer gebruiken? | Bij overbelasting | Bij ongelijke verdeling |
+
+**De 80% Regel**
+
+Plan resources op maximaal 80% capaciteit. De overige 20% is buffer voor:
+
+- Onverwachte problemen en storingen
+- Vergaderingen en administratie
+- Ziekte en verlof
+- Ad-hoc verzoeken en onderbrekingen
+
+Een fulltime medewerker van 40 uur per week plan je dus voor maximaal 32 productieve uren.
+
+**Resource Histogrammen**
+
+Een resource histogram toont de belasting van een resource over tijd in een staafdiagram.
+Het maakt direct zichtbaar:
+- Wanneer iemand overbelast is (boven de capaciteitslijn)
+- Wanneer er onderbezetting is (ver onder de lijn)
+- Waar resource leveling nodig is
+
+**Veelgemaakte Fouten**
+
+1. **100% planning**: Geen buffer inplannen leidt tot direct vertraging bij het eerste probleem.
+2. **Multitasking overschatten**: Contextwisseling kost 20-40% productiviteit. Plan mensen
+liefst op één project tegelijk.
+3. **Skills negeren**: Niet elke developer kan elke taak. Houd rekening met specialisaties.
+4. **Beschikbaarheid vergeten**: Vakanties, trainingen, deeltijd — check de daadwerkelijke
+beschikbaarheid, niet de theoretische.
+5. **Geen resource planning updaten**: Beschikbaarheid verandert continu. Update minstens
+elke twee weken.`,
       keyTakeaways: [
         'Resource planning matches required with available capacity',
         'Resource leveling resolves overallocation',
@@ -1533,6 +1791,99 @@ const module3: Module = {
       titleNL: 'Budget en kostenraming',
       duration: '16:00',
       type: 'video',
+      transcript: `"Hoeveel gaat dit kosten?" Het is waarschijnlijk de eerste vraag die je sponsor stelt. En het
+is een van de moeilijkste vragen om goed te beantwoorden. In deze les leer je verschillende
+schattingstechnieken en hoe je een projectbudget opbouwt.
+
+**Kosten Categorieën**
+
+Projectkosten vallen in verschillende categorieën:
+
+- **Directe kosten**: Direct toe te wijzen aan het project (salarissen, materialen, licenties)
+- **Indirecte kosten**: Gedeeld met andere projecten (kantoorhuur, managementoverhead)
+- **Vaste kosten**: Veranderen niet met de projectomvang (licentiekosten, huurcontracten)
+- **Variabele kosten**: Veranderen met de omvang (uren, materiaalverbruik)
+
+**Schattingstechnieken**
+
+Er zijn vier veelgebruikte technieken, elk met eigen voor- en nadelen:
+
+**1. Analogous Estimating (Analoog schatten)**
+Je gebruikt kosten van vergelijkbare eerdere projecten als basis.
+- Voordeel: Snel, weinig data nodig
+- Nadeel: Onnauwkeurig als projecten niet echt vergelijkbaar zijn
+- Nauwkeurigheid: ±25-50%
+
+**2. Parametric Estimating (Parametrisch schatten)**
+Je gebruikt statistische relaties. Bijvoorbeeld: "€500 per vierkante meter" of "€200 per story point."
+- Voordeel: Nauwkeuriger dan analoog, schaalbaar
+- Nadeel: Vereist betrouwbare parameters
+- Nauwkeurigheid: ±15-25%
+
+**3. Bottom-up Estimating (Bottom-up schatten)**
+Je schat elk werkpakket individueel en telt alles op.
+- Voordeel: Meest nauwkeurig
+- Nadeel: Tijdrovend, vereist gedetailleerde WBS
+- Nauwkeurigheid: ±5-15%
+
+**4. Three-Point Estimating (Driepuntsschatting)**
+Je maakt drie schattingen per taak:
+- **O** = Optimistisch (best case)
+- **M** = Meest waarschijnlijk
+- **P** = Pessimistisch (worst case)
+
+De PERT-formule: **Schatting = (O + 4M + P) / 6**
+
+| Techniek | Snelheid | Nauwkeurigheid | Wanneer gebruiken |
+|----------|----------|---------------|-------------------|
+| Analoog | Zeer snel | Laag (±35%) | Vroege fase, weinig detail |
+| Parametrisch | Snel | Medium (±20%) | Bij beschikbare parameters |
+| Bottom-up | Langzaam | Hoog (±10%) | Gedetailleerde planning |
+| Driepunt | Medium | Hoog (±10%) | Bij onzekerheid |
+
+**Het Projectbudget Opbouwen**
+
+Een projectbudget is meer dan alleen de som van alle kostenramingen:
+
+1. **Kostenramingen per werkpakket** (uit je WBS)
+2. **+ Contingency Reserve** (5-15% voor bekende risico's)
+3. **= Cost Baseline** (de referentielijn voor monitoring)
+4. **+ Management Reserve** (5-10% voor onbekende risico's)
+5. **= Totaal Projectbudget**
+
+Het verschil tussen contingency en management reserve is belangrijk:
+- **Contingency reserve**: Voor geïdentificeerde risico's (known unknowns). De PM mag dit inzetten.
+- **Management reserve**: Voor onvoorziene situaties (unknown unknowns). Alleen de sponsor
+kan dit vrijgeven.
+
+**Earned Value Management (EVM)**
+
+EVM is een krachtige techniek om kosten EN voortgang tegelijk te meten. De drie basiswaarden:
+
+- **PV** (Planned Value): Hoeveel werk had er klaar moeten zijn?
+- **EV** (Earned Value): Hoeveel werk IS er daadwerkelijk klaar?
+- **AC** (Actual Cost): Hoeveel heeft het tot nu toe gekost?
+
+Belangrijke indicatoren:
+- **CPI** (Cost Performance Index) = EV / AC
+  - CPI > 1 = onder budget
+  - CPI < 1 = over budget
+- **SPI** (Schedule Performance Index) = EV / PV
+  - SPI > 1 = voor op schema
+  - SPI < 1 = achter op schema
+
+Een CPI van 0.85 betekent dat je voor elke euro die je uitgeeft slechts €0.85 aan waarde terugkrijgt.
+Dat is een serieus probleem.
+
+**Praktische Tips**
+
+1. **Documenteer je aannames**: Elke schatting is gebaseerd op aannames. Schrijf ze op zodat je
+later kunt verklaren waarom de schatting afwijkt.
+2. **Betrek het team**: De mensen die het werk doen, schatten het werk het best.
+3. **Gebruik historische data**: Kijk naar eerdere projecten. Bouw een database op van werkelijke
+kosten versus schattingen.
+4. **Vermijd anchoring bias**: Laat teamleden onafhankelijk schatten voordat je erover discussieert.
+5. **Review regelmatig**: Herzie het budget bij elke fase-overgang en bij significante wijzigingen.`,
       keyTakeaways: [
         'Bottom-up is the most accurate but time-consuming',
         'Build in contingency and management reserve',
@@ -1555,6 +1906,113 @@ const module3: Module = {
       titleNL: 'Risicomanagement',
       duration: '22:00',
       type: 'video',
+      transcript: `"Wat kan er misgaan?" is misschien wel de belangrijkste vraag die een projectmanager kan stellen.
+Risicomanagement gaat over het proactief identificeren, analyseren en beheersen van onzekerheden
+die je project kunnen beïnvloeden — zowel negatief als positief.
+
+**Wat is een Risico?**
+
+Een risico is een onzekere gebeurtenis of omstandigheid die, als het optreedt, een positief of negatief
+effect heeft op ten minste één projectdoelstelling (scope, tijd, kosten of kwaliteit).
+
+Belangrijk: een risico is NIET hetzelfde als een probleem. Een risico KAN optreden; een probleem IS
+al opgetreden.
+
+- **Bedreiging (threat)**: Een risico met negatief effect
+- **Kans (opportunity)**: Een risico met positief effect
+
+**Het Risicomanagement Proces**
+
+Risicomanagement is een continu proces met vijf stappen:
+
+**1. Risico-identificatie**
+Alle mogelijke risico's in kaart brengen. Technieken:
+- Brainstormsessies met het team
+- Checklist-analyse (uit eerdere projecten)
+- SWOT-analyse
+- Expert interviews
+- Delphi-techniek (anonieme expertinput)
+
+**2. Kwalitatieve Risico-analyse**
+Risico's prioriteren op basis van kans (probability) en impact:
+
+| Kans \\ Impact | Laag | Medium | Hoog |
+|----------------|------|--------|------|
+| **Hoog** | Medium | Hoog | Kritiek |
+| **Medium** | Laag | Medium | Hoog |
+| **Laag** | Verwaarloosbaar | Laag | Medium |
+
+De risicoscore = Kans × Impact. Focus je op de risico's met de hoogste scores.
+
+**3. Kwantitatieve Risico-analyse**
+Voor de belangrijkste risico's: bereken het financiële effect. Technieken:
+- **EMV** (Expected Monetary Value) = Kans × Financieel Impact
+- **Monte Carlo simulatie**: Simuleer duizenden scenario's om de verdeling van mogelijke
+uitkomsten te zien
+- **Beslisboomanalyse**: Visualiseer keuzes en hun mogelijke uitkomsten
+
+Een risico met 30% kans en €100.000 impact heeft een EMV van €30.000. Dit bedrag reserveer
+je als contingency.
+
+**4. Risico-response Planning**
+
+Voor bedreigingen heb je vier strategieën:
+
+| Strategie | Beschrijving | Voorbeeld |
+|-----------|-------------|-----------|
+| **Vermijden** | Elimineer het risico | Kies bewezen technologie i.p.v. experimentele |
+| **Overdragen** | Verschuif naar derde partij | Verzekering afsluiten, outsourcen |
+| **Mitigeren** | Verklein kans of impact | Extra testen, training, backup systemen |
+| **Accepteren** | Bewust het risico accepteren | Bij lage kans/impact, budget als buffer |
+
+Voor kansen (positieve risico's):
+- **Exploiteren**: Zorg dat de kans zich voordoet
+- **Delen**: Partner met een andere partij
+- **Vergroten**: Vergroot de kans of impact
+- **Accepteren**: Pak het mee als het zich voordoet
+
+**5. Risico-monitoring en -beheersing**
+Continu monitoren, nieuwe risico's identificeren, en responses evalueren.
+
+**Het Risicoregister**
+
+Het risicoregister is HET centrale document voor risicomanagement. Het bevat voor elk risico:
+
+- **ID**: Uniek nummer
+- **Beschrijving**: Wat kan er gebeuren?
+- **Categorie**: Technisch, organisatorisch, extern, projectmanagement
+- **Kans**: Hoog/Medium/Laag of percentage
+- **Impact**: Hoog/Medium/Laag of bedrag
+- **Risicoscore**: Kans × Impact
+- **Response strategie**: Vermijden/Overdragen/Mitigeren/Accepteren
+- **Eigenaar**: Wie bewaakt dit risico?
+- **Trigger**: Wanneer weten we dat het risico optreedt?
+- **Status**: Open, in behandeling, gesloten
+
+**Risk Appetite en Risk Tolerance**
+
+- **Risk Appetite**: Hoeveel risico is de organisatie bereid te nemen? (Strategisch niveau)
+- **Risk Tolerance**: De meetbare grens van risicoacceptatie. (Operationeel niveau)
+
+Een startup heeft doorgaans een hogere risk appetite dan een bank. Dit beïnvloedt welke
+risico-responses je kiest.
+
+**Veelgemaakte Fouten**
+
+1. **Risicomanagement als eenmalige activiteit**: Het is continu. Plan maandelijkse risk reviews.
+2. **Alleen negatieve risico's zien**: Vergeet de kansen niet — ze kunnen je project versnellen
+of verbeteren.
+3. **Geen eigenaar toewijzen**: Een risico zonder eigenaar wordt door niemand bewaakt.
+4. **Te laat beginnen**: Start risicomanagement in de initiatiefase, niet pas bij de uitvoering.
+5. **Risico's verbergen**: Creëer een cultuur waarin het veilig is om risico's te benoemen.
+
+**Praktische Tips**
+
+- Houd risicosessies kort en gefocust (max 1 uur)
+- Gebruik categorieën om volledigheid te waarborgen
+- Koppel risico's aan je WBS — elk werkpakket kan risico's hebben
+- Review het risicoregister bij elke statusmeeting
+- Vier het als een risico NIET optreedt — dat betekent dat je mitigatie werkte`,
       keyTakeaways: [
         'Risks have both probability and impact - assess both',
         'Four response strategies: avoid, transfer, mitigate, accept',
