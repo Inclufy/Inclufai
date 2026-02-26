@@ -1605,6 +1605,143 @@ const markAsComplete = async () => {
               </div>
             </ScrollArea>
           )}
+          {/* Exam (full width) */}
+          {currentLesson.type === 'exam' && (
+            <ScrollArea className="flex-1">
+              <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+                <div>
+                  <h1 className="text-3xl font-bold mb-2">{currentLesson.title}</h1>
+                  <p className="text-muted-foreground">
+                    {currentModule?.title} • {isNL ? 'Les' : 'Lesson'} {getLessonGlobalIndex(course.modules, currentLessonId)} {isNL ? 'van' : 'of'} {allLessons.length}
+                  </p>
+                </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <GraduationCap className="w-5 h-5 text-purple-600" />
+                      {currentLesson.title.toLowerCase().includes('final') || currentLesson.title.toLowerCase().includes('eind')
+                        ? (isNL ? 'Eindexamen' : 'Final Exam')
+                        : (isNL ? 'Module Examen' : 'Module Exam')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {currentLesson.transcript && (
+                      <div className="prose dark:prose-invert max-w-none text-sm mb-4">
+                        {currentLesson.transcript.split('\n\n').map((p: string, i: number) => (
+                          <p key={i}>{p}</p>
+                        ))}
+                      </div>
+                    )}
+                    <QuizEngine
+                      lessonId={currentLesson.id}
+                      courseSlug={slug || ''}
+                      apiBase="/api/v1"
+                      language={isNL ? 'nl' : 'en'}
+                      timeLimit={currentLesson.title.toLowerCase().includes('final') || currentLesson.title.toLowerCase().includes('eind') ? 60 : 30}
+                      onComplete={(passed) => {
+                        if (passed) {
+                          completeLesson(course.id, currentLessonId, allLessons.length);
+                          awardSkillPoints(currentLessonId, 'exam_pass', 2.0);
+                          toast({ title: isNL ? 'Examen gehaald!' : 'Exam passed!' });
+                        }
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </ScrollArea>
+          )}
+          {/* Certificate */}
+          {currentLesson.type === 'certificate' && (
+            <ScrollArea className="flex-1">
+              <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+                <div>
+                  <h1 className="text-3xl font-bold mb-2">{currentLesson.title}</h1>
+                  <p className="text-muted-foreground">
+                    {currentModule?.title} • {isNL ? 'Les' : 'Lesson'} {getLessonGlobalIndex(course.modules, currentLessonId)} {isNL ? 'van' : 'of'} {allLessons.length}
+                  </p>
+                </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Award className="w-5 h-5 text-yellow-600" />
+                      {isNL ? 'Cursus Certificaat' : 'Course Certificate'}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {currentLesson.transcript && (
+                      <div className="prose dark:prose-invert max-w-none text-sm mb-4">
+                        {currentLesson.transcript.split('\n\n').map((p: string, i: number) => (
+                          <p key={i}>{p}</p>
+                        ))}
+                      </div>
+                    )}
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-6 rounded-lg border">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Progress value={progress} className="flex-1 h-3" />
+                        <span className="text-sm font-bold">{progress}%</span>
+                      </div>
+                      <p className="text-muted-foreground text-sm">
+                        {progress === 100
+                          ? (isNL ? 'Je hebt de cursus voltooid! Download je certificaat hieronder.' : 'You have completed the course! Download your certificate below.')
+                          : (isNL ? 'Voltooi de cursus en slaag voor het examen om je certificaat te ontvangen.' : 'Complete the course and pass the exam to receive your certificate.')}
+                      </p>
+                    </div>
+                    {progress === 100 && (
+                      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 p-6 rounded-lg border-2 border-yellow-300 text-center">
+                        <Award className="w-16 h-16 text-yellow-500 mx-auto mb-3" />
+                        <h3 className="font-bold text-lg mb-1">{isNL ? 'Gefeliciteerd!' : 'Congratulations!'}</h3>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {isNL ? `Je hebt "${course.titleNL || course.title}" voltooid` : `You completed "${course.title}"`}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{user?.name || user?.email || 'Student'}</p>
+                      </div>
+                    )}
+                    <Button
+                      disabled={progress < 100}
+                      className={progress === 100 ? "w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white" : "w-full"}
+                      onClick={() => {
+                        if (progress < 100) return;
+                        try {
+                          const token = localStorage.getItem('access_token');
+                          const certUrl = `${import.meta.env.VITE_BACKEND_URL || '/api/v1'}/academy/certificates/generate/?course_id=${course.id}`;
+                          fetch(certUrl, {
+                            headers: token ? { Authorization: `Bearer ${token}` } : {},
+                          })
+                            .then(res => {
+                              if (res.ok) return res.blob();
+                              throw new Error('Certificate not available');
+                            })
+                            .then(blob => {
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `certificate-${course.id}.pdf`;
+                              a.click();
+                              URL.revokeObjectURL(url);
+                            })
+                            .catch(() => {
+                              toast({
+                                title: isNL ? 'Certificaat wordt gegenereerd' : 'Certificate being generated',
+                                description: isNL ? 'Je ontvangt je certificaat binnenkort per e-mail.' : 'You will receive your certificate by email shortly.',
+                              });
+                            });
+                        } catch {
+                          toast({
+                            title: isNL ? 'Certificaat wordt gegenereerd' : 'Certificate being generated',
+                            description: isNL ? 'Je ontvangt je certificaat binnenkort per e-mail.' : 'You will receive your certificate by email shortly.',
+                          });
+                        }
+                      }}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      {isNL ? 'Certificaat Downloaden' : 'Download Certificate'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </ScrollArea>
+          )}
           {/* Scrollable Content (for video/reading lessons) */}
           {(currentLesson.type === 'video' || currentLesson.type === 'reading' || !currentLesson.type) && (
             <ScrollArea className="flex-1">
