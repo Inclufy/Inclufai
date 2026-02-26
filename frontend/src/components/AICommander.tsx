@@ -775,9 +775,9 @@ const AICommander = ({
           {/* Footer */}
           <div className="px-5 py-2.5 bg-gray-50 dark:bg-gray-800/50 border-t border-purple-50 dark:border-purple-900/30 flex items-center justify-between">
             <div className="flex items-center gap-4 text-xs text-gray-500">
-              <span className="flex items-center gap-1.5 font-medium"><Building2 className="h-3.5 w-3.5 text-purple-500" />{programs.length} programma's</span>
-              <span className="flex items-center gap-1.5 font-medium"><FolderKanban className="h-3.5 w-3.5 text-blue-500" />{projects.length} projecten</span>
-              {atRiskCount > 0 && <span className="flex items-center gap-1.5 font-medium text-orange-600"><AlertTriangle className="h-3.5 w-3.5" />{atRiskCount} at-risk</span>}
+              <span className="flex items-center gap-1.5 font-medium"><Building2 className="h-3.5 w-3.5 text-purple-500" />{programs.length} {isNL ? "programma's" : 'programs'}</span>
+              <span className="flex items-center gap-1.5 font-medium"><FolderKanban className="h-3.5 w-3.5 text-blue-500" />{projects.length} {isNL ? 'projecten' : 'projects'}</span>
+              {atRiskCount > 0 && <span className="flex items-center gap-1.5 font-medium text-orange-600"><AlertTriangle className="h-3.5 w-3.5" />{atRiskCount} {isNL ? 'risico' : 'at-risk'}</span>}
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-400">
               <Sparkles className="h-3 w-3 text-purple-500" /><span>AI Advisor</span>
