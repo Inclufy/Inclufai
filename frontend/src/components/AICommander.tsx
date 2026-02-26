@@ -119,7 +119,7 @@ const callAI = async (prompt: string): Promise<string> => {
   
   if (!messageResponse.ok) throw new Error("AI service unavailable");
   const data = await messageResponse.json();
-  return data.ai_response?.content || "Geen antwoord ontvangen.";
+  return data.ai_response?.content || "";
 };
 
 // ============================================
@@ -147,10 +147,6 @@ const exampleQuestions = {
 // BUILD CONTEXT PROMPT
 // ============================================
 const buildContextPrompt = (query: string, programs: Program[], projects: Project[], isNL: boolean): string => {
-  const lang = isNL
-    ? "**BELANGRIJK: Antwoord ALTIJD in het Nederlands. Gebruik GEEN ** voor bold tekst, gebruik gewoon normale tekst. Gebruik - voor bullets.**"
-    : "**IMPORTANT: Always respond in English. Do NOT use ** for bold text, use plain text. Use - for bullets.**";
-
   const noneLabel = isNL ? 'Geen' : 'None';
 
   const programSummary = programs.length > 0
@@ -164,7 +160,17 @@ const buildContextPrompt = (query: string, programs: Program[], projects: Projec
   const programsLabel = isNL ? "programma's" : 'programs';
   const projectsLabel = isNL ? 'projecten' : 'projects';
 
-  return `${lang}
+  // Language instruction — placed at START and END to override backend system prompt
+  // The backend says "respond in the same language as the user" but the user's UI language
+  // should take priority, even if they type the query in a different language.
+  const langStart = isNL
+    ? "[TAAL: NEDERLANDS] Antwoord VERPLICHT in het Nederlands, ongeacht de taal van de vraag hieronder."
+    : "[LANGUAGE: ENGLISH] You MUST respond in English, regardless of the query language below.";
+  const langEnd = isNL
+    ? "HERINNERING: Antwoord volledig in het NEDERLANDS. Gebruik Nederlandse headers, bullets en tekst."
+    : "REMINDER: Respond entirely in ENGLISH. Use English headers, bullets and text.";
+
+  return `${langStart}
 
 ## Context
 - ${programs.length} ${programsLabel}, ${projects.length} ${projectsLabel}
@@ -176,7 +182,7 @@ ${programSummary}
 ### ${isNL ? 'Projecten' : 'Projects'}
 ${projectSummary}
 
-## ${isNL ? 'Vraag' : 'Question'}
+## ${isNL ? 'Vraag van de gebruiker' : 'User question'}
 ${query}
 
 ## ${isNL ? 'Instructies' : 'Instructions'}
@@ -185,7 +191,8 @@ ${query}
 - ${isNL ? 'GEEN ** gebruiken, gewoon normale tekst' : 'Do NOT use ** for bold, use plain text'}
 - Max 250 ${isNL ? 'woorden' : 'words'}
 - ${isNL ? 'Eindig met concrete volgende stappen' : 'End with concrete next steps'}
-`;
+
+${langEnd}`;
 };
 
 // ============================================
