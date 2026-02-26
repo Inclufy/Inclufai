@@ -34,19 +34,28 @@ export const detectTopicFromTitle = (title: string): VisualType | null => {
     return 'methodology';
   }
 
-  // --- LIFECYCLE: phases, processes, timelines, planning ---
+  // --- PLANNING TOOLS: WBS, Gantt, resource planning, etc. ---
+  // These are planning techniques/tools, NOT lifecycle phases.
+  // Return null so they get content-based rendering (generic) instead of the 5-phases diagram.
+  if (
+    lower.includes('wbs') || lower.includes('work breakdown') ||
+    lower.includes('gantt') ||
+    lower.includes('resource planning') || lower.includes('resource allocat') ||
+    lower.includes('critical path') || lower.includes('roadmap')
+  ) {
+    return null;
+  }
+
+  // --- LIFECYCLE: specifically about project phases/lifecycle ---
   if (
     lower.includes('levenscyclus') || lower.includes('lifecycle') ||
     lower.includes('fase') || lower.includes('phase') ||
-    lower.includes('gantt') || lower.includes('wbs') || lower.includes('work breakdown') ||
-    lower.includes('roadmap') || lower.includes('timeline') ||
-    lower.includes('planning') || lower.includes('plans thema') ||
+    lower.includes('plans thema') ||
     lower.includes('afsluiting') || lower.includes('closing') || lower.includes('closure') ||
     lower.includes('initiatie') || lower.includes('initiation') || lower.includes('starting up') ||
     lower.includes('directing') || lower.includes('controlling') || lower.includes('managing') ||
     lower.includes('tailoring') || lower.includes('sprint') ||
     lower.includes('cadans') || lower.includes('cadence') ||
-    lower.includes('critical path') ||
     lower.includes('pi planning')
   ) {
     return 'lifecycle';
