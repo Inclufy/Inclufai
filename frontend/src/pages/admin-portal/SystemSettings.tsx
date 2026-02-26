@@ -26,7 +26,7 @@ const SystemSettings = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const r = await fetch("/api/v1/admin/settings/", { method: "PUT", headers: jsonHeaders, body: JSON.stringify(settings) });
+      const r = await fetch("/api/v1/admin/settings/", { method: "PATCH", headers: jsonHeaders, body: JSON.stringify(settings) });
       if (r.ok) { toast.success("Settings opgeslagen"); setSettings(await r.json()); } else toast.error("Opslaan mislukt");
     } catch { toast.error("Opslaan mislukt"); } finally { setSaving(false); }
   };

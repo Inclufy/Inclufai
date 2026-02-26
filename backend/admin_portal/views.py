@@ -17,6 +17,7 @@ from decimal import Decimal
 
 from accounts.models import Company
 from subscriptions.models import SubscriptionPlan, CompanySubscription
+from projects.models import Project
 from .models import AuditLog, SystemSetting, log_action
 from .serializers import (
     UserListSerializer, UserDetailSerializer, UserCreateSerializer, UserUpdateSerializer,
@@ -104,12 +105,15 @@ class DashboardStatsView(APIView):
                 'count': count
             })
         
+        total_projects = Project.objects.count()
+
         return Response({
             'overview': {
                 'total_users': total_users,
                 'active_users': active_users,
                 'total_companies': total_companies,
                 'active_subscriptions': active_subscriptions,
+                'total_projects': total_projects,
             },
             'revenue': {
                 'mrr': float(mrr),
