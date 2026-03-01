@@ -13,6 +13,8 @@ from .views import (
     AdminPlanViewSet,
     AuditLogViewSet,
     SystemSettingsView,
+    ClientApiKeyListView,
+    ClientApiKeyDetailView,
 )
 
 # Import registration views
@@ -39,6 +41,10 @@ urlpatterns = [
     
     # System settings
     path('settings/', SystemSettingsView.as_view(), name='admin-settings'),
+
+    # Client API keys (per company)
+    path('api-keys/', ClientApiKeyListView.as_view(), name='admin-api-keys'),
+    path('api-keys/<uuid:pk>/', ClientApiKeyDetailView.as_view(), name='admin-api-key-detail'),
     
     # ============================================
     # ACADEMY / TRAINING MANAGEMENT

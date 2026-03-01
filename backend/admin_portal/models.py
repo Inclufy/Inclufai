@@ -177,6 +177,87 @@ class SystemSetting(models.Model):
         return f"{self.key} ({self.category})"
 
 
+class ClientApiKey(models.Model):
+    """
+    Per-client (company) API keys for external AI services (OpenAI, Anthropic)
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    company = models.ForeignKey(
+        'accounts.Company',
+        on_delete=models.CASCADE,
+        related_name='ai_api_keys'
+    )
+
+    PROVIDER_CHOICES = [
+        ('openai', 'OpenAI'),
+        ('anthropic', 'Anthropic'),
+    ]
+    provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES)
+
+    api_key = models.CharField(max_length=500)
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        ordering = ['company', 'provider']
+        unique_together = ['company', 'provider']
+
+    def __str__(self):
+        return f"{self.company.name} - {self.get_provider_display()}"
+
+    @property
+    def masked_key(self):
+        if len(self.api_key) > 8:
+            return self.api_key[:4] + '****' + self.api_key[-4:]
+        return '********'
+
+
+# Default system settings to initialize when none exist
+DEFAULT_SYSTEM_SETTINGS = [
+    {'key': 'site_name', 'value': 'ProjeXtPal', 'category': 'general', 'description': 'Platform name'},
+    {'key': 'support_email', 'value': 'support@projextpal.com', 'category': 'general', 'description': 'Support contact email'},
+    {'key': 'default_language', 'value': 'nl', 'category': 'general', 'description': 'Default platform language'},
+    {'key': 'maintenance_mode', 'value': False, 'category': 'maintenance', 'description': 'Enable maintenance mode'},
+    {'key': 'allow_registration', 'value': True, 'category': 'security', 'description': 'Allow new user registrations'},
+    {'key': 'require_email_verification', 'value': True, 'category': 'security', 'description': 'Require email verification for new accounts'},
+    {'key': 'max_upload_size_mb', 'value': 10, 'category': 'general', 'description': 'Maximum file upload size in MB'},
+    {'key': 'session_timeout_minutes', 'value': 480, 'category': 'security', 'description': 'Session timeout in minutes'},
+    {'key': 'default_trial_days', 'value': 14, 'category': 'billing', 'description': 'Default trial period in days'},
+    {'key': 'smtp_host', 'value': '', 'category': 'email', 'description': 'SMTP server hostname'},
+    {'key': 'smtp_port', 'value': 587, 'category': 'email', 'description': 'SMTP server port'},
+    {'key': 'smtp_from_email', 'value': 'noreply@projextpal.com', 'category': 'email', 'description': 'Default sender email address'},
+    {'key': 'enable_ai_features', 'value': True, 'category': 'features', 'description': 'Enable AI-powered features globally'},
+    {'key': 'enable_academy', 'value': True, 'category': 'features', 'description': 'Enable Academy/Training module'},
+]
+
+
+def initialize_default_settings():
+    """Create default system settings if none exist"""
+    created = []
+    for setting_data in DEFAULT_SYSTEM_SETTINGS:
+        obj, was_created = SystemSetting.objects.get_or_create(
+            key=setting_data['key'],
+            defaults={
+                'value': setting_data['value'],
+                'category': setting_data['category'],
+                'description': setting_data['description'],
+            }
+        )
+        if was_created:
+            created.append(setting_data['key'])
+    return created
+
+
 # ============================================================
 # HELPER FUNCTION FOR AUDIT LOGGING
 # ============================================================

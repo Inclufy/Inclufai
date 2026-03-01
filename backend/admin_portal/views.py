@@ -18,12 +18,12 @@ from decimal import Decimal
 from accounts.models import Company
 from subscriptions.models import SubscriptionPlan, CompanySubscription
 from projects.models import Project
-from .models import AuditLog, SystemSetting, log_action
+from .models import AuditLog, SystemSetting, ClientApiKey, log_action, initialize_default_settings
 from .serializers import (
     UserListSerializer, UserDetailSerializer, UserCreateSerializer, UserUpdateSerializer,
     CompanyListSerializer, CompanyDetailSerializer, CompanyCreateSerializer,
     SubscriptionPlanListSerializer, SubscriptionPlanDetailSerializer, SubscriptionPlanCreateUpdateSerializer,
-    AuditLogSerializer, SystemSettingSerializer, CurrentUserSerializer, DashboardStatsSerializer
+    AuditLogSerializer, SystemSettingSerializer, ClientApiKeySerializer, CurrentUserSerializer, DashboardStatsSerializer
 )
 from .permissions import IsSuperAdmin
 
@@ -566,62 +566,148 @@ class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
 
 class SystemSettingsView(APIView):
     """
-    GET /api/v1/admin/settings/ - Get all settings
+    GET /api/v1/admin/settings/ - Get all settings (auto-initializes defaults)
     PATCH /api/v1/admin/settings/ - Update settings
     """
     permission_classes = [IsAuthenticated, IsSuperAdmin]
-    
+
     def get(self, request):
-        settings = SystemSetting.objects.all()
-        
-        # Group by category
-        grouped = {}
-        for setting in settings:
-            if setting.category not in grouped:
-                grouped[setting.category] = {}
-            
-            value = setting.value
-            if setting.is_sensitive:
-                value = '********'
-            
-            grouped[setting.category][setting.key] = value
-        
-        return Response(grouped)
-    
+        # Auto-initialize defaults if no settings exist
+        if not SystemSetting.objects.exists():
+            initialize_default_settings()
+
+        all_settings = SystemSetting.objects.all()
+        result = []
+        for s in all_settings:
+            result.append({
+                'id': str(s.id),
+                'key': s.key,
+                'value': '********' if s.is_sensitive else s.value,
+                'category': s.category,
+                'description': s.description,
+                'is_sensitive': s.is_sensitive,
+                'updated_at': s.updated_at.isoformat() if s.updated_at else None,
+            })
+        return Response(result)
+
     def patch(self, request):
         updated = []
-        
-        for category, settings_dict in request.data.items():
-            if isinstance(settings_dict, dict):
-                for key, value in settings_dict.items():
-                    setting, created = SystemSetting.objects.update_or_create(
-                        key=key,
-                        defaults={
-                            'value': value,
-                            'category': category,
-                            'updated_by': request.user
-                        }
-                    )
-                    updated.append(key)
-        
+        settings_list = request.data if isinstance(request.data, list) else [request.data]
+
+        for item in settings_list:
+            key = item.get('key')
+            value = item.get('value')
+            if key is None or value is None:
+                continue
+            try:
+                setting = SystemSetting.objects.get(key=key)
+                setting.value = value
+                setting.updated_by = request.user
+                setting.save()
+                updated.append(key)
+            except SystemSetting.DoesNotExist:
+                category = item.get('category', 'general')
+                SystemSetting.objects.create(
+                    key=key, value=value, category=category,
+                    description=item.get('description', ''),
+                    updated_by=request.user,
+                )
+                updated.append(key)
+
+        if updated:
+            log_action(
+                user=request.user,
+                action='settings_updated',
+                category='settings',
+                description=f"Updated settings: {', '.join(updated)}",
+                request=request,
+            )
+
+        return Response({'status': 'updated', 'keys': updated})
+
+
+# ============================================================
+# CLIENT API KEYS VIEW (per company)
+# ============================================================
+
+class ClientApiKeyListView(APIView):
+    """
+    GET  /api/v1/admin/api-keys/ - List all client API keys
+    POST /api/v1/admin/api-keys/ - Create/update a client API key
+    """
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+
+    def get(self, request):
+        company_id = request.query_params.get('company_id')
+        qs = ClientApiKey.objects.select_related('company').all()
+        if company_id:
+            qs = qs.filter(company_id=company_id)
+        serializer = ClientApiKeySerializer(qs, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        company_id = request.data.get('company_id')
+        provider = request.data.get('provider')
+        api_key = request.data.get('api_key', '')
+
+        if not company_id or not provider:
+            return Response(
+                {'error': 'company_id and provider are required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if provider not in ('openai', 'anthropic'):
+            return Response(
+                {'error': 'provider must be openai or anthropic'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        obj, created = ClientApiKey.objects.update_or_create(
+            company_id=company_id,
+            provider=provider,
+            defaults={
+                'api_key': api_key,
+                'is_active': bool(api_key),
+                'updated_by': request.user,
+            },
+        )
+
         log_action(
             user=request.user,
-            action='settings_updated',
+            action='api_key_created' if created else 'settings_updated',
             category='settings',
-            description=f"Updated settings: {', '.join(updated)}",
-            request=request
+            description=f"{'Created' if created else 'Updated'} {provider} API key for company {obj.company.name}",
+            resource_type='client_api_key',
+            resource_id=str(obj.id),
+            company=obj.company,
+            request=request,
         )
-        
-        return Response({'status': 'updated', 'keys': updated})
-    
-    @action(detail=False, methods=['get'])
-    def system_info(self, request):
-        """Get system information"""
-        return Response({
-            'version': '1.0.0',
-            'environment': 'development',
-            'database': {
-                'type': 'sqlite',
-            },
-            'uptime_days': 45,
-        })
+
+        return Response(ClientApiKeySerializer(obj).data, status=status.HTTP_200_OK)
+
+
+class ClientApiKeyDetailView(APIView):
+    """
+    DELETE /api/v1/admin/api-keys/<id>/ - Delete a client API key
+    """
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+
+    def delete(self, request, pk):
+        try:
+            obj = ClientApiKey.objects.get(pk=pk)
+        except ClientApiKey.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        log_action(
+            user=request.user,
+            action='api_key_revoked',
+            category='settings',
+            severity='warning',
+            description=f"Revoked {obj.provider} API key for company {obj.company.name}",
+            resource_type='client_api_key',
+            resource_id=str(obj.id),
+            company=obj.company,
+            request=request,
+        )
+        obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
