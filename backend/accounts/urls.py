@@ -27,6 +27,7 @@ from accounts.views import (
     AdminStatsView,
     admin_users_list,
     update_subscription_status,  # ← ADD THIS
+    CompanyApiKeysView,
 )
 from .two_factor import (
     Setup2FAView, 
@@ -56,6 +57,7 @@ urlpatterns = [
     path("reset-password/<str:token>/", ResetPasswordView.as_view(), name="reset_password"),
     path("user/", CurrentUserView.as_view(), name="current_user"),
     path("company-users/", CompanyUsersView.as_view(), name="company_users"),
+    path("company-users/members/", CompanyUsersView.as_view(), name="company_users_members"),
     path("user/update/", UpdateOwnProfileView.as_view(), name="update_own_profile"),
     path("user/change-password/", ChangePasswordView.as_view(), name="change_password"),
     path("register/", PublicAdminRegisterView.as_view(), name="register"),
@@ -81,9 +83,13 @@ urlpatterns = [
     path("subscriptions/tiers/", SubscriptionTiersView.as_view(), name="subscription_tiers"),
     
     # Subscription Status Update (NEW)
-    path("registrations/<int:user_id>/subscription/", 
-         update_subscription_status, 
+    path("registrations/<int:user_id>/subscription/",
+         update_subscription_status,
          name="update_subscription_status"),  # ← ADD THIS
+
+    # Company API Keys (client-facing, admin roles)
+    path("company-api-keys/", CompanyApiKeysView.as_view(), name="company_api_keys"),
+    path("company-api-keys/<str:provider>/", CompanyApiKeysView.as_view(), name="company_api_key_detail"),
 ]
 
 urlpatterns += router.urls

@@ -24,7 +24,26 @@ class PortfolioViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.role == 'superadmin':
             return Portfolio.objects.all()
-        return Portfolio.objects.filter(company=user.company)
+        company = getattr(user, 'company', None)
+        if not company:
+            return Portfolio.objects.none()
+        return Portfolio.objects.filter(company=company)
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        company = getattr(user, 'company', None)
+        if company:
+            serializer.save(company=company)
+        else:
+            serializer.save()
+
+    def perform_update(self, serializer):
+        user = self.request.user
+        company = getattr(user, 'company', None)
+        if company:
+            serializer.save(company=company)
+        else:
+            serializer.save()
 
 
 class GovernanceBoardViewSet(viewsets.ModelViewSet):
@@ -131,11 +150,11 @@ def ai_generate_text(request):
         return Response({"error": "prompt is required"}, status=http_status.HTTP_400_BAD_REQUEST)
 
     api_key = getattr(settings, 'OPENAI_API_KEY', None) or os.getenv('OPENAI_API_KEY')
-    if not api_key:
-        logger.error("OPENAI_API_KEY is not configured")
+    if not api_key or api_key.startswith('sk-test') or api_key.startswith('sk-your') or len(api_key) < 20:
+        logger.warning(f"OPENAI_API_KEY is not configured or is a test/placeholder key: {api_key[:10] if api_key else 'None'}...")
         return Response(
-            {"error": "AI service is not configured. Please set OPENAI_API_KEY."},
-            status=http_status.HTTP_503_SERVICE_UNAVAILABLE
+            {"error": "AI service is not configured. Please set a valid OPENAI_API_KEY."},
+            status=http_status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
     try:
@@ -170,4 +189,7 @@ def ai_generate_text(request):
         return Response({"error": f"AI service error: {str(e)}"}, status=http_status.HTTP_502_BAD_GATEWAY)
     except Exception as e:
         logger.error(f"AI generate failed: {type(e).__name__}: {e}")
-        return Response({"error": str(e)}, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(
+            {"error": f"AI service unavailable: {type(e).__name__}"},
+            status=http_status.HTTP_503_SERVICE_UNAVAILABLE,
+        )

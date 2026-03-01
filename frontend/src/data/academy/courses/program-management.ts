@@ -16,7 +16,7 @@ import { instructors } from '../instructors';
 // ============================================
 const module1: Module = {
   id: 'pgm-m1',
-  title: 'Program Management Basics',
+  title: 'Module 1: Program Management Basics',
   titleNL: 'Programma Management Basis',
   description: 'Understanding the fundamentals of program management and how it differs from projects.',
   descriptionNL: 'Begrijpen van de fundamenten van programma management en hoe het verschilt van projecten.',
@@ -1390,7 +1390,7 @@ Volgende: Benefits Management beheersen!`,
 
 const module2: Module = {
   id: 'pgm-m2',
-  title: 'Strategic Alignment',
+  title: 'Module 2: Strategic Alignment',
   titleNL: 'Strategische Afstemming',
   description: 'Link programs to organizational strategy and manage stakeholders effectively.',
   descriptionNL: 'Koppel programma\'s aan organisatiestrategie en manage stakeholders effectief.',
@@ -1459,7 +1459,7 @@ const module2: Module = {
 
 const module3: Module = {
   id: 'pgm-m3',
-  title: 'Execution & Benefits',
+  title: 'Module 3: Execution & Benefits',
   titleNL: 'Uitvoering & Benefits',
   description: 'Execute programs effectively and ensure benefits are realized.',
   descriptionNL: 'Voer programma\'s effectief uit en verzeker dat benefits worden gerealiseerd.',
