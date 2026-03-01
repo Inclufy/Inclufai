@@ -51,6 +51,7 @@ build:backend:
   only:
     - master
     - main
+  when: manual
 
 build:frontend:
   stage: build
@@ -68,6 +69,7 @@ build:frontend:
   only:
     - master
     - main
+  when: manual
 
 deploy:production:
   stage: deploy
