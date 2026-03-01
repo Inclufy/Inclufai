@@ -99,7 +99,7 @@ interface Company {
 // API CONFIG
 // ============================================================
 
-const API_BASE_URL = '/api/v1/subscriptions';
+const API_BASE_URL = '/api/v1';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('access_token');
@@ -610,7 +610,7 @@ export default function InvoiceManagement() {
                   <TableHead>{isNL ? 'Vervaldatum' : 'Due Date'}</TableHead>
                   <TableHead>{isNL ? 'Periode' : 'Period'}</TableHead>
                   <TableHead>{isNL ? 'Bedrag' : 'Amount'}</TableHead>
-                  <TableHead>{pt("Status")}</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead className="text-right">{isNL ? 'Acties' : 'Actions'}</TableHead>
                 </TableRow>
               </TableHeader>
