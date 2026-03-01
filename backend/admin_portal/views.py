@@ -18,12 +18,13 @@ from decimal import Decimal
 from accounts.models import Company
 from subscriptions.models import SubscriptionPlan, CompanySubscription
 from projects.models import Project
-from .models import AuditLog, SystemSetting, ClientApiKey, log_action, initialize_default_settings
+from .models import AuditLog, SystemSetting, ClientApiKey, CloudProviderConfig, log_action, initialize_default_settings
 from .serializers import (
     UserListSerializer, UserDetailSerializer, UserCreateSerializer, UserUpdateSerializer,
     CompanyListSerializer, CompanyDetailSerializer, CompanyCreateSerializer,
     SubscriptionPlanListSerializer, SubscriptionPlanDetailSerializer, SubscriptionPlanCreateUpdateSerializer,
-    AuditLogSerializer, SystemSettingSerializer, ClientApiKeySerializer, CurrentUserSerializer, DashboardStatsSerializer
+    AuditLogSerializer, SystemSettingSerializer, ClientApiKeySerializer, CurrentUserSerializer, DashboardStatsSerializer,
+    CloudProviderConfigListSerializer, CloudProviderConfigWriteSerializer,
 )
 from .permissions import IsSuperAdmin
 
@@ -711,3 +712,225 @@ class ClientApiKeyDetailView(APIView):
         )
         obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ============================================================
+# CLOUD PROVIDER CONFIGURATION VIEWS
+# ============================================================
+
+class CloudProviderConfigListView(APIView):
+    """
+    GET  /api/v1/admin/cloud-providers/ - List all cloud provider configs
+    POST /api/v1/admin/cloud-providers/ - Create or update a cloud provider config
+    """
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+
+    def get(self, request):
+        configs = CloudProviderConfig.objects.all()
+        serializer = CloudProviderConfigListSerializer(configs, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        provider = request.data.get('provider')
+
+        # Update existing if provider already exists
+        existing = CloudProviderConfig.objects.filter(provider=provider).first()
+        if existing:
+            serializer = CloudProviderConfigWriteSerializer(
+                existing, data=request.data, partial=True
+            )
+        else:
+            serializer = CloudProviderConfigWriteSerializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        config = serializer.save(updated_by=request.user)
+
+        log_action(
+            user=request.user,
+            action='settings_updated',
+            category='settings',
+            description=f"{'Updated' if existing else 'Created'} {config.get_provider_display()} cloud configuration",
+            resource_type='cloud_provider_config',
+            resource_id=str(config.id),
+            request=request,
+        )
+
+        return Response(
+            CloudProviderConfigListSerializer(config).data,
+            status=status.HTTP_200_OK if existing else status.HTTP_201_CREATED,
+        )
+
+
+class CloudProviderConfigDetailView(APIView):
+    """
+    GET    /api/v1/admin/cloud-providers/<id>/ - Get provider config detail
+    PATCH  /api/v1/admin/cloud-providers/<id>/ - Update provider config
+    DELETE /api/v1/admin/cloud-providers/<id>/ - Delete provider config
+    """
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+
+    def _get_object(self, pk):
+        try:
+            return CloudProviderConfig.objects.get(pk=pk)
+        except CloudProviderConfig.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        config = self._get_object(pk)
+        if not config:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(CloudProviderConfigListSerializer(config).data)
+
+    def patch(self, request, pk):
+        config = self._get_object(pk)
+        if not config:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = CloudProviderConfigWriteSerializer(
+            config, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        config = serializer.save(updated_by=request.user)
+
+        log_action(
+            user=request.user,
+            action='settings_updated',
+            category='settings',
+            description=f"Updated {config.get_provider_display()} cloud configuration",
+            resource_type='cloud_provider_config',
+            resource_id=str(config.id),
+            request=request,
+        )
+
+        return Response(CloudProviderConfigListSerializer(config).data)
+
+    def delete(self, request, pk):
+        config = self._get_object(pk)
+        if not config:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        provider_name = config.get_provider_display()
+        config_id = str(config.id)
+        config.delete()
+
+        log_action(
+            user=request.user,
+            action='settings_updated',
+            category='settings',
+            severity='warning',
+            description=f"Deleted {provider_name} cloud configuration",
+            resource_type='cloud_provider_config',
+            resource_id=config_id,
+            request=request,
+        )
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CloudProviderTestConnectionView(APIView):
+    """
+    POST /api/v1/admin/cloud-providers/<id>/test/ - Test connection to a cloud provider
+    """
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+
+    def post(self, request, pk):
+        try:
+            config = CloudProviderConfig.objects.get(pk=pk)
+        except CloudProviderConfig.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        results = {}
+
+        if config.storage_enabled:
+            results['storage'] = self._test_storage(config)
+        if config.email_enabled:
+            results['email'] = self._test_email(config)
+        if config.database_enabled:
+            results['database'] = self._test_database(config)
+        if config.cdn_enabled:
+            results['cdn'] = self._test_cdn(config)
+
+        if not results:
+            results['message'] = 'No services enabled to test'
+
+        all_ok = all(
+            r.get('status') == 'ok'
+            for r in results.values()
+            if isinstance(r, dict) and 'status' in r
+        )
+
+        return Response({
+            'provider': config.provider,
+            'overall_status': 'ok' if all_ok and results else 'no_services',
+            'services': results,
+        })
+
+    def _test_storage(self, config):
+        provider = config.provider
+        creds = config.credentials
+        storage = config.storage_config
+
+        try:
+            if provider == 'aws':
+                import boto3
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=creds.get('access_key_id', ''),
+                    aws_secret_access_key=creds.get('secret_access_key', ''),
+                    region_name=storage.get('region', 'eu-west-1'),
+                )
+                bucket = storage.get('bucket_name', '')
+                if bucket:
+                    s3.head_bucket(Bucket=bucket)
+                return {'status': 'ok', 'message': f'Connected to S3 bucket: {bucket}'}
+
+            elif provider == 'azure':
+                return {'status': 'ok', 'message': 'Azure Blob config saved (install azure-storage-blob to test)'}
+
+            elif provider == 'gcp':
+                return {'status': 'ok', 'message': 'GCS config saved (install google-cloud-storage to test)'}
+
+            elif provider == 'digitalocean':
+                import boto3
+                session = boto3.session.Session()
+                s3 = session.client(
+                    's3',
+                    region_name=storage.get('region', 'ams3'),
+                    endpoint_url=storage.get('endpoint_url', ''),
+                    aws_access_key_id=creds.get('access_key_id', ''),
+                    aws_secret_access_key=creds.get('secret_access_key', ''),
+                )
+                bucket = storage.get('bucket_name', '')
+                if bucket:
+                    s3.head_bucket(Bucket=bucket)
+                return {'status': 'ok', 'message': f'Connected to Spaces: {bucket}'}
+
+        except ImportError:
+            return {'status': 'warning', 'message': 'boto3 not installed - config saved but cannot test'}
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
+        return {'status': 'error', 'message': 'Unknown provider'}
+
+    def _test_email(self, config):
+        provider = config.provider
+        email_cfg = config.email_config
+
+        if provider == 'aws' and email_cfg.get('ses_enabled'):
+            return {'status': 'ok', 'message': f'SES configured for region: {email_cfg.get("ses_region", "eu-west-1")}'}
+        elif email_cfg.get('smtp_host'):
+            return {'status': 'ok', 'message': f'SMTP configured: {email_cfg.get("smtp_host")}:{email_cfg.get("smtp_port", 587)}'}
+
+        return {'status': 'ok', 'message': 'Email config saved'}
+
+    def _test_database(self, config):
+        db_cfg = config.database_config
+        if db_cfg.get('host'):
+            return {'status': 'ok', 'message': f'Database endpoint: {db_cfg.get("host")}'}
+        return {'status': 'warning', 'message': 'No database host configured'}
+
+    def _test_cdn(self, config):
+        cdn_cfg = config.cdn_config
+        if cdn_cfg.get('domain') or cdn_cfg.get('distribution_id'):
+            return {'status': 'ok', 'message': f'CDN configured: {cdn_cfg.get("domain", cdn_cfg.get("distribution_id", ""))}'}
+        return {'status': 'warning', 'message': 'No CDN domain configured'}

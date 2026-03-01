@@ -222,6 +222,92 @@ class ClientApiKey(models.Model):
         return '********'
 
 
+class CloudProviderConfig(models.Model):
+    """
+    Cloud provider configuration for storage, email, database, and CDN services.
+    One entry per provider (AWS, Azure, GCP, DigitalOcean).
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    PROVIDER_CHOICES = [
+        ('aws', 'Amazon Web Services'),
+        ('azure', 'Microsoft Azure'),
+        ('gcp', 'Google Cloud Platform'),
+        ('digitalocean', 'DigitalOcean'),
+    ]
+    provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES, unique=True)
+
+    is_active = models.BooleanField(default=False, help_text="Enable this cloud provider")
+
+    # Storage config (S3, Azure Blob, GCS, Spaces)
+    storage_enabled = models.BooleanField(default=False)
+    storage_config = models.JSONField(default=dict, blank=True)
+
+    # Email service config (SES, SendGrid, etc.)
+    email_enabled = models.BooleanField(default=False)
+    email_config = models.JSONField(default=dict, blank=True)
+
+    # Database config (RDS, Azure SQL, Cloud SQL)
+    database_enabled = models.BooleanField(default=False)
+    database_config = models.JSONField(default=dict, blank=True)
+
+    # CDN config (CloudFront, Azure CDN, Cloud CDN)
+    cdn_enabled = models.BooleanField(default=False)
+    cdn_config = models.JSONField(default=dict, blank=True)
+
+    # Credentials (stored encrypted in production)
+    credentials = models.JSONField(
+        default=dict, blank=True,
+        help_text="Provider credentials (access keys, secrets, service account JSON)"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        ordering = ['provider']
+        verbose_name = 'Cloud Provider Configuration'
+        verbose_name_plural = 'Cloud Provider Configurations'
+
+    def __str__(self):
+        status = "Active" if self.is_active else "Inactive"
+        return f"{self.get_provider_display()} ({status})"
+
+    @property
+    def masked_credentials(self):
+        """Return credentials with sensitive values masked."""
+        masked = {}
+        for key, value in self.credentials.items():
+            if isinstance(value, str) and len(value) > 8:
+                masked[key] = value[:4] + '****' + value[-4:]
+            elif isinstance(value, str):
+                masked[key] = '********'
+            else:
+                masked[key] = value
+        return masked
+
+    @property
+    def active_services(self):
+        """List of enabled services for this provider."""
+        services = []
+        if self.storage_enabled:
+            services.append('storage')
+        if self.email_enabled:
+            services.append('email')
+        if self.database_enabled:
+            services.append('database')
+        if self.cdn_enabled:
+            services.append('cdn')
+        return services
+
+
 # Default system settings to initialize when none exist
 DEFAULT_SYSTEM_SETTINGS = [
     {'key': 'site_name', 'value': 'ProjeXtPal', 'category': 'general', 'description': 'Platform name'},

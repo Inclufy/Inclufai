@@ -7,7 +7,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from accounts.models import Company
 from subscriptions.models import SubscriptionPlan, CompanySubscription
-from .models import AuditLog, SystemSetting, ClientApiKey
+from .models import AuditLog, SystemSetting, ClientApiKey, CloudProviderConfig
 from accounts.models import Registration
 
 User = get_user_model()
@@ -428,6 +428,42 @@ class SystemSettingSerializer(serializers.ModelSerializer):
         if instance.is_sensitive:
             data['value'] = '********'
         return data
+
+
+class CloudProviderConfigListSerializer(serializers.ModelSerializer):
+    """Serializer for listing cloud provider configs (masks credentials)"""
+
+    provider_display = serializers.CharField(source='get_provider_display', read_only=True)
+    masked_credentials = serializers.DictField(read_only=True)
+    active_services = serializers.ListField(read_only=True)
+
+    class Meta:
+        model = CloudProviderConfig
+        fields = [
+            'id', 'provider', 'provider_display', 'is_active',
+            'storage_enabled', 'storage_config',
+            'email_enabled', 'email_config',
+            'database_enabled', 'database_config',
+            'cdn_enabled', 'cdn_config',
+            'masked_credentials', 'active_services',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class CloudProviderConfigWriteSerializer(serializers.ModelSerializer):
+    """Serializer for creating/updating cloud provider configs"""
+
+    class Meta:
+        model = CloudProviderConfig
+        fields = [
+            'provider', 'is_active',
+            'storage_enabled', 'storage_config',
+            'email_enabled', 'email_config',
+            'database_enabled', 'database_config',
+            'cdn_enabled', 'cdn_config',
+            'credentials',
+        ]
 
 
 class ClientApiKeySerializer(serializers.ModelSerializer):
