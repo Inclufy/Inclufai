@@ -56,6 +56,15 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_totp',
     'academy',
     'deployment',
+    'lss_green',
+    'lss_black',
+    'hybrid',
+    'safe',
+    'msp',
+    'pmi',
+    'p2_programme',
+    'hybrid_programme',
+    'cross_methodology',
 ]
 
 MIDDLEWARE = [
