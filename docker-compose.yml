@@ -45,7 +45,7 @@ services:
       - POSTGRES_HOST=postgres
       - POSTGRES_PASSWORD=ZinedineLoukile2013
       - REDIS_HOST=redis
-      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,projectpal-backend,projextpal.com,www.projextpal.com
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,projectpal-backend,projextpal.com,www.projextpal.com,api.projextpal.com
       - FRONTEND_URL=https://projextpal.com
       - BASE_URL=https://projextpal.com
     depends_on:
