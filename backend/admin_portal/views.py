@@ -401,8 +401,6 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
         return CompanyDetailSerializer
     
     def create(self, request, *args, **kwargs):
-        print(f"=== DEBUG CREATE === request.data: {request.data}")
-        
         # Create company first
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -426,13 +424,11 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
                     billing_cycle=billing_cycle or 'monthly',
                     payment_method=payment_method or 'stripe'
                 )
-                print(f"Created subscription: {status_value}, {billing_cycle}, {payment_method}")
-                
                 company.is_subscribed = True
                 company.save()
             except SubscriptionPlan.DoesNotExist:
-                print(f"Plan {subscription_plan_id} not found")
-        
+                pass
+
         # Log action
         log_action(
             user=self.request.user,
@@ -478,8 +474,6 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
 
     
     def partial_update(self, request, *args, **kwargs):
-        print(f"=== DEBUG PATCH === request.data: {request.data}")
-        
         instance = self.get_object()
         
         # Handle subscription update separately
@@ -504,7 +498,6 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
                         if subscription_status and subscription_status != 'none':
                             existing_sub.status = subscription_status
                         existing_sub.save()
-                        print(f"Updated subscription: {existing_sub.status}, {existing_sub.billing_cycle}, {existing_sub.payment_method}")
                     else:
                         new_status = subscription_status if subscription_status and subscription_status != 'none' else 'active'
                         CompanySubscription.objects.create(
@@ -514,8 +507,7 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
                             billing_cycle=billing_cycle or 'monthly',
                             payment_method=payment_method or 'stripe'
                         )
-                        print(f"Created new subscription")
-                    
+
                     instance.is_subscribed = True
                     instance.save()
                 except SubscriptionPlan.DoesNotExist:
@@ -527,8 +519,7 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
                 if payment_method:
                     existing_sub.payment_method = payment_method
                 existing_sub.save()
-                print(f"Updated status only: {existing_sub.status}")
-                
+
                 if subscription_status == 'canceled':
                     instance.is_subscribed = False
                     instance.save()
