@@ -18,6 +18,10 @@ from .views import (
     CloudProviderConfigListView,
     CloudProviderConfigDetailView,
     CloudProviderTestConnectionView,
+    ProjectImportView,
+    CourseImportView,
+    TimesheetExportView,
+    TimesheetApiView,
 )
 
 # Import registration views
@@ -76,7 +80,19 @@ urlpatterns = [
     
     # Analytics
     path('training/analytics/', academy_views.admin_get_analytics, name='admin-training-analytics'),
-    
+
+    # Course import
+    path('training/courses/import/', CourseImportView.as_view(), name='admin-training-courses-import'),
+
+    # Project import
+    path('projects/import/', ProjectImportView.as_view(), name='admin-projects-import'),
+
+    # Timesheet export (admin/superadmin only)
+    path('timesheets/export/', TimesheetExportView.as_view(), name='admin-timesheets-export'),
+
+    # Timesheet API (API key or token auth for integrations)
+    path('timesheets/api/', TimesheetApiView.as_view(), name='admin-timesheets-api'),
+
     # Include router URLs
     path('', include(router.urls)),
 ]
