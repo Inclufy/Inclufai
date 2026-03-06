@@ -94,6 +94,7 @@ import NotFound from "./pages/NotFound";
 import IntentSelection from "./pages/IntentSelection";
 import RegistrationConfirmation from "./pages/RegistrationConfirmation";
 import Demo from './pages/Demo';
+import OnboardingWizard from './pages/OnboardingWizard';
 
 // Program Page Imports
 import ProgramsOverview from "./pages/ProgramsOverview";
@@ -339,6 +340,17 @@ const ProtectedPage = ({ children }: { children: React.ReactNode }) => (
 );
 
 // ============================================
+// Onboarding Check - Redirects first-time users
+// ============================================
+const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
+  const hasCompleted = localStorage.getItem('onboarding_completed');
+  if (!hasCompleted) {
+    return <Navigate to="/onboarding" replace />;
+  }
+  return <>{children}</>;
+};
+
+// ============================================
 // Public Route Component
 // ============================================
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
@@ -414,9 +426,16 @@ const App = () => (
               </Route>
               
               {/* ============================================ */}
+              {/* Onboarding Wizard - First Time Setup         */}
+              {/* ============================================ */}
+              <Route path="/onboarding" element={
+                <ProtectedRoute><OnboardingWizard /></ProtectedRoute>
+              } />
+
+              {/* ============================================ */}
               {/* Protected Routes - Dashboard & Main App      */}
               {/* ============================================ */}
-              <Route path="/dashboard" element={<ProtectedPage><Index /></ProtectedPage>} />
+              <Route path="/dashboard" element={<ProtectedPage><OnboardingCheck><Index /></OnboardingCheck></ProtectedPage>} />
               
               {/* Reports - Role-based AI reports */}
               <Route path="/reports" element={<ProtectedPage><ReportsPage /></ProtectedPage>} />
