@@ -1,9 +1,22 @@
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
+from projects.models import Project
 
 from .models import MSPBenefit, BenefitRealization, MSPTranche
 from .serializers import MSPBenefitSerializer, BenefitRealizationSerializer, MSPTrancheSerializer
+
+
+def _get_company(user):
+    return getattr(user, 'company', None)
+
+
+def _verify_program_access(user, program_id):
+    """Verify the user's company owns the target program."""
+    company = _get_company(user)
+    if not company or not Project.objects.filter(id=program_id, company=company).exists():
+        raise PermissionDenied("You do not have access to this program.")
 
 
 class MSPBenefitViewSet(viewsets.ModelViewSet):
@@ -14,10 +27,10 @@ class MSPBenefitViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description']
 
     def get_queryset(self):
-        company = getattr(self.request.user, 'company', None)
+        company = _get_company(self.request.user)
         if not company:
             return MSPBenefit.objects.none()
-        queryset = MSPBenefit.objects.filter(program__company=company)
+        queryset = MSPBenefit.objects.select_related('program', 'owner').filter(program__company=company)
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
@@ -26,6 +39,7 @@ class MSPBenefitViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         program_id = self.kwargs.get('program_id')
         if program_id:
+            _verify_program_access(self.request.user, program_id)
             serializer.save(program_id=program_id)
         else:
             serializer.save()
@@ -37,10 +51,10 @@ class BenefitRealizationViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
 
     def get_queryset(self):
-        company = getattr(self.request.user, 'company', None)
+        company = _get_company(self.request.user)
         if not company:
             return BenefitRealization.objects.none()
-        queryset = BenefitRealization.objects.filter(benefit__program__company=company)
+        queryset = BenefitRealization.objects.select_related('benefit', 'benefit__program').filter(benefit__program__company=company)
         benefit_pk = self.kwargs.get('pk') or self.kwargs.get('benefit_pk')
         if benefit_pk:
             queryset = queryset.filter(benefit_id=benefit_pk)
@@ -62,10 +76,10 @@ class MSPTrancheViewSet(viewsets.ModelViewSet):
     ordering_fields = ['sequence', 'start_date']
 
     def get_queryset(self):
-        company = getattr(self.request.user, 'company', None)
+        company = _get_company(self.request.user)
         if not company:
             return MSPTranche.objects.none()
-        queryset = MSPTranche.objects.filter(program__company=company)
+        queryset = MSPTranche.objects.select_related('program').filter(program__company=company)
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
@@ -74,6 +88,7 @@ class MSPTrancheViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         program_id = self.kwargs.get('program_id')
         if program_id:
+            _verify_program_access(self.request.user, program_id)
             serializer.save(program_id=program_id)
         else:
             serializer.save()

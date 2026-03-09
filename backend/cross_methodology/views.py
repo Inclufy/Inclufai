@@ -19,7 +19,7 @@ class MethodologyComparisonViewSet(viewsets.ModelViewSet):
         user = self.request.user
         company = getattr(user, 'company', None)
         if company:
-            return MethodologyComparison.objects.filter(company=company)
+            return MethodologyComparison.objects.select_related('company', 'created_by').filter(company=company)
         return MethodologyComparison.objects.none()
 
     def perform_create(self, serializer):
@@ -39,7 +39,7 @@ class MethodologyMetricsViewSet(viewsets.ModelViewSet):
         user = self.request.user
         company = getattr(user, 'company', None)
         if company:
-            return MethodologyMetrics.objects.filter(company=company)
+            return MethodologyMetrics.objects.select_related('company').filter(company=company)
         return MethodologyMetrics.objects.none()
 
     def perform_create(self, serializer):

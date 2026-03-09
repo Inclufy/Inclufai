@@ -1,14 +1,25 @@
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
+from projects.models import Project
 
 from .models import AgileReleaseTrain, ARTSync, ProgramIncrement, PIObjective
 from .serializers import (
     AgileReleaseTrainSerializer, ARTSyncSerializer,
     ProgramIncrementSerializer, PIObjectiveSerializer
 )
+
+
+def _get_company(user):
+    return getattr(user, 'company', None)
+
+
+def _verify_program_access(user, program_id):
+    """Verify the user's company owns the target program."""
+    company = _get_company(user)
+    if not company or not Project.objects.filter(id=program_id, company=company).exists():
+        raise PermissionDenied("You do not have access to this program.")
 
 
 class AgileReleaseTrainViewSet(viewsets.ModelViewSet):
@@ -19,10 +30,10 @@ class AgileReleaseTrainViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description']
 
     def get_queryset(self):
-        company = getattr(self.request.user, 'company', None)
+        company = _get_company(self.request.user)
         if not company:
             return AgileReleaseTrain.objects.none()
-        queryset = AgileReleaseTrain.objects.filter(program__company=company)
+        queryset = AgileReleaseTrain.objects.select_related('program', 'rte').filter(program__company=company)
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
@@ -31,6 +42,7 @@ class AgileReleaseTrainViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         program_id = self.kwargs.get('program_id')
         if program_id:
+            _verify_program_access(self.request.user, program_id)
             serializer.save(program_id=program_id)
         else:
             serializer.save()
@@ -42,10 +54,10 @@ class ARTSyncViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
 
     def get_queryset(self):
-        company = getattr(self.request.user, 'company', None)
+        company = _get_company(self.request.user)
         if not company:
             return ARTSync.objects.none()
-        queryset = ARTSync.objects.filter(art__program__company=company)
+        queryset = ARTSync.objects.select_related('art', 'art__program').filter(art__program__company=company)
         program_id = self.kwargs.get('program_id')
         art_pk = self.kwargs.get('pk') or self.kwargs.get('art_pk')
         if program_id and art_pk:
@@ -68,10 +80,10 @@ class ProgramIncrementViewSet(viewsets.ModelViewSet):
     ordering_fields = ['start_date', 'created_at']
 
     def get_queryset(self):
-        company = getattr(self.request.user, 'company', None)
+        company = _get_company(self.request.user)
         if not company:
             return ProgramIncrement.objects.none()
-        queryset = ProgramIncrement.objects.filter(program__company=company)
+        queryset = ProgramIncrement.objects.select_related('program').filter(program__company=company)
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
@@ -80,6 +92,7 @@ class ProgramIncrementViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         program_id = self.kwargs.get('program_id')
         if program_id:
+            _verify_program_access(self.request.user, program_id)
             serializer.save(program_id=program_id)
         else:
             serializer.save()
@@ -92,10 +105,10 @@ class PIObjectiveViewSet(viewsets.ModelViewSet):
     filterset_fields = ['committed', 'achieved']
 
     def get_queryset(self):
-        company = getattr(self.request.user, 'company', None)
+        company = _get_company(self.request.user)
         if not company:
             return PIObjective.objects.none()
-        queryset = PIObjective.objects.filter(pi__program__company=company)
+        queryset = PIObjective.objects.select_related('pi', 'pi__program').filter(pi__program__company=company)
         pi_id = self.kwargs.get('pi_id')
         if pi_id:
             queryset = queryset.filter(pi_id=pi_id)
