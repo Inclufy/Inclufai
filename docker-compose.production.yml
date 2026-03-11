@@ -38,7 +38,7 @@ services:
     container_name: projextpal-backend-prod
     restart: unless-stopped
     env_file:
-      - .env
+      - backend/.env
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-projextpal}
       POSTGRES_USER: ${POSTGRES_USER:-projextpal}
