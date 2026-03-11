@@ -98,6 +98,7 @@ class MonitoringAgent:
         self._check_count = 0
         self._ssl_check_counter = 0
         self._service_check_counter = 0
+        self._startup_grace_cycles = self.global_config.get("startup_grace_cycles", 3)
 
         self.logger = logging.getLogger("monitor.agent")
 
@@ -126,14 +127,18 @@ class MonitoringAgent:
                 self.dashboard.update_app_result(app_name, "http", result)
                 self.alert_manager.process_check_result(app_name, "http", result)
 
-                # Auto-recovery if needed
+                # Auto-recovery if needed (skip during startup grace period)
                 if result["status"] not in ("healthy", "slow", "skipped"):
-                    recovery = self.recovery_manager.attempt_recovery(app_name, app, result)
-                    if recovery["needs_manual"]:
-                        self.alert_manager.trigger_alert(
-                            app_name, "CRITICAL",
-                            f"Manual intervention needed: {recovery['details']}",
-                        )
+                    if self._check_count > self._startup_grace_cycles:
+                        recovery = self.recovery_manager.attempt_recovery(app_name, app, result)
+                        if recovery["needs_manual"]:
+                            self.alert_manager.trigger_alert(
+                                app_name, "CRITICAL",
+                                f"Manual intervention needed: {recovery['details']}",
+                            )
+                    else:
+                        self.logger.info("%s: skipping recovery (startup grace period, cycle %d/%d)",
+                                         app_name, self._check_count, self._startup_grace_cycles)
                 elif result["status"] == "healthy":
                     self.recovery_manager.reset_attempts(app_name)
 
@@ -144,12 +149,16 @@ class MonitoringAgent:
                 self.alert_manager.process_check_result(app_name, "redis", result)
 
                 if result["status"] not in ("healthy", "skipped"):
-                    recovery = self.recovery_manager.attempt_recovery(app_name, app, result)
-                    if recovery["needs_manual"]:
-                        self.alert_manager.trigger_alert(
-                            app_name, "CRITICAL",
-                            f"Manual intervention needed: {recovery['details']}",
-                        )
+                    if self._check_count > self._startup_grace_cycles:
+                        recovery = self.recovery_manager.attempt_recovery(app_name, app, result)
+                        if recovery["needs_manual"]:
+                            self.alert_manager.trigger_alert(
+                                app_name, "CRITICAL",
+                                f"Manual intervention needed: {recovery['details']}",
+                            )
+                    else:
+                        self.logger.info("%s: skipping recovery (startup grace period)",
+                                         app_name)
 
             # Docker container check
             if app.get("container"):
@@ -158,12 +167,16 @@ class MonitoringAgent:
                 self.alert_manager.process_check_result(app_name, "docker", result)
 
                 if result["status"] in ("down", "dead", "not_found"):
-                    recovery = self.recovery_manager.attempt_recovery(app_name, app, result)
-                    if recovery["needs_manual"]:
-                        self.alert_manager.trigger_alert(
-                            app_name, "CRITICAL",
-                            f"Container recovery failed: {recovery['details']}",
-                        )
+                    if self._check_count > self._startup_grace_cycles:
+                        recovery = self.recovery_manager.attempt_recovery(app_name, app, result)
+                        if recovery["needs_manual"]:
+                            self.alert_manager.trigger_alert(
+                                app_name, "CRITICAL",
+                                f"Container recovery failed: {recovery['details']}",
+                            )
+                    else:
+                        self.logger.info("%s: skipping recovery (startup grace period)",
+                                         app_name)
 
             # Log file check
             if app.get("log_path"):

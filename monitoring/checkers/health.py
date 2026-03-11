@@ -111,7 +111,8 @@ def check_redis_health(app_config):
         sock.close()
 
         result["response_time_ms"] = round(elapsed_ms, 1)
-        if b"PONG" in response:
+        if b"PONG" in response or b"NOAUTH" in response:
+            # PONG = healthy, NOAUTH = Redis is running but requires auth (still healthy)
             result["status"] = "healthy"
         else:
             result["status"] = "degraded"
