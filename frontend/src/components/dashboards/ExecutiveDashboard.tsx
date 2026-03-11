@@ -33,7 +33,8 @@ import {
   BarChart3,
   CreditCard,
   ArrowUpRight,
-  Settings
+  Settings,
+  GraduationCap
 } from "lucide-react";
 
 const fetchProjects = async () => {
@@ -51,6 +52,15 @@ const fetchPrograms = async () => {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!response.ok) throw new Error("Failed to fetch programs");
+  return response.json();
+};
+
+const fetchEnrollments = async () => {
+  const token = localStorage.getItem("access_token");
+  const response = await fetch("/api/v1/academy/enrollments/", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) return [];
   return response.json();
 };
 
@@ -243,6 +253,7 @@ const ExecutiveDashboard: React.FC = () => {
 
   const { data: projectsData } = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
   const { data: programsData } = useQuery({ queryKey: ["programs"], queryFn: fetchPrograms });
+  const { data: enrollmentsData } = useQuery({ queryKey: ["enrollments"], queryFn: fetchEnrollments });
 
   const projects = Array.isArray(projectsData) ? projectsData : (projectsData?.results || []);
   const programs = Array.isArray(programsData) ? programsData : (programsData?.results || []);
@@ -253,9 +264,12 @@ const ExecutiveDashboard: React.FC = () => {
   const atRiskProjects = projects.filter((p: any) => p.health_status === 'at_risk' || p.health_status === 'critical').length;
   const totalBudget = projects.reduce((sum: number, p: any) => sum + (parseFloat(p.budget) || 0), 0) + 
                       programs.reduce((sum: number, p: any) => sum + (parseFloat(p.total_budget) || 0), 0);
-  const avgProgress = projects.length > 0 
+  const avgProgress = projects.length > 0
     ? Math.round(projects.reduce((sum: number, p: any) => sum + (p.progress || 0), 0) / projects.length)
     : 0;
+
+  const enrollments = Array.isArray(enrollmentsData) ? enrollmentsData : (enrollmentsData?.results || []);
+  const trainingsInProgress = enrollments.filter((e: any) => e.status === 'active' || e.status === 'pending').length;
 
   const programStatusCounts = programs.reduce((acc: Record<string, number>, p: any) => {
     const status = p.status || 'planning';
@@ -399,13 +413,14 @@ const ExecutiveDashboard: React.FC = () => {
           content={aiSummary} 
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-5">
           <StatCard title={pt("Programs")} value={totalPrograms} subtitle={t.app.totalPrograms} icon={Building2} color="purple" />
           <StatCard title={pt("Projects")} value={totalProjects} subtitle={t.app.totalProjects} icon={FolderKanban} color="blue" />
           <StatCard title={pt("Active")} value={activeProjects} subtitle={t.app.inProgress} icon={Activity} color="emerald" trend="up" trendValue="+12%" />
           <StatCard title={pt("At Risk")} value={atRiskProjects} subtitle={t.app.requiresAttention} icon={AlertTriangle} color="red" />
           <StatCard title={pt("Budget")} value={formatBudget(totalBudget, currencyCode)} subtitle={t.app.totalAllocated} icon={DollarSign} color="amber" />
           <StatCard title={pt("Progress")} value={`${avgProgress}%`} subtitle={pt("Average Completion")} icon={Target} color="emerald" />
+          <StatCard title={pt("Trainings")} value={trainingsInProgress} subtitle={pt("In Progress")} icon={GraduationCap} color="blue" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
