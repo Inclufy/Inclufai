@@ -59,26 +59,46 @@ interface SendMessageResponse {
 const suggestionsData = {
   en: [
     {
-      icon: AlertTriangle,
-      title: "Project risks",
-      description: "Analyze current project risks and suggest mitigations.",
+      icon: BarChart3,
+      title: "Campaign analysis",
+      description: "Analyze the performance of your active campaigns.",
+    },
+    {
+      icon: FolderKanban,
+      title: "Content calendar",
+      description: "Plan your content for the upcoming week.",
     },
     {
       icon: TrendingUp,
-      title: "Performance report",
-      description: "Generate a summary of project performance metrics.",
+      title: "Growth tips",
+      description: "Discover opportunities to grow your reach.",
+    },
+    {
+      icon: AlertTriangle,
+      title: "Performance reports",
+      description: "Generate a summary of marketing performance.",
     },
   ],
   nl: [
     {
-      icon: AlertTriangle,
-      title: "Projectrisico's",
-      description: "Analyseer huidige projectrisico's en stel mitigaties voor.",
+      icon: BarChart3,
+      title: "Campagne analyse",
+      description: "Bekijk de prestaties van je actieve campagnes.",
+    },
+    {
+      icon: FolderKanban,
+      title: "Content kalender",
+      description: "Plan je content voor de komende week.",
     },
     {
       icon: TrendingUp,
-      title: "Prestatierapport",
-      description: "Genereer een samenvatting van projectprestaties.",
+      title: "Groei tips",
+      description: "Ontdek kansen om je bereik te vergroten.",
+    },
+    {
+      icon: AlertTriangle,
+      title: "Prestatie rapporten",
+      description: "Genereer een samenvatting van marketing prestaties.",
     },
   ],
 };
@@ -86,14 +106,16 @@ const suggestionsData = {
 // Quick actions
 const quickActionsData = {
   en: [
-    { icon: BarChart3, label: "Monthly report" },
-    { icon: TrendingUp, label: "Portfolio analysis" },
-    { icon: AlertTriangle, label: "Risk scan" },
+    { icon: MessageSquare, label: "Campaign idea" },
+    { icon: ListChecks, label: "Write email" },
+    { icon: TrendingUp, label: "SEO tips" },
+    { icon: Building2, label: "Social post" },
   ],
   nl: [
-    { icon: BarChart3, label: "Maandrapportage" },
-    { icon: TrendingUp, label: "Portfolio analyse" },
-    { icon: AlertTriangle, label: "Risico scan" },
+    { icon: MessageSquare, label: "Campagne idee" },
+    { icon: ListChecks, label: "E-mail schrijven" },
+    { icon: TrendingUp, label: "SEO tips" },
+    { icon: Building2, label: "Social post" },
   ],
 };
 
@@ -244,7 +266,7 @@ export default function AICopilotSidebar() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-violet-700 flex items-center justify-center shadow-sm">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div>
@@ -252,12 +274,12 @@ export default function AICopilotSidebar() {
               <span className="font-semibold text-sm text-foreground">AI Copilot</span>
               <Badge
                 variant="secondary"
-                className="text-[10px] px-1.5 py-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0"
+                className="text-[10px] px-1.5 py-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 border-0"
               >
                 Online
               </Badge>
             </div>
-            <span className="text-[11px] text-muted-foreground">ProjeXtPal AI</span>
+            <span className="text-[11px] text-muted-foreground">Inclufy AI</span>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -289,7 +311,7 @@ export default function AICopilotSidebar() {
             <div className="space-y-6">
               {/* Welcome Icon & Text */}
               <div className="text-center pt-6 pb-2">
-                <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-gradient-to-br from-emerald-400 to-teal-500 shadow-lg">
+                <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-gradient-to-br from-purple-500 to-violet-600 shadow-lg">
                   <Sparkles className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="text-base font-semibold text-foreground mb-1">
@@ -297,8 +319,8 @@ export default function AICopilotSidebar() {
                 </h3>
                 <p className="text-xs text-muted-foreground max-w-[260px] mx-auto">
                   {language === "nl"
-                    ? "Ik help u met overzicht van uw projecten en programma's"
-                    : "I help you with insights on your projects and programs"}
+                    ? "Ik help u met marketing strategie, content & inzichten."
+                    : "I help you with marketing strategy, content & insights."}
                 </p>
               </div>
 
@@ -377,7 +399,7 @@ export default function AICopilotSidebar() {
               {/* Loading indicator */}
               {isSending && (
                 <div className="flex items-start gap-2 mt-3">
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center flex-shrink-0">
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-violet-700 flex items-center justify-center flex-shrink-0">
                     <Loader2 className="h-4 w-4 text-white animate-spin" />
                   </div>
                   <div className="bg-muted/50 rounded-lg px-3 py-2">
@@ -430,13 +452,13 @@ export default function AICopilotSidebar() {
             onClick={() => handleSendMessage()}
             disabled={!inputValue.trim() || isSending || !!activeForm}
             size="icon"
-            className="h-10 w-10 flex-shrink-0 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
+            className="h-10 w-10 flex-shrink-0 bg-gradient-to-br from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white"
           >
             {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>
         <p className="text-[10px] text-center text-muted-foreground mt-1.5">
-          ProjeXtPal AI &middot; {language === "nl" ? "Aangedreven door gespecialiseerde agents" : "Powered by specialized agents"}
+          Inclufy AI &middot; {language === "nl" ? "Aangedreven door gespecialiseerde agents" : "Powered by specialized agents"}
         </p>
       </div>
     </div>

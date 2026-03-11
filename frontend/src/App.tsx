@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LanguageProvider, useLanguage, languages } from "./contexts/LanguageContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -294,13 +295,23 @@ const AppHeader = () => {
 
         {/* AI Copilot Toggle */}
         <Button
-          variant={copilotOpen ? "default" : "ghost"}
-          size="icon"
+          variant={copilotOpen ? "default" : "outline"}
           onClick={toggleCopilot}
           title="AI Copilot"
-          className={copilotOpen ? "bg-gradient-to-br from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700" : ""}
+          className={cn(
+            "gap-2 px-3 h-9",
+            copilotOpen
+              ? "bg-gradient-to-br from-purple-600 to-violet-700 text-white hover:from-purple-700 hover:to-violet-800 border-0"
+              : "hover:border-purple-300 dark:hover:border-purple-700"
+          )}
         >
-          <Sparkles className="h-5 w-5" />
+          <Sparkles className="h-4 w-4" />
+          <span className="hidden sm:inline text-sm font-medium">AI Copilot</span>
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span className="hidden sm:inline text-xs opacity-80">Online</span>
         </Button>
 
         {/* Logout */}
