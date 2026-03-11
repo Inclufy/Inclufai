@@ -214,6 +214,7 @@ import BiometricAuth from "./pages/settings/BiometricAuth";
 import AdminTrainingManagement from '@/pages/admin-portal/AdminTrainingManagement';
 import InvoiceManagement from '@/pages/admin-portal/InvoiceManagement';
 import SubscriptionManagement from '@/pages/admin-portal/SubscriptionManagement';
+import MonitoringDashboard from '@/pages/admin-portal/MonitoringDashboard';
 
 // ============================================
 // Query Client
@@ -424,6 +425,7 @@ const App = () => (
                 <Route path="invoices" element={<InvoiceManagement />} />
                 <Route path="subscriptions" element={<SubscriptionManagement />} />
                 <Route path="demo-requests" element={<DemoRequests />} />
+                <Route path="monitoring" element={<MonitoringDashboard />} />
               </Route>
               
               {/* ============================================ */}
