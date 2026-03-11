@@ -1,0 +1,116 @@
+global:
+  check_interval: 30            # seconds between checks
+  alert_cooldown: 300           # seconds between repeat alerts for same issue
+  max_response_time: 2000       # ms — alert if exceeded
+  log_level: INFO
+  data_retention_days: 30       # keep detailed metrics for 30 days
+  daily_summary_hour: 8         # send daily summary at 8:00 AM
+
+  email:
+    enabled: true
+    smtp_host: smtp.gmail.com
+    smtp_port: 587
+    use_tls: true
+    username: ${MONITOR_EMAIL_USER}
+    password: ${MONITOR_EMAIL_PASSWORD}
+    from_address: monitoring@inclufy.com
+    recipients:
+      - team@inclufy.com
+
+  system_thresholds:
+    cpu_warning: 80             # percent
+    cpu_critical: 95
+    memory_warning: 85
+    memory_critical: 95
+    disk_warning: 80
+    disk_critical: 95
+
+  recovery:
+    max_restart_attempts: 3     # max container restarts before escalating
+    restart_cooldown: 60        # seconds between restart attempts
+    auto_recovery_enabled: true
+
+applications:
+  - name: ProjeXtPal API
+    type: web
+    url: http://localhost:8001
+    health_endpoint: /api/health/
+    container: inclufai-backend-1
+    log_path: /var/log/projextpal/backend.log
+    max_response_time: 1500
+    recovery: auto
+    enabled: true
+
+  - name: ProjeXtPal Frontend
+    type: web
+    url: http://localhost:80
+    health_endpoint: /health
+    container: inclufai-frontend-1
+    recovery: auto
+    enabled: true
+
+  - name: ProjeXtPal Database
+    type: database
+    container: inclufai-postgres-1
+    health_command: pg_isready -U postgres
+    recovery: restart
+    enabled: true
+
+  - name: ProjeXtPal Redis
+    type: cache
+    url: redis://localhost:6379
+    container: inclufai-redis-1
+    health_command: redis-cli ping
+    recovery: restart
+    enabled: true
+
+  # Placeholder entries for future applications
+  # Uncomment and configure as each app is deployed
+
+  # - name: App2 API
+  #   type: web
+  #   url: http://localhost:8002
+  #   health_endpoint: /api/health/
+  #   container: app2-backend-1
+  #   recovery: auto
+  #   enabled: false
+
+  # - name: App2 Frontend
+  #   type: web
+  #   url: http://localhost:8082
+  #   health_endpoint: /health
+  #   container: app2-frontend-1
+  #   recovery: auto
+  #   enabled: false
+
+  # - name: App3 API
+  #   type: web
+  #   url: http://localhost:8003
+  #   health_endpoint: /api/health/
+  #   container: app3-backend-1
+  #   recovery: auto
+  #   enabled: false
+
+  # - name: Mobile App1 Backend
+  #   type: mobile-backend
+  #   url: http://localhost:9001
+  #   health_endpoint: /api/health/
+  #   container: mobile1-backend-1
+  #   recovery: auto
+  #   enabled: false
+
+  # - name: Mobile App2 Backend
+  #   type: mobile-backend
+  #   url: http://localhost:9002
+  #   health_endpoint: /api/health/
+  #   container: mobile2-backend-1
+  #   recovery: auto
+  #   enabled: false
+
+  # - name: Mobile App3 Backend
+  #   type: mobile-backend
+  #   url: http://localhost:9003
+  #   health_endpoint: /api/health/
+  #   container: mobile3-backend-1
+  #   recovery: auto
+  #   enabled: false
