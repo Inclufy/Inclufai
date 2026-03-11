@@ -103,7 +103,7 @@ services:
       - nginx
     networks:
       - projextpal-network
-    command: python agent.py --daemon --log-file /app/data/monitor.log
+    # Uses CMD from Dockerfile: python -m monitoring.agent --daemon
 
 networks:
   projextpal-network:
