@@ -1,14 +1,39 @@
+# Web frontend (not needed for mobile build)
 frontend/
+frontend/node_modules/
+frontend/dist/
+
+# Backend
 backend/
-docs/
-load-tests/
+
+# Infrastructure
 nginx/
 ssl/
-*.sql
-*.sh
-*.tar.gz
+docs/
+load-tests/
+monitoring/
+uat-agent/
+
+# Docker
 docker-compose*.yml
 Dockerfile*
 Caddyfile
+
+# Build artifacts & caches
+.git/
+ios/Pods/
+android/.gradle/
+android/app/build/
+
+# Large files
+*.sql
+*.sh
+*.tar.gz
 *.md
 app-store-screenshots/
+projextpal-production-deployment.tar.gz
+
+# Misc
+*.log
+.env
+.env.*
