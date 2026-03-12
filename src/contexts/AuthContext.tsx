@@ -28,7 +28,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tempToken, setTempToken] = useState<string | null>(null);
 
   useEffect(() => {
     loadStoredAuth();
@@ -42,36 +41,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const res = await api.get('/users/me/');
         setUser(res.data);
       }
-    } catch {
-      await SecureStore.deleteItemAsync('auth_token');
+    } catch (error: any) {
+      // Only clear token on 401 (invalid token), not on server errors
+      if (error.response?.status === 401) {
+        await SecureStore.deleteItemAsync('auth_token');
+        setToken(null);
+      }
+      // On 5xx/network errors, keep token and retry on next app open
     } finally {
       setLoading(false);
     }
   }
 
+  // Stores email/password temporarily for 2FA verification
+  const [tempCredentials, setTempCredentials] = useState<{ email: string; password: string } | null>(null);
+
   async function login(email: string, password: string) {
-    const res = await api.post('/auth/login/', { email, password });
+    const res = await api.post('/auth/login-2fa/', { email, password });
     if (res.data.requires_2fa) {
-      setTempToken(res.data.temp_token);
+      setTempCredentials({ email, password });
       return { requires2FA: true };
     }
-    const authToken = res.data.token;
-    await SecureStore.setItemAsync('auth_token', authToken);
-    setToken(authToken);
+    await SecureStore.setItemAsync('auth_token', res.data.access);
+    await SecureStore.setItemAsync('refresh_token', res.data.refresh);
+    setToken(res.data.access);
     setUser(res.data.user);
     return {};
   }
 
   async function verify2FA(code: string) {
-    const res = await api.post('/auth/verify-2fa/', {
-      temp_token: tempToken,
-      code,
+    if (!tempCredentials) throw new Error('No pending 2FA login');
+    const res = await api.post('/auth/login-2fa/', {
+      email: tempCredentials.email,
+      password: tempCredentials.password,
+      totp_code: code,
     });
-    const authToken = res.data.token;
-    await SecureStore.setItemAsync('auth_token', authToken);
-    setToken(authToken);
+    await SecureStore.setItemAsync('auth_token', res.data.access);
+    await SecureStore.setItemAsync('refresh_token', res.data.refresh);
+    setToken(res.data.access);
     setUser(res.data.user);
-    setTempToken(null);
+    setTempCredentials(null);
   }
 
   async function logout() {
@@ -81,6 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // ignore
     }
     await SecureStore.deleteItemAsync('auth_token');
+    await SecureStore.deleteItemAsync('refresh_token');
     setToken(null);
     setUser(null);
   }
