@@ -512,18 +512,21 @@ class CurrentUserSerializer(serializers.ModelSerializer):
     def get_subscription(self, obj):
         if not obj.company:
             return None
-        
-        subscription = CompanySubscription.objects.filter(
-            company=obj.company,
-            status__in=['active', 'trialing']
-        ).first()
-        
-        if subscription:
-            return {
-                'plan_name': subscription.plan.name,
-                'plan_level': subscription.plan.plan_level,
-                'status': subscription.status
-            }
+
+        try:
+            subscription = CompanySubscription.objects.filter(
+                company=obj.company,
+                status__in=['active', 'trialing']
+            ).select_related('plan').first()
+
+            if subscription and subscription.plan:
+                return {
+                    'plan_name': subscription.plan.name,
+                    'plan_level': subscription.plan.plan_level,
+                    'status': subscription.status
+                }
+        except Exception:
+            pass
         return None
 
 
