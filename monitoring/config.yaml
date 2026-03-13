@@ -54,7 +54,7 @@ applications:
   - name: ProjeXtPal
     group: projextpal
     type: web
-    url: http://localhost:443
+    url: http://localhost
     health_endpoint: /health/
     max_response_time: 1500
     recovery: auto
