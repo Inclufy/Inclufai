@@ -16,6 +16,7 @@ import type {
 
 export class TestRunner {
   private browser: Browser | null = null;
+  private browserAvailable: boolean = false;
   private scenarios: Scenario[] = [];
   private appConfig: AppConfig;
   private agentConfig: AgentConfig;
@@ -48,6 +49,23 @@ export class TestRunner {
     }
   }
 
+  private async launchBrowser(): Promise<boolean> {
+    try {
+      this.browser = await chromium.launch({
+        headless: this.agentConfig.headless,
+        executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined,
+        args: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? ['--no-sandbox', '--disable-gpu'] : [],
+      });
+      this.browserAvailable = true;
+      return true;
+    } catch (error: any) {
+      this.onStepLog('runner', `Browser not available: ${error.message.substring(0, 100)}`);
+      this.onStepLog('runner', 'Running in API-only mode — browser-dependent scenarios will be skipped.');
+      this.browserAvailable = false;
+      return false;
+    }
+  }
+
   async run(filter?: { ids?: string[]; tags?: string[] }): Promise<TestReport> {
     const startedAt = new Date().toISOString();
     const startTime = Date.now();
@@ -56,11 +74,7 @@ export class TestRunner {
 
     this.ensureScreenshotDir();
 
-    this.browser = await chromium.launch({
-      headless: this.agentConfig.headless,
-      executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined,
-      args: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? ['--no-sandbox', '--disable-gpu'] : [],
-    });
+    await this.launchBrowser();
 
     let scenariosToRun = this.scenarios;
     if (filter?.ids?.length) {
@@ -80,13 +94,15 @@ export class TestRunner {
       this.allIssues.push(...result.issues);
     }
 
-    // Crawl screens if enabled
-    if (this.agentConfig.crawlScreens) {
+    // Crawl screens if enabled (requires browser)
+    if (this.agentConfig.crawlScreens && this.browserAvailable) {
       await this.crawlAllScreens();
     }
 
-    await this.browser.close();
-    this.browser = null;
+    if (this.browser) {
+      await this.browser.close();
+      this.browser = null;
+    }
 
     const finishedAt = new Date().toISOString();
     const duration = Date.now() - startTime;
@@ -121,31 +137,44 @@ export class TestRunner {
     const issues: Issue[] = [];
     let scenarioStatus: 'passed' | 'failed' | 'skipped' = 'passed';
 
-    const context = await this.browser!.newContext({
-      viewport: { width: 1280, height: 720 },
-      ignoreHTTPSErrors: true,
-    });
-    const page = await context.newPage();
-    page.setDefaultTimeout(this.agentConfig.timeoutMs);
-
-    // Capture console errors
+    let context: any = null;
+    let page: any = null;
     const consoleErrors: string[] = [];
-    page.on('console', (msg: any) => {
-      if (msg.type() === 'error') {
-        consoleErrors.push(msg.text());
-      }
-    });
-    page.on('pageerror', (err: Error) => {
-      consoleErrors.push(err.message);
-      issues.push({
-        type: 'console_error',
-        severity: 'major',
-        title: `JS Error: ${err.message.substring(0, 80)}`,
-        description: err.message,
-        page: page.url(),
-        suggestion: 'Check browser console for stack trace and fix the JavaScript error.',
+
+    if (this.browserAvailable && this.browser) {
+      context = await this.browser.newContext({
+        viewport: { width: 1280, height: 720 },
+        ignoreHTTPSErrors: true,
       });
-    });
+      page = await context.newPage();
+      page.setDefaultTimeout(this.agentConfig.timeoutMs);
+
+      // Capture console errors
+      page.on('console', (msg: any) => {
+        if (msg.type() === 'error') {
+          consoleErrors.push(msg.text());
+        }
+      });
+      page.on('pageerror', (err: Error) => {
+        consoleErrors.push(err.message);
+        issues.push({
+          type: 'console_error',
+          severity: 'major',
+          title: `JS Error: ${err.message.substring(0, 80)}`,
+          description: err.message,
+          page: page.url(),
+          suggestion: 'Check browser console for stack trace and fix the JavaScript error.',
+        });
+      });
+    } else {
+      // Create a stub page object that throws helpful errors when browser features are used
+      page = new Proxy({}, {
+        get(_target, prop) {
+          if (prop === 'url') return () => 'no-browser://api-only';
+          throw new Error(`Browser not available — cannot use page.${String(prop)}(). This scenario requires a browser (install Playwright: npx playwright install).`);
+        },
+      });
+    }
 
     const api = createApiClient(this.appConfig.apiUrl);
     const screenshotDir = resolve(this.agentConfig.reportOutput, 'screenshots');
@@ -161,9 +190,11 @@ export class TestRunner {
         this.onStepLog(scenario.id, message);
       },
       reportIssue: (issue) => {
-        issues.push({ ...issue, page: page.url() });
+        const currentUrl = typeof page?.url === 'function' ? page.url() : 'api-only';
+        issues.push({ ...issue, page: currentUrl });
       },
       takeScreenshot: async (name: string): Promise<string | undefined> => {
+        if (!this.browserAvailable) return undefined;
         try {
           const safeName = name.replace(/[^a-zA-Z0-9-_]/g, '-');
           const path = `${screenshotDir}/${scenario.id}-${safeName}.png`;
@@ -246,13 +277,15 @@ export class TestRunner {
         severity: 'minor',
         title: `${consoleErrors.length} console error(s) during ${scenario.name}`,
         description: consoleErrors.slice(0, 10).join('\n'),
-        page: page.url(),
+        page: this.browserAvailable ? page.url() : 'api-only',
         screenshot,
         suggestion: 'Review and fix console errors to improve stability.',
       });
     }
 
-    await context.close();
+    if (context) {
+      await context.close();
+    }
 
     return {
       id: scenario.id,

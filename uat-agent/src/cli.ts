@@ -62,12 +62,12 @@ program
   .option('-s, --scenario <ids...>', 'Specific scenario IDs to run')
   .option('-t, --tag <tags...>', 'Run scenarios with specific tags')
   .option('--all', 'Run all scenarios for the app')
+  .option('--every-app', 'Run all scenarios for every registered app')
   .option('--headed', 'Run browser in headed mode (visible)')
   .option('--crawl', 'Crawl all screens and audit each page for bugs')
+  .option('--dry-run', 'Validate scenario structure without executing (no server needed)')
   .option('--no-report', 'Skip saving report files')
   .action(async (options) => {
-    const appName = options.app.toLowerCase();
-    const appConfig = getAppConfig(appName);
     const agentConfig = getAgentConfig();
 
     if (options.headed) {
@@ -77,43 +77,71 @@ program
       agentConfig.crawlScreens = true;
     }
 
+    // Determine which apps to run
+    const appsToRun: string[] = options.everyApp
+      ? Object.keys(SCENARIO_REGISTRY)
+      : [options.app.toLowerCase()];
+
+    // Collect scenarios across all target apps
+    let scenarios: Scenario[] = [];
+    const seenIds = new Set<string>();
+
+    for (const appName of appsToRun) {
+      let appScenarios: Scenario[] = [];
+
+      if (options.all || options.everyApp) {
+        appScenarios = SCENARIO_REGISTRY[appName] || [];
+      } else if (options.scenario) {
+        const allScenarios = Object.values(SCENARIO_REGISTRY).flat();
+        appScenarios = allScenarios.filter((s) => options.scenario.includes(s.id));
+      } else if (options.tag) {
+        appScenarios = (SCENARIO_REGISTRY[appName] || []).filter((s) =>
+          s.tags.some((t: string) => options.tag.includes(t))
+        );
+      } else {
+        appScenarios = (SCENARIO_REGISTRY[appName] || []).filter((s) =>
+          s.tags.includes('smoke') || s.tags.includes('critical')
+        );
+        if (appScenarios.length === 0) {
+          appScenarios = SCENARIO_REGISTRY[appName] || [];
+        }
+      }
+
+      for (const s of appScenarios) {
+        if (!seenIds.has(s.id)) {
+          seenIds.add(s.id);
+          scenarios.push(s);
+        }
+      }
+    }
+
+    // Add generic scenarios if not already included
+    if ((options.all || options.everyApp) && !appsToRun.includes('generic')) {
+      for (const s of genericScenarios) {
+        if (!seenIds.has(s.id)) {
+          seenIds.add(s.id);
+          scenarios.push(s);
+        }
+      }
+    }
+
+    const appName = appsToRun[0];
+    const appConfig = getAppConfig(appName);
+
     console.log('\n  Inclufy UAT Agent v1.0.0');
     console.log('  ' + '-'.repeat(40));
-    console.log(`  App:         ${appConfig.name}`);
+    if (options.everyApp) {
+      console.log(`  Apps:        ${appsToRun.join(', ')}`);
+    } else {
+      console.log(`  App:         ${appConfig.name}`);
+    }
     console.log(`  Frontend:    ${appConfig.baseUrl}`);
     console.log(`  API:         ${appConfig.apiUrl}`);
     console.log(`  Headless:    ${agentConfig.headless}`);
-    console.log('  ' + '-'.repeat(40));
-
-    // Collect scenarios
-    let scenarios: Scenario[] = [];
-
-    if (options.all) {
-      // Run all scenarios for the app
-      scenarios = SCENARIO_REGISTRY[appName] || [];
-      if (appName !== 'generic') {
-        // Also add generic scenarios
-        scenarios = [...scenarios, ...genericScenarios];
-      }
-    } else if (options.scenario) {
-      // Run specific scenarios by ID
-      const allScenarios = Object.values(SCENARIO_REGISTRY).flat();
-      scenarios = allScenarios.filter((s) => options.scenario.includes(s.id));
-    } else if (options.tag) {
-      // Run by tag
-      const allScenarios = Object.values(SCENARIO_REGISTRY).flat();
-      scenarios = allScenarios.filter((s) =>
-        s.tags.some((t: string) => options.tag.includes(t))
-      );
-    } else {
-      // Default: run smoke tests for the app
-      scenarios = (SCENARIO_REGISTRY[appName] || []).filter((s) =>
-        s.tags.includes('smoke') || s.tags.includes('critical')
-      );
-      if (scenarios.length === 0) {
-        scenarios = SCENARIO_REGISTRY[appName] || [];
-      }
+    if (options.dryRun) {
+      console.log(`  Mode:        DRY RUN (validation only)`);
     }
+    console.log('  ' + '-'.repeat(40));
 
     if (scenarios.length === 0) {
       console.log('\n  No scenarios found matching your criteria.');
@@ -121,6 +149,56 @@ program
       process.exit(1);
     }
 
+    // --- DRY RUN MODE ---
+    if (options.dryRun) {
+      console.log(`\n  Validating ${scenarios.length} scenario(s)...\n`);
+      let valid = 0;
+      let invalid = 0;
+
+      // Group by app
+      const byApp = new Map<string, Scenario[]>();
+      for (const s of scenarios) {
+        const app = s.app || 'unknown';
+        if (!byApp.has(app)) byApp.set(app, []);
+        byApp.get(app)!.push(s);
+      }
+
+      for (const [app, appScenarios] of byApp) {
+        console.log(`  [${app.toUpperCase()}]`);
+        for (const scenario of appScenarios) {
+          const errors: string[] = [];
+          if (!scenario.id) errors.push('missing id');
+          if (!scenario.name) errors.push('missing name');
+          if (!scenario.steps || scenario.steps.length === 0) errors.push('no steps defined');
+          if (!scenario.tags || scenario.tags.length === 0) errors.push('no tags');
+          for (let i = 0; i < (scenario.steps || []).length; i++) {
+            const step = scenario.steps[i];
+            if (!step.name) errors.push(`step ${i}: missing name`);
+            if (typeof step.action !== 'function') errors.push(`step ${i}: action is not a function`);
+          }
+
+          if (errors.length === 0) {
+            console.log(`    \x1b[32mVALID\x1b[0m  ${scenario.id} - ${scenario.name} (${scenario.steps.length} steps)`);
+            valid++;
+          } else {
+            console.log(`    \x1b[31mERROR\x1b[0m  ${scenario.id} - ${scenario.name}`);
+            for (const err of errors) {
+              console.log(`             ${err}`);
+            }
+            invalid++;
+          }
+        }
+      }
+
+      console.log('\n  ' + '='.repeat(50));
+      console.log(`  Dry run: \x1b[32m${valid} valid\x1b[0m, \x1b[31m${invalid} invalid\x1b[0m, ${scenarios.length} total`);
+      console.log('  ' + '='.repeat(50) + '\n');
+
+      if (invalid > 0) process.exit(1);
+      return;
+    }
+
+    // --- LIVE RUN MODE ---
     console.log(`\n  Running ${scenarios.length} scenario(s)...\n`);
 
     const runner = new TestRunner(appConfig, agentConfig, (id, msg) => {
