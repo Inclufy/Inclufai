@@ -37,31 +37,66 @@ const scenario: Scenario = {
       },
     },
     {
-      name: 'Campaigns endpoint',
+      name: 'Newsletters endpoint',
       action: async (ctx) => {
-        const res = await ctx.api.get('/api/v1/campaigns/');
-        ctx.log(`GET /api/v1/campaigns/ -> ${res.status}`);
+        const res = await ctx.api.get('/api/v1/newsletters/newsletters/');
+        ctx.log(`GET /api/v1/newsletters/newsletters/ -> ${res.status}`);
       },
     },
     {
-      name: 'Contacts endpoint',
+      name: 'Newsletter templates endpoint',
       action: async (ctx) => {
-        const res = await ctx.api.get('/api/v1/contacts/');
-        ctx.log(`GET /api/v1/contacts/ -> ${res.status}`);
+        const res = await ctx.api.get('/api/v1/newsletters/templates/');
+        ctx.log(`GET /api/v1/newsletters/templates/ -> ${res.status}`);
       },
     },
     {
-      name: 'Analytics endpoint',
+      name: 'Mailing lists endpoint',
       action: async (ctx) => {
-        const res = await ctx.api.get('/api/v1/analytics/');
-        ctx.log(`GET /api/v1/analytics/ -> ${res.status}`);
+        const res = await ctx.api.get('/api/v1/newsletters/mailing-lists/');
+        ctx.log(`GET /api/v1/newsletters/mailing-lists/ -> ${res.status}`);
       },
     },
     {
-      name: 'Email templates endpoint',
+      name: 'Subscribers endpoint',
       action: async (ctx) => {
-        const res = await ctx.api.get('/api/v1/templates/');
-        ctx.log(`GET /api/v1/templates/ -> ${res.status}`);
+        const res = await ctx.api.get('/api/v1/newsletters/subscribers/');
+        ctx.log(`GET /api/v1/newsletters/subscribers/ -> ${res.status}`);
+      },
+    },
+    {
+      name: 'Global newsletters endpoint',
+      action: async (ctx) => {
+        const res = await ctx.api.get('/api/v1/newsletters/global-newsletters/');
+        ctx.log(`GET /api/v1/newsletters/global-newsletters/ -> ${res.status}`);
+      },
+    },
+    {
+      name: 'Communication status-reports endpoint',
+      action: async (ctx) => {
+        const res = await ctx.api.get('/api/v1/communication/status-reports/');
+        ctx.log(`GET /api/v1/communication/status-reports/ -> ${res.status}`);
+      },
+    },
+    {
+      name: 'Communication meetings endpoint',
+      action: async (ctx) => {
+        const res = await ctx.api.get('/api/v1/communication/meetings/');
+        ctx.log(`GET /api/v1/communication/meetings/ -> ${res.status}`);
+      },
+    },
+    {
+      name: 'Execution stakeholders endpoint',
+      action: async (ctx) => {
+        const res = await ctx.api.get('/api/v1/execution/stakeholders/');
+        ctx.log(`GET /api/v1/execution/stakeholders/ -> ${res.status}`);
+      },
+    },
+    {
+      name: 'Execution change-requests endpoint',
+      action: async (ctx) => {
+        const res = await ctx.api.get('/api/v1/execution/change-requests/');
+        ctx.log(`GET /api/v1/execution/change-requests/ -> ${res.status}`);
       },
     },
   ],

@@ -6,12 +6,14 @@ import { projectpalScenarios } from './scenarios/projectpal/index.js';
 import { financeScenarios } from './scenarios/finance/index.js';
 import { marketingScenarios } from './scenarios/marketing/index.js';
 import { genericScenarios } from './scenarios/generic/index.js';
+import { mobileScenarios } from './scenarios/mobile/index.js';
 import type { Scenario } from './core/types.js';
 
 const SCENARIO_REGISTRY: Record<string, Scenario[]> = {
   projectpal: projectpalScenarios,
   finance: financeScenarios,
   marketing: marketingScenarios,
+  mobile: mobileScenarios,
   generic: genericScenarios,
 };
 
