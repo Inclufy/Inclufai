@@ -32,6 +32,15 @@ const APP_CONFIGS: Record<string, () => AppConfig> = {
       password: process.env.MARKETING_TEST_PASSWORD || 'password123',
     },
   }),
+  go: () => ({
+    name: 'Inclufy GO',
+    baseUrl: process.env.GO_BASE_URL || 'http://localhost:3001',
+    apiUrl: process.env.GO_API_URL || 'http://localhost:8001',
+    credentials: {
+      email: process.env.GO_TEST_EMAIL || 'test@example.com',
+      password: process.env.GO_TEST_PASSWORD || 'password123',
+    },
+  }),
   mobile: () => ({
     name: 'Inclufy Mobile',
     baseUrl: process.env.MOBILE_BASE_URL || 'http://localhost:8083',
