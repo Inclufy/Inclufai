@@ -11,6 +11,8 @@ import aiReports from './09-ai-reports.js';
 import profileSettings from './10-profile-settings.js';
 import pushNotifications from './11-push-notifications.js';
 import governance from './12-governance.js';
+import userFeatures from './13-user-features.js';
+import deepLinking from './14-deep-linking.js';
 
 export const projectpalMobileScenarios: Scenario[] = [
   login,
@@ -25,6 +27,8 @@ export const projectpalMobileScenarios: Scenario[] = [
   profileSettings,
   pushNotifications,
   governance,
+  userFeatures,
+  deepLinking,
 ];
 
 export default projectpalMobileScenarios;
