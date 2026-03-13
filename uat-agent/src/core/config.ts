@@ -50,6 +50,24 @@ const APP_CONFIGS: Record<string, () => AppConfig> = {
       password: process.env.MOBILE_TEST_PASSWORD || 'password123',
     },
   }),
+  projectpal_mobile: () => ({
+    name: 'ProjeXtPal Mobile',
+    baseUrl: process.env.PROJECTPAL_MOBILE_BASE_URL || process.env.PROJECTPAL_BASE_URL || 'http://localhost:8083',
+    apiUrl: process.env.PROJECTPAL_MOBILE_API_URL || process.env.PROJECTPAL_API_URL || 'http://localhost:8083',
+    credentials: {
+      email: process.env.PROJECTPAL_MOBILE_TEST_EMAIL || process.env.PROJECTPAL_TEST_EMAIL || 'test@example.com',
+      password: process.env.PROJECTPAL_MOBILE_TEST_PASSWORD || process.env.PROJECTPAL_TEST_PASSWORD || 'password123',
+    },
+  }),
+  finance_mobile: () => ({
+    name: 'Inclufy Finance Mobile',
+    baseUrl: process.env.FINANCE_MOBILE_BASE_URL || process.env.FINANCE_BASE_URL || 'http://localhost:3000',
+    apiUrl: process.env.FINANCE_MOBILE_API_URL || process.env.FINANCE_API_URL || 'http://localhost:8000',
+    credentials: {
+      email: process.env.FINANCE_MOBILE_TEST_EMAIL || process.env.FINANCE_TEST_EMAIL || 'test@example.com',
+      password: process.env.FINANCE_MOBILE_TEST_PASSWORD || process.env.FINANCE_TEST_PASSWORD || 'password123',
+    },
+  }),
   generic: () => ({
     name: process.env.APP_NAME || 'GenericApp',
     baseUrl: process.env.APP_BASE_URL || 'http://localhost:3000',

@@ -8,6 +8,8 @@ import { marketingScenarios } from './scenarios/marketing/index.js';
 import { genericScenarios } from './scenarios/generic/index.js';
 import { mobileScenarios } from './scenarios/mobile/index.js';
 import { goScenarios } from './scenarios/go/index.js';
+import { financeMobileScenarios } from './scenarios/finance_mobile/index.js';
+import { projectpalMobileScenarios } from './scenarios/projectpal_mobile/index.js';
 import type { Scenario } from './core/types.js';
 
 const SCENARIO_REGISTRY: Record<string, Scenario[]> = {
@@ -16,6 +18,8 @@ const SCENARIO_REGISTRY: Record<string, Scenario[]> = {
   marketing: marketingScenarios,
   go: goScenarios,
   mobile: mobileScenarios,
+  finance_mobile: financeMobileScenarios,
+  projectpal_mobile: projectpalMobileScenarios,
   generic: genericScenarios,
 };
 
