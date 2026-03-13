@@ -13,6 +13,7 @@ import globalNewsletters from './11-global-newsletters.js';
 import aiMarketing from './12-ai-marketing.js';
 import marketingAutomation from './13-marketing-automation.js';
 import analyticsBudget from './14-analytics-budget.js';
+import newsletterWorkflows from './15-newsletter-workflows.js';
 
 export const marketingScenarios: Scenario[] = [
   login,
@@ -29,6 +30,7 @@ export const marketingScenarios: Scenario[] = [
   aiMarketing,
   marketingAutomation,
   analyticsBudget,
+  newsletterWorkflows,
 ];
 
 export default marketingScenarios;

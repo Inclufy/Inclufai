@@ -5,6 +5,7 @@ import notifications from './03-notifications.js';
 import academy from './04-academy.js';
 import programs from './05-programs.js';
 import apiHealth from './06-api-health.js';
+import taskCrud from './07-task-crud.js';
 
 export const mobileScenarios: Scenario[] = [
   login,
@@ -13,6 +14,7 @@ export const mobileScenarios: Scenario[] = [
   academy,
   programs,
   apiHealth,
+  taskCrud,
 ];
 
 export default mobileScenarios;
