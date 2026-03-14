@@ -22,6 +22,9 @@ build/
 .idea/
 *.swp
 
+# Monitoring runtime data
+monitoring/data/
+
 # Docker
 *.backup
 
