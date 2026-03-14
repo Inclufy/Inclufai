@@ -940,7 +940,6 @@ class CompanyDetailView(APIView):
             return Response({'detail': 'Company not found'}, status=status.HTTP_404_NOT_FOUND)
 
     def patch(self, request, pk):
-        print(f"=== DEBUG PATCH === request.data: {request.data}")
         from accounts.models import Company
         if not request.user.is_superuser:
             return Response({'detail': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)

@@ -179,30 +179,13 @@ class ChatViewSet(viewsets.ModelViewSet):
             ]
 
             # Create user-specific AI agent and set user context
-            # Debug: Check what type of user object we have
-            print(f"DEBUG: request.user type: {type(request.user)}")
-            print(f"DEBUG: request.user: {request.user}")
-            print(
-                f"DEBUG: request.user.is_authenticated: {request.user.is_authenticated}"
-            )
-            if hasattr(request.user, "role"):
-                print(f"DEBUG: request.user.role: {request.user.role}")
-
-            # Check if we have user_details from the request
-            print(f"DEBUG: user_details from request: {request.data.get('user')}")
-            print(f"DEBUG: Detected language: {detected_language}")
-
             # Use the authenticated user if available, otherwise try to get user from session
             user_for_context = request.user
             if not request.user.is_authenticated or str(request.user) == "default_user":
                 # Try to get user from session context
                 session_data = get_user_session()
-                print(f"DEBUG: session_data: {session_data}")
                 if session_data and session_data.get("user"):
                     user_for_context = session_data["user"]
-                    print(
-                        f"DEBUG: Using user from session: {type(user_for_context)} - {user_for_context}"
-                    )
 
             user_ai_agent = ERPAIAgent(tools=tools, user=user_for_context)
 

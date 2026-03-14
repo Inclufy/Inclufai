@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = decouple.config("SECRET_KEY")
 
-DEBUG = True  # Temporary debug
+DEBUG = decouple.config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = ["*"]
 

@@ -290,8 +290,6 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
         return CompanyDetailSerializer
     
     def create(self, request, *args, **kwargs):
-        print(f"=== DEBUG CREATE === request.data: {request.data}")
-        
         # Create company first
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -367,8 +365,6 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
 
     
     def partial_update(self, request, *args, **kwargs):
-        print(f"=== DEBUG PATCH === request.data: {request.data}")
-        
         instance = self.get_object()
         
         # Handle subscription update separately
