@@ -11,7 +11,7 @@ class WorkflowDiagramModelTest(TestCase):
     def setUp(self):
         self.company = Company.objects.create(name="Test Company")
         self.user = User.objects.create_user(
-            email="test@example.com", password="testpass123", company=self.company
+            username="testuser", email="test@example.com", password="testpass123", company=self.company
         )
         self.project = Project.objects.create(
             company=self.company, name="Test Project", created_by=self.user

@@ -8,7 +8,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from openai import OpenAI
 
-client = OpenAI(api_key=settings.OPENAI_API_KEY)
+_client = None
+
+def _get_openai_client():
+    global _client
+    if _client is None:
+        _client = OpenAI(api_key=settings.OPENAI_API_KEY)
+    return _client
 
 SYSTEM_PROMPT = """Je bent de ProjeXtPal AI Assistent, een vriendelijke en behulpzame chatbot op de website van ProjeXtPal.
 
@@ -66,7 +72,7 @@ def public_chat(request):
         
         messages.append({"role": "user", "content": message})
         
-        response = client.chat.completions.create(
+        response = _get_openai_client().chat.completions.create(
             model="gpt-4o-mini",
             messages=messages,
             temperature=0.7,

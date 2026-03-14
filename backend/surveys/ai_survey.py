@@ -5,7 +5,13 @@ import json
 from django.conf import settings
 from openai import OpenAI
 
-client = OpenAI(api_key=settings.OPENAI_API_KEY)
+_client = None
+
+def _get_openai_client():
+    global _client
+    if _client is None:
+        _client = OpenAI(api_key=settings.OPENAI_API_KEY)
+    return _client
 
 
 def generate_project_survey(project_data: dict) -> dict:
@@ -62,7 +68,7 @@ def generate_project_survey(project_data: dict) -> dict:
     """
     
     try:
-        response = client.chat.completions.create(
+        response = _get_openai_client().chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are an expert project management consultant who creates effective post-project surveys. Always respond with valid JSON only."},
@@ -140,7 +146,7 @@ def analyze_survey_results(survey_data: dict, responses: list) -> dict:
     """
     
     try:
-        response = client.chat.completions.create(
+        response = _get_openai_client().chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are an expert project analyst who provides actionable insights from survey data. Always respond with valid JSON only."},
@@ -194,7 +200,7 @@ def generate_questionnaire_from_activities(activities: list, milestones: list, k
     """
     
     try:
-        response = client.chat.completions.create(
+        response = _get_openai_client().chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a project management expert. Generate relevant survey questions. Always respond with valid JSON only."},

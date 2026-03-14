@@ -30,7 +30,13 @@ except ImportError:
     PracticeAssignment = None
     Exam = None
 
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+client = None
+
+def get_openai_client():
+    global client
+    if client is None:
+        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+    return client
 
 # ============================================================================
 # AI COMPLETE COURSE GENERATION
@@ -71,7 +77,7 @@ Return ONLY valid JSON (no markdown):
   ]
 }}"""
 
-        response = client.chat.completions.create(
+        response = get_openai_client().chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a professional course designer. Return ONLY valid JSON."},
@@ -227,7 +233,7 @@ Return ONLY JSON:
 }}"""
 
     try:
-        response = client.chat.completions.create(
+        response = get_openai_client().chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "Return ONLY JSON."},

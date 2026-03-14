@@ -19,10 +19,17 @@ from bot.ai.tools.project_analysis_tools import get_project_analysis
 from bot.models import Chat, ChatMessage
 from bot.serializers import ChatCreateSerializer, ChatMessageSerializer, ChatSerializer
 
-# Initialize the AI agent
-tools = ToolRegistry.get_tools()
-ai_agent = ERPAIAgent(tools=tools)
+# Lazy-initialize the AI agent
+_ai_agent = None
 logger = logging.getLogger("bot.views")
+
+
+def _get_ai_agent():
+    global _ai_agent
+    if _ai_agent is None:
+        tools = ToolRegistry.get_tools()
+        _ai_agent = ERPAIAgent(tools=tools)
+    return _ai_agent
 
 
 def detect_language(text: str) -> str:

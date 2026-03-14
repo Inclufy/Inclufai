@@ -185,11 +185,11 @@ DEFAULT_FROM_EMAIL = decouple.config("DEFAULT_FROM_EMAIL")
 FRONTEND_URL = decouple.config("FRONTEND_URL")
 BASE_URL = decouple.config("BASE_URL")
 
-STRIPE_SECRET_KEY = decouple.config("STRIPE_SECRET_KEY")
-STRIPE_PUBLIC_KEY = decouple.config("STRIPE_PUBLIC_KEY")
-STRIPE_WEBHOOK_SECRET = decouple.config("STRIPE_WEBHOOK_SECRET")
+STRIPE_SECRET_KEY = decouple.config("STRIPE_SECRET_KEY", default="")
+STRIPE_PUBLIC_KEY = decouple.config("STRIPE_PUBLIC_KEY", default="")
+STRIPE_WEBHOOK_SECRET = decouple.config("STRIPE_WEBHOOK_SECRET", default="")
 
-OPENAI_API_KEY = decouple.config("OPENAI_API_KEY")
+OPENAI_API_KEY = decouple.config("OPENAI_API_KEY", default="")
 
 # drf-spectacular settings
 SPECTACULAR_SETTINGS = {
