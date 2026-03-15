@@ -12,9 +12,6 @@ import {
   Mic,
   Maximize2,
   Minimize2,
-  FolderKanban,
-  Building2,
-  ListChecks,
   BarChart3,
   AlertTriangle,
   TrendingUp,
@@ -26,27 +23,10 @@ import {
   Info,
   ArrowRight,
   Lightbulb,
-  Target,
-  Users,
   Settings,
-  Shield,
-  BookOpen,
-  Calendar,
   Compass,
   Map,
   ExternalLink,
-  Layout,
-  FileText,
-  Clock,
-  GraduationCap,
-  Kanban,
-  Layers,
-  GitBranch,
-  Workflow,
-  CheckCircle2,
-  Brain,
-  Briefcase,
-  type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
@@ -54,14 +34,25 @@ import DynamicForm from "@/components/chat/DynamicForm";
 import { AIMessageRenderer } from "@/components/AIMessageRenderer";
 import { useCopilot } from "@/contexts/CopilotContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { usePageTranslations } from "@/hooks/usePageTranslations";
+
 import { toast } from "sonner";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 import { VoiceChatDialog } from "@/components/dashboards/HomeAIVoiceCards";
 import { SetupWizardPanel } from "@/pages/OnboardingWizard";
+import {
+  gt,
+  getGuideMap,
+  getDefaultGuide,
+  getRelatedPages,
+  getSitemap,
+  type GuideContent,
+  type NavLink,
+  type NavSection,
+} from "@/components/copilot-guide-data";
 
 /* ─── Types ─── */
 type CopilotTab = "chat" | "guide" | "setup";
+type Lang = "en" | "nl" | "fr";
 
 interface Message {
   id: string;
@@ -89,364 +80,13 @@ interface SendMessageResponse {
   ai_response: { id: number; content: string; original_ai_response?: string };
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   GUIDE CONTENT — per-page user guide with features, how-tos, tips
-   ═══════════════════════════════════════════════════════════════════ */
-
-interface GuideFeature {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-}
-
-interface GuideHowTo {
-  title: string;
-  steps: string[];
-}
-
-interface GuideContent {
-  pageTitle: string;
-  pageDescription: string;
-  features: GuideFeature[];
-  howTos: GuideHowTo[];
-  tips: string[];
-  tourSteps: TourStep[];
-}
-
-const GUIDE_MAP: Record<string, GuideContent> = {
-  "/dashboard": {
-    pageTitle: "Dashboard",
-    pageDescription: "Uw centrale project cockpit met overzicht van alle projecten, programma's en taken.",
-    features: [
-      { icon: BarChart3, title: "Project overzicht", description: "Status van al uw projecten in één oogopslag" },
-      { icon: ListChecks, title: "Taken & deadlines", description: "Openstaande taken en naderende deadlines" },
-      { icon: TrendingUp, title: "Voortgang", description: "Voortgangsgrafieken en burndown charts" },
-      { icon: AlertTriangle, title: "Risico's & alerts", description: "Waarschuwingen voor projectrisico's" },
-    ],
-    howTos: [
-      { title: "Dashboard gebruiken", steps: ["Bekijk projectstatus kaarten bovenaan", "Scroll voor taak- en deadlineoverzicht", "Klik op een project voor details", "Gebruik filters voor specifieke weergaven"] },
-    ],
-    tips: [
-      "Check uw dashboard dagelijks voor actuele projectstatus.",
-      "Klik op risico-alerts voor directe actie.",
-      "Gebruik de AI Copilot voor snelle projectinzichten.",
-    ],
-    tourSteps: [
-      { title: "Welkom op het Dashboard", description: "Dit is uw centrale project cockpit. Hier ziet u alle belangrijke projectinformatie." },
-    ],
-  },
-  "/projects": {
-    pageTitle: "Projecten",
-    pageDescription: "Beheer al uw projecten met ondersteuning voor Scrum, Kanban, PRINCE2, Waterfall en meer.",
-    features: [
-      { icon: FolderKanban, title: "Project portfolio", description: "Overzicht van alle projecten met status en voortgang" },
-      { icon: Layers, title: "Methodologie keuze", description: "Kies de juiste methodologie per project" },
-      { icon: Users, title: "Team toewijzing", description: "Wijs teamleden toe aan projecten" },
-      { icon: Target, title: "Doelen & KPI's", description: "Stel projectdoelen en meetbare KPI's in" },
-    ],
-    howTos: [
-      { title: "Project aanmaken", steps: ["Klik op '+ Nieuw Project'", "Vul projectnaam en beschrijving in", "Selecteer de methodologie (Scrum, Kanban, etc.)", "Stel het team en de planning in", "Klik op Aanmaken"] },
-      { title: "Project bekijken", steps: ["Klik op een project in de lijst", "Bekijk de project details en voortgang", "Navigeer via het submenu naar specifieke onderdelen", "Gebruik de methodologie-specifieke tools"] },
-    ],
-    tips: [
-      "Kies de juiste methodologie bij aanvang — later wijzigen is complex.",
-      "Stel altijd een project charter op als fundament.",
-      "Gebruik de AI Copilot voor risico-analyse en advies.",
-    ],
-    tourSteps: [
-      { title: "Projecten", description: "Hier beheert u al uw projecten en kiest u de juiste aanpak." },
-    ],
-  },
-  "/programs": {
-    pageTitle: "Programma's",
-    pageDescription: "Beheer programma's die meerdere gerelateerde projecten bundelen (SAFe, MSP, PMI, PRINCE2).",
-    features: [
-      { icon: Building2, title: "Programma portfolio", description: "Overzicht van alle programma's" },
-      { icon: GitBranch, title: "Project bundeling", description: "Groepeer gerelateerde projecten" },
-      { icon: Target, title: "Benefits management", description: "Track programma-baten en waarderealisatie" },
-      { icon: Users, title: "Stakeholder management", description: "Beheer stakeholders op programmaniveau" },
-    ],
-    howTos: [
-      { title: "Programma aanmaken", steps: ["Klik op '+ Nieuw Programma'", "Kies de programma-methodologie (SAFe, MSP, etc.)", "Vul naam en doelstelling in", "Wijs projecten toe aan het programma", "Klik op Aanmaken"] },
-    ],
-    tips: [
-      "Gebruik programma's voor strategische initiatieven met meerdere projecten.",
-      "Track benefits op programmaniveau voor strategisch inzicht.",
-      "Stel regelmatige governance reviews in.",
-    ],
-    tourSteps: [
-      { title: "Programma's", description: "Hier beheert u strategische programma's met meerdere projecten." },
-    ],
-  },
-  "/governance": {
-    pageTitle: "Governance",
-    pageDescription: "Portfolio governance, boards en stakeholder management.",
-    features: [
-      { icon: Shield, title: "Portfolio's", description: "Beheer project portfolio's en prioritering" },
-      { icon: Briefcase, title: "Boards", description: "Governance boards en besluitvorming" },
-      { icon: Users, title: "Stakeholders", description: "Stakeholder analyse en communicatie" },
-      { icon: BarChart3, title: "Rapportages", description: "Governance rapportages en dashboards" },
-    ],
-    howTos: [
-      { title: "Portfolio beheren", steps: ["Ga naar Governance → Portfolio's", "Bekijk de portfolio matrix", "Prioriteer projecten op basis van waarde en risico", "Neem portfolio-beslissingen"] },
-    ],
-    tips: [
-      "Gebruik portfolio management voor strategische projectselectie.",
-      "Houd governance boards regelmatig (maandelijks) bij.",
-      "Documenteer alle governance-beslissingen.",
-    ],
-    tourSteps: [
-      { title: "Governance", description: "Hier beheert u portfolio governance en besluitvorming." },
-    ],
-  },
-  "/reports": {
-    pageTitle: "Rapportages",
-    pageDescription: "Genereer project- en programmarapportages met analyses en inzichten.",
-    features: [
-      { icon: FileText, title: "Standaard rapporten", description: "Voorgedefinieerde rapportage templates" },
-      { icon: BarChart3, title: "Dashboards", description: "Visuele project dashboards" },
-      { icon: TrendingUp, title: "Trendanalyse", description: "Projectprestaties over tijd" },
-      { icon: FileText, title: "Export", description: "Exporteer naar PDF, Excel of PowerPoint" },
-    ],
-    howTos: [
-      { title: "Rapport genereren", steps: ["Open Rapportages", "Selecteer het rapporttype", "Kies projecten en periode", "Genereer het rapport", "Download of deel met stakeholders"] },
-    ],
-    tips: [
-      "Genereer wekelijks statusrapporten voor stakeholders.",
-      "Gebruik trendanalyses om problemen vroegtijdig te signaleren.",
-      "Pas rapporten aan per doelgroep (stuurgroep vs. team).",
-    ],
-    tourSteps: [
-      { title: "Rapportages", description: "Hier genereert u project- en programmarapportages." },
-    ],
-  },
-  "/team": {
-    pageTitle: "Team",
-    pageDescription: "Beheer uw teamleden, rollen en capaciteit.",
-    features: [
-      { icon: Users, title: "Teamoverzicht", description: "Alle teamleden en hun rollen" },
-      { icon: Target, title: "Capaciteitsplanning", description: "Beschikbaarheid en allocatie per teamlid" },
-      { icon: BarChart3, title: "Werklast", description: "Werklast verdeling over het team" },
-      { icon: Calendar, title: "Beschikbaarheid", description: "Vakanties, verlof en beschikbaarheid" },
-    ],
-    howTos: [
-      { title: "Teamlid toevoegen", steps: ["Open het Team overzicht", "Klik op '+ Teamlid uitnodigen'", "Vul e-mail en rol in", "Wijs projecten toe", "Verstuur de uitnodiging"] },
-    ],
-    tips: [
-      "Houd capaciteitsplanning actueel voor realistische planning.",
-      "Verdeel taken gelijkmatig om overbelasting te voorkomen.",
-      "Gebruik rollen voor duidelijke verantwoordelijkheden.",
-    ],
-    tourSteps: [
-      { title: "Team", description: "Hier beheert u uw team, rollen en capaciteit." },
-    ],
-  },
-  "/time-tracking": {
-    pageTitle: "Tijdregistratie",
-    pageDescription: "Registreer en analyseer tijdsbesteding per project, taak en teamlid.",
-    features: [
-      { icon: Clock, title: "Uren registreren", description: "Log uren per project en taak" },
-      { icon: BarChart3, title: "Urenanalyse", description: "Analyse van tijdsbesteding per categorie" },
-      { icon: Target, title: "Budget tracking", description: "Vergelijk bestede vs. geplande uren" },
-      { icon: FileText, title: "Urenstaten", description: "Genereer urenstaten en overzichten" },
-    ],
-    howTos: [
-      { title: "Uren loggen", steps: ["Open Tijdregistratie", "Selecteer het project en de taak", "Vul de datum en het aantal uren in", "Voeg een notitie toe (optioneel)", "Klik op Opslaan"] },
-    ],
-    tips: [
-      "Log uren dagelijks voor de meest nauwkeurige registratie.",
-      "Gebruik categorieën voor betere analyse (development, meetings, etc.).",
-      "Review wekelijks of de registratie compleet is.",
-    ],
-    tourSteps: [
-      { title: "Tijdregistratie", description: "Hier registreert en analyseert u tijdsbesteding." },
-    ],
-  },
-  "/ai-assistant": {
-    pageTitle: "AI Assistent",
-    pageDescription: "Uw persoonlijke AI project management assistent voor analyses en advies.",
-    features: [
-      { icon: Brain, title: "AI Analyses", description: "Automatische project analyses en inzichten" },
-      { icon: AlertTriangle, title: "Risico detectie", description: "AI identificeert risico's proactief" },
-      { icon: Lightbulb, title: "Advies", description: "AI-gestuurde aanbevelingen per project" },
-      { icon: FileText, title: "Rapportage", description: "Automatisch gegenereerde rapporten" },
-    ],
-    howTos: [
-      { title: "AI Assistent gebruiken", steps: ["Open de AI Assistent pagina", "Stel een vraag over uw project", "AI analyseert uw data en geeft advies", "Pas het advies toe in uw projectmanagement"] },
-    ],
-    tips: [
-      "Stel specifieke vragen voor de beste resultaten.",
-      "Gebruik AI voor risico-scans vóór belangrijke milestones.",
-      "Laat AI statusrapporten genereren om tijd te besparen.",
-    ],
-    tourSteps: [
-      { title: "AI Assistent", description: "Hier gebruikt u AI voor project analyses en advies." },
-    ],
-  },
-  "/post-project": {
-    pageTitle: "Post Project",
-    pageDescription: "Evalueer afgeronde projecten en documenteer lessons learned.",
-    features: [
-      { icon: CheckCircle2, title: "Project evaluatie", description: "Systematische evaluatie van afgeronde projecten" },
-      { icon: BookOpen, title: "Lessons learned", description: "Documenteer en deel geleerde lessen" },
-      { icon: BarChart3, title: "Prestatie-analyse", description: "Vergelijk planning vs. realisatie" },
-      { icon: Target, title: "Benefits realisatie", description: "Meet of verwachte baten zijn gerealiseerd" },
-    ],
-    howTos: [
-      { title: "Post-project review", steps: ["Selecteer het afgeronde project", "Doorloop de evaluatiechecklist", "Documenteer lessons learned", "Beoordeel de benefits realisatie", "Deel resultaten met stakeholders"] },
-    ],
-    tips: [
-      "Voer de review uit binnen 2 weken na projectafsluiting.",
-      "Betrek het hele team bij lessons learned sessies.",
-      "Gebruik lessons learned in toekomstige projecten.",
-    ],
-    tourSteps: [
-      { title: "Post Project", description: "Hier evalueert u projecten en documenteert lessons learned." },
-    ],
-  },
-  "/profile": {
-    pageTitle: "Profiel",
-    pageDescription: "Beheer uw persoonlijke instellingen, profielfoto en voorkeuren.",
-    features: [
-      { icon: Users, title: "Profielgegevens", description: "Naam, foto en contactgegevens" },
-      { icon: Settings, title: "Voorkeuren", description: "Taal, thema en notificatie-instellingen" },
-      { icon: Shield, title: "Beveiliging", description: "Wachtwoord en authenticatie" },
-      { icon: BarChart3, title: "Activiteit", description: "Uw recente activiteiten overzicht" },
-    ],
-    howTos: [
-      { title: "Profiel bijwerken", steps: ["Open uw Profiel", "Klik op 'Bewerken'", "Pas uw gegevens aan", "Upload een profielfoto", "Klik op Opslaan"] },
-    ],
-    tips: [
-      "Houd uw contactgegevens up-to-date.",
-      "Stel notificatie-voorkeuren in voor relevante meldingen.",
-      "Kies een thema (licht/donker) dat prettig werkt.",
-    ],
-    tourSteps: [
-      { title: "Profiel", description: "Hier beheert u uw persoonlijke instellingen." },
-    ],
-  },
-  "/settings": {
-    pageTitle: "Instellingen",
-    pageDescription: "Configureer systeem-, team- en projectinstellingen.",
-    features: [
-      { icon: Settings, title: "Systeeminstellingen", description: "Algemene configuratie en voorkeuren" },
-      { icon: Users, title: "Gebruikersbeheer", description: "Rollen, rechten en uitnodigingen" },
-      { icon: Workflow, title: "Workflows", description: "Aangepaste workflows en goedkeuringsprocessen" },
-      { icon: Shield, title: "Beveiliging", description: "Beveiligingsinstellingen en audit trails" },
-    ],
-    howTos: [
-      { title: "Instellingen aanpassen", steps: ["Open Instellingen", "Navigeer naar de gewenste sectie", "Pas de configuratie aan", "Klik op Opslaan"] },
-    ],
-    tips: [
-      "Stel rollen en rechten zorgvuldig in voor goede governance.",
-      "Configureer notificaties per project voor relevante updates.",
-      "Review instellingen periodiek na organisatiewijzigingen.",
-    ],
-    tourSteps: [
-      { title: "Instellingen", description: "Hier configureert u alle systeem- en projectinstellingen." },
-    ],
-  },
-  "/surveys": {
-    pageTitle: "Enquêtes",
-    pageDescription: "Maak en verstuur enquêtes voor projectfeedback en teamtevredenheid.",
-    features: [
-      { icon: FileText, title: "Enquête builder", description: "Maak enquêtes met diverse vraagtypen" },
-      { icon: Users, title: "Verspreiding", description: "Verstuur naar teams en stakeholders" },
-      { icon: BarChart3, title: "Resultaten", description: "Analyseer antwoorden en trends" },
-      { icon: TrendingUp, title: "Inzichten", description: "AI-gestuurde analyse van feedback" },
-    ],
-    howTos: [
-      { title: "Enquête maken", steps: ["Klik op '+ Nieuwe Enquête'", "Voeg vragen toe (multiple choice, schaal, open)", "Stel de doelgroep in", "Verstuur de enquête", "Bekijk resultaten in het dashboard"] },
-    ],
-    tips: [
-      "Houd enquêtes kort (max 10 vragen) voor hogere response rates.",
-      "Verstuur na elke sprint of fase een korte retrospective enquête.",
-      "Gebruik NPS-vragen voor vergelijkbare metingen over tijd.",
-    ],
-    tourSteps: [
-      { title: "Enquêtes", description: "Hier maakt en analyseert u enquêtes voor projectfeedback." },
-    ],
-  },
-};
-
-const DEFAULT_GUIDE: GuideContent = {
-  pageTitle: "ProjeXtPal",
-  pageDescription: "Uw complete AI-gestuurde project management platform. Ontdek hieronder alle modules.",
-  features: [
-    { icon: Layout, title: "Dashboard", description: "Centraal overzicht van al uw projecten" },
-    { icon: FolderKanban, title: "Projecten", description: "Projectbeheer met diverse methodologieën" },
-    { icon: Building2, title: "Programma's", description: "Strategische programma's met meerdere projecten" },
-    { icon: GraduationCap, title: "Academy", description: "Leer project management methodologieën" },
-  ],
-  howTos: [
-    { title: "Aan de slag met ProjeXtPal", steps: ["Maak uw eerste project aan via Projecten", "Kies de juiste methodologie (Scrum, Kanban, PRINCE2, etc.)", "Stel uw team samen en wijs rollen toe", "Begin met plannen en taken toewijzen", "Monitor voortgang via het Dashboard"] },
-    { title: "Navigeren in de applicatie", steps: ["Gebruik de zijbalk links om naar modules te navigeren", "Open de AI Copilot (rechtsboven) voor hulp op elke pagina", "Klik op 'Gids' voor pagina-specifieke handleidingen", "Methodologie-specifieke menu's verschijnen bij projectweergave"] },
-  ],
-  tips: [
-    "Gebruik de AI Copilot om snel antwoorden te vinden over projectmanagement.",
-    "Klik op 'Gids' op elke pagina voor context-specifieke handleidingen.",
-    "De Academy biedt trainingen voor alle ondersteunde methodologieën.",
-  ],
-  tourSteps: [
-    { title: "Welkom bij ProjeXtPal", description: "Dit is uw complete project management platform. Laten we een rondleiding doen." },
-  ],
-};
-
-/* ─── Related pages navigation ─── */
-interface NavLink {
-  label: string;
-  path: string;
-  icon: LucideIcon;
-}
-
-interface NavSection {
-  title: string;
-  links: NavLink[];
-}
-
-const RELATED_PAGES: Record<string, NavLink[]> = {
-  "/dashboard":      [{ label: "Projecten", path: "/projects", icon: FolderKanban }, { label: "Rapportages", path: "/reports", icon: FileText }, { label: "Team", path: "/team", icon: Users }],
-  "/projects":       [{ label: "Dashboard", path: "/dashboard", icon: Layout }, { label: "Programma's", path: "/programs", icon: Building2 }, { label: "Team", path: "/team", icon: Users }],
-  "/programs":       [{ label: "Projecten", path: "/projects", icon: FolderKanban }, { label: "Governance", path: "/governance/portfolios", icon: Shield }, { label: "Rapportages", path: "/reports", icon: FileText }],
-  "/governance":     [{ label: "Programma's", path: "/programs", icon: Building2 }, { label: "Rapportages", path: "/reports", icon: FileText }, { label: "Projecten", path: "/projects", icon: FolderKanban }],
-  "/reports":        [{ label: "Dashboard", path: "/dashboard", icon: Layout }, { label: "Projecten", path: "/projects", icon: FolderKanban }, { label: "Tijdregistratie", path: "/time-tracking", icon: Clock }],
-  "/team":           [{ label: "Projecten", path: "/projects", icon: FolderKanban }, { label: "Tijdregistratie", path: "/time-tracking", icon: Clock }, { label: "Dashboard", path: "/dashboard", icon: Layout }],
-  "/time-tracking":  [{ label: "Projecten", path: "/projects", icon: FolderKanban }, { label: "Team", path: "/team", icon: Users }, { label: "Rapportages", path: "/reports", icon: FileText }],
-  "/ai-assistant":   [{ label: "Dashboard", path: "/dashboard", icon: Layout }, { label: "Projecten", path: "/projects", icon: FolderKanban }, { label: "Rapportages", path: "/reports", icon: FileText }],
-  "/post-project":   [{ label: "Projecten", path: "/projects", icon: FolderKanban }, { label: "Rapportages", path: "/reports", icon: FileText }, { label: "Enquêtes", path: "/surveys", icon: FileText }],
-  "/profile":        [{ label: "Instellingen", path: "/settings", icon: Settings }, { label: "Dashboard", path: "/dashboard", icon: Layout }, { label: "Team", path: "/team", icon: Users }],
-  "/settings":       [{ label: "Profiel", path: "/profile", icon: Users }, { label: "Team", path: "/team", icon: Users }, { label: "Governance", path: "/governance/portfolios", icon: Shield }],
-  "/surveys":        [{ label: "Post Project", path: "/post-project", icon: CheckCircle2 }, { label: "Team", path: "/team", icon: Users }, { label: "Rapportages", path: "/reports", icon: FileText }],
-};
-
-const APP_SITEMAP: NavSection[] = [
-  { title: "Overzicht", links: [
-    { label: "Dashboard", path: "/dashboard", icon: Layout },
-    { label: "AI Assistent", path: "/ai-assistant", icon: Brain },
-  ]},
-  { title: "Projecten & Programma's", links: [
-    { label: "Projecten", path: "/projects", icon: FolderKanban },
-    { label: "Programma's", path: "/programs", icon: Building2 },
-    { label: "Governance", path: "/governance/portfolios", icon: Shield },
-  ]},
-  { title: "Team & Planning", links: [
-    { label: "Team", path: "/team", icon: Users },
-    { label: "Tijdregistratie", path: "/time-tracking", icon: Clock },
-    { label: "Rapportages", path: "/reports", icon: FileText },
-  ]},
-  { title: "Evaluatie & Overig", links: [
-    { label: "Post Project", path: "/post-project", icon: CheckCircle2 },
-    { label: "Enquêtes", path: "/surveys", icon: FileText },
-    { label: "Profiel", path: "/profile", icon: Users },
-    { label: "Instellingen", path: "/settings", icon: Settings },
-  ]},
-];
+/* Guide content is in copilot-guide-data.ts with EN/NL/FR translations */
 
 /* ═══════════════════════════════════════════════════════════════════
    SUGGESTIONS & QUICK ACTIONS (Chat tab)
    ═══════════════════════════════════════════════════════════════════ */
 
-const suggestionsData = {
+const suggestionsData: Record<Lang, { icon: typeof AlertTriangle; title: string; description: string }[]> = {
   en: [
     { icon: AlertTriangle, title: "Project risks", description: "Analyze current project risks and suggest mitigations." },
     { icon: TrendingUp, title: "Performance report", description: "Generate a summary of project performance metrics." },
@@ -455,9 +95,13 @@ const suggestionsData = {
     { icon: AlertTriangle, title: "Projectrisico's", description: "Analyseer huidige projectrisico's en stel mitigaties voor." },
     { icon: TrendingUp, title: "Prestatierapport", description: "Genereer een samenvatting van projectprestaties." },
   ],
+  fr: [
+    { icon: AlertTriangle, title: "Risques du projet", description: "Analysez les risques actuels du projet et proposez des atténuations." },
+    { icon: TrendingUp, title: "Rapport de performance", description: "Générez un résumé des métriques de performance du projet." },
+  ],
 };
 
-const quickActionsData = {
+const quickActionsData: Record<Lang, { icon: typeof BarChart3; label: string }[]> = {
   en: [
     { icon: BarChart3, label: "Monthly report" },
     { icon: TrendingUp, label: "Portfolio analysis" },
@@ -468,6 +112,11 @@ const quickActionsData = {
     { icon: TrendingUp, label: "Portfolio analyse" },
     { icon: AlertTriangle, label: "Risico scan" },
   ],
+  fr: [
+    { icon: BarChart3, label: "Rapport mensuel" },
+    { icon: TrendingUp, label: "Analyse de portfolio" },
+    { icon: AlertTriangle, label: "Scan des risques" },
+  ],
 };
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -477,7 +126,7 @@ const quickActionsData = {
 export default function AICopilotSidebar() {
   const { isOpen, close, requestedTab } = useCopilot();
   const { language } = useLanguage();
-  const { pt } = usePageTranslations();
+
   const location = useLocation();
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
@@ -493,12 +142,16 @@ export default function AICopilotSidebar() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Resolve current path for guide
+  // Resolve current path for guide — multilingual
+  const lang = language as Lang;
   const currentPath = "/" + location.pathname.split("/").filter(Boolean)[0];
-  const guide = GUIDE_MAP[location.pathname] || GUIDE_MAP[currentPath] || DEFAULT_GUIDE;
+  const guideMap = getGuideMap(lang);
+  const guide = guideMap[location.pathname] || guideMap[currentPath] || getDefaultGuide(lang);
+  const relatedPages = getRelatedPages(lang);
+  const sitemap = getSitemap(lang);
 
-  const suggestions = language === "nl" ? suggestionsData.nl : suggestionsData.en;
-  const quickActions = language === "nl" ? quickActionsData.nl : quickActionsData.en;
+  const suggestions = suggestionsData[lang] ?? suggestionsData.en;
+  const quickActions = quickActionsData[lang] ?? quickActionsData.en;
 
   // Sync with requested tab from context
   useEffect(() => {
@@ -553,7 +206,7 @@ export default function AICopilotSidebar() {
 
   const handleFormCancel = () => {
     setActiveForm(null);
-    setMessages((prev) => [...prev, { id: Date.now().toString(), role: "assistant", content: language === "nl" ? "Formulier geannuleerd. Hoe kan ik verder helpen?" : "Form cancelled. How else can I help you?", timestamp: new Date() }]);
+    setMessages((prev) => [...prev, { id: Date.now().toString(), role: "assistant", content: gt("formCancelled", lang), timestamp: new Date() }]);
   };
 
   const handleNewChat = () => {
@@ -563,7 +216,7 @@ export default function AICopilotSidebar() {
 
   const handleCopyMessage = (content: string) => {
     navigator.clipboard.writeText(content);
-    toast.success(language === "nl" ? "Gekopieerd" : "Copied to clipboard");
+    toast.success(lang === "nl" ? "Gekopieerd" : lang === "fr" ? "Copié" : "Copied to clipboard");
   };
 
   const handleFeedback = (type: "positive" | "negative") => {
@@ -573,7 +226,7 @@ export default function AICopilotSidebar() {
   if (!isOpen) return null;
 
   const sidebarWidth = expanded ? "w-[600px]" : "w-[380px]";
-  const isNl = language === "nl";
+  const isNl = language === "nl"; // kept for VoiceChatDialog prop
 
   /* ─── Guide Tab Content ─── */
   const renderGuideTab = () => (
@@ -593,7 +246,7 @@ export default function AICopilotSidebar() {
               onClick={() => setIsTourOpen(true)}
             >
               <Play className="h-3 w-3 mr-1.5" />
-              {isNl ? "Start Rondleiding" : "Start Tour"}
+              {gt("startTour", lang)}
             </Button>
           )}
         </div>
@@ -601,7 +254,7 @@ export default function AICopilotSidebar() {
         {/* Features */}
         <div className="space-y-2">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1">
-            {isNl ? "Functies" : "Features"}
+            {gt("features", lang)}
           </p>
           <div className="grid grid-cols-1 gap-1.5">
             {guide.features.map((feature, i) => {
@@ -626,7 +279,7 @@ export default function AICopilotSidebar() {
         {/* How-To's */}
         <div className="space-y-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1">
-            {isNl ? "Hoe werkt het?" : "How does it work?"}
+            {gt("howDoesItWork", lang)}
           </p>
           {guide.howTos.map((howTo, i) => (
             <div key={i} className="rounded-lg border border-border p-3 space-y-2">
@@ -650,7 +303,7 @@ export default function AICopilotSidebar() {
 
         {/* Tips */}
         <div className="space-y-2">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1">Tips & Best Practices</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1">{gt("tipsBest", lang)}</p>
           {guide.tips.map((tip, i) => (
             <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30">
               <Lightbulb className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
@@ -661,23 +314,23 @@ export default function AICopilotSidebar() {
 
         {/* Ask AI button */}
         <div className="pt-2">
-          <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => { setActiveTab("chat"); handleSendMessage(isNl ? `Hoe gebruik ik ${guide.pageTitle}? Geef me een overzicht.` : `How do I use ${guide.pageTitle}? Give me an overview.`); }}>
+          <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => { setActiveTab("chat"); handleSendMessage(`${gt("howDoIUse", lang)} ${guide.pageTitle}? ${gt("giveOverview", lang)}`); }}>
             <MessageSquare className="h-3 w-3 mr-1.5" />
-            {isNl ? `Vraag de AI Copilot over ${guide.pageTitle}` : `Ask AI Copilot about ${guide.pageTitle}`}
+            {`${gt("askCopilot", lang)} ${guide.pageTitle}`}
           </Button>
         </div>
 
         <div className="border-t border-border" />
 
         {/* Related pages */}
-        {RELATED_PAGES[currentPath] && (
+        {relatedPages[currentPath] && (
           <div className="space-y-2">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1 flex items-center gap-1">
               <Compass className="h-3 w-3" />
-              {isNl ? "Gerelateerde pagina's" : "Related pages"}
+              {gt("relatedPages", lang)}
             </p>
             <div className="grid grid-cols-1 gap-1">
-              {RELATED_PAGES[currentPath].map((link, i) => {
+              {relatedPages[currentPath].map((link, i) => {
                 const LinkIcon = link.icon;
                 return (
                   <button key={i} className="flex items-center gap-2.5 p-2 rounded-lg border border-border hover:bg-accent/50 hover:border-purple-300 transition-all text-left group cursor-pointer w-full" onClick={() => navigate(link.path)}>
@@ -697,10 +350,10 @@ export default function AICopilotSidebar() {
         <div className="space-y-2">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1 flex items-center gap-1">
             <Map className="h-3 w-3" />
-            {isNl ? "Alle modules" : "All modules"}
+            {gt("allModules", lang)}
           </p>
           <div className="space-y-2">
-            {APP_SITEMAP.map((section, si) => (
+            {sitemap.map((section, si) => (
               <div key={si} className="rounded-lg border border-border p-2.5 space-y-1.5">
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{section.title}</p>
                 <div className="grid grid-cols-2 gap-1">
@@ -758,7 +411,7 @@ export default function AICopilotSidebar() {
           </button>
           <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "guide" ? "border-purple-600 text-purple-700 dark:text-purple-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("guide")}>
             <HelpCircle className="h-3.5 w-3.5" />
-            {isNl ? "Gids" : "Guide"}
+            {gt("guide", lang)}
           </button>
           <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "setup" ? "border-purple-600 text-purple-700 dark:text-purple-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("setup")}>
             <Settings className="h-3.5 w-3.5" />
@@ -788,7 +441,7 @@ export default function AICopilotSidebar() {
                         </div>
                         <div className="text-left">
                           <p className="text-white font-bold text-sm leading-tight">AI Chat</p>
-                          <p className="text-white/70 text-[10px]">{isNl ? "Stel je vragen" : "Ask questions"}</p>
+                          <p className="text-white/70 text-[10px]">{gt("askQuestions", lang)}</p>
                         </div>
                       </div>
                     </div>
@@ -804,7 +457,7 @@ export default function AICopilotSidebar() {
                         </div>
                         <div className="text-left">
                           <p className="text-white font-bold text-sm leading-tight">Voice</p>
-                          <p className="text-white/70 text-[10px]">{isNl ? "Praat met PX" : "Talk to PX"}</p>
+                          <p className="text-white/70 text-[10px]">{gt("talkToPX", lang)}</p>
                         </div>
                       </div>
                     </div>
@@ -814,11 +467,11 @@ export default function AICopilotSidebar() {
                 {messages.length === 0 ? (
                   <div className="space-y-6">
                     <div className="text-center pt-2 pb-2">
-                      <h3 className="text-base font-semibold text-foreground mb-1">{isNl ? "Hallo! Ik ben uw AI Copilot" : "Hello! I'm your AI Copilot"}</h3>
-                      <p className="text-xs text-muted-foreground max-w-[260px] mx-auto">{isNl ? "Ik help u met overzicht van uw projecten en programma's" : "I help you with insights on your projects and programs"}</p>
+                      <h3 className="text-base font-semibold text-foreground mb-1">{gt("hello", lang)}</h3>
+                      <p className="text-xs text-muted-foreground max-w-[260px] mx-auto">{gt("helpWith", lang)}</p>
                     </div>
                     <div>
-                      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">{isNl ? "Suggesties" : "Suggestions"}</p>
+                      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">{gt("suggestions", lang)}</p>
                       <div className="space-y-2">
                         {suggestions.map((item, i) => (
                           <button key={i} onClick={() => handleSendMessage(item.description)} className="w-full flex items-start gap-3 p-3 rounded-lg border border-border bg-background hover:bg-accent/50 hover:border-primary/20 transition-all text-left group">
@@ -830,7 +483,7 @@ export default function AICopilotSidebar() {
                       </div>
                     </div>
                     <div>
-                      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">{isNl ? "Snelle Acties" : "Quick Actions"}</p>
+                      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">{gt("quickActions", lang)}</p>
                       <div className="space-y-1.5">
                         {quickActions.map((action, i) => (
                           <button key={i} onClick={() => handleSendMessage(action.label)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent/50 transition-colors text-left">
@@ -855,7 +508,7 @@ export default function AICopilotSidebar() {
                             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
                             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
                             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
-                            <span className="text-xs text-muted-foreground ml-1">{isNl ? "Denken..." : "Thinking..."}</span>
+                            <span className="text-xs text-muted-foreground ml-1">{gt("thinking", lang)}</span>
                           </div>
                         </div>
                       </div>
@@ -870,19 +523,19 @@ export default function AICopilotSidebar() {
               <div className="px-4 pt-2">
                 <Button variant="ghost" size="sm" onClick={handleNewChat} className="w-full text-xs text-muted-foreground hover:text-foreground">
                   <Plus className="h-3.5 w-3.5 mr-1.5" />
-                  {isNl ? "Nieuw gesprek" : "New conversation"}
+                  {gt("newConversation", lang)}
                 </Button>
               </div>
             )}
 
             <div className="p-3 border-t border-border bg-card">
               <div className="flex items-center gap-2">
-                <Input ref={inputRef} value={inputValue} onChange={(e) => setInputValue(e.target.value)} onKeyPress={(e) => e.key === "Enter" && !isSending && !activeForm && handleSendMessage()} placeholder={isNl ? "Stel een vraag..." : "Ask a question..."} disabled={isSending || !!activeForm} className="h-10 text-sm bg-background" />
+                <Input ref={inputRef} value={inputValue} onChange={(e) => setInputValue(e.target.value)} onKeyPress={(e) => e.key === "Enter" && !isSending && !activeForm && handleSendMessage()} placeholder={gt("askQuestion", lang)} disabled={isSending || !!activeForm} className="h-10 text-sm bg-background" />
                 <Button onClick={() => handleSendMessage()} disabled={!inputValue.trim() || isSending || !!activeForm} size="icon" className="h-10 w-10 flex-shrink-0 bg-gradient-to-br from-purple-500 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-700 text-white">
                   {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 </Button>
               </div>
-              <p className="text-[10px] text-center text-muted-foreground mt-1.5">ProjeXtPal AI &middot; {isNl ? "Aangedreven door gespecialiseerde agents" : "Powered by specialized agents"}</p>
+              <p className="text-[10px] text-center text-muted-foreground mt-1.5">ProjeXtPal AI &middot; {gt("poweredBy", lang)}</p>
             </div>
           </>
         )}

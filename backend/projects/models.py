@@ -102,6 +102,7 @@ class Project(models.Model):
     health_risk = models.CharField(max_length=7, default='#808080', blank=True)
     health_quality = models.CharField(max_length=7, default='#808080', blank=True)
     last_analysis_date = models.DateTimeField(null=True, blank=True)
+    is_demo = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-created_at"]

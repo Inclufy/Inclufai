@@ -325,6 +325,7 @@ def generate_demo_projects(company, user, industry, methodology='agile'):
             end_date=end_date,
             status='planning',
             created_by=user,
+            is_demo=True,
         )
 
         # Create milestones
