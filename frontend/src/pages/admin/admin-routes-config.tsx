@@ -6,13 +6,13 @@
 import { lazy } from 'react';
 
 // Lazy load admin pages
-const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
-const UserManagement = lazy(() => import('@/pages/admin/UserManagement'));
-const TenantManagement = lazy(() => import('@/pages/admin/TenantManagement'));
+const AdminDashboard = lazy(() => import('@/pages/admin-portal/AdminDashboard'));
+const UserManagement = lazy(() => import('@/pages/admin-portal/UserManagement'));
+const TenantManagement = lazy(() => import('@/pages/admin-portal/OrganizationManagement'));
 const PlanManagement = lazy(() => import('@/pages/admin/PlanManagement'));
-const IntegrationManagement = lazy(() => import('@/pages/admin/IntegrationManagement'));
-const SystemSettings = lazy(() => import('@/pages/admin/SystemSettings'));
-const AuditLogs = lazy(() => import('@/pages/admin/AuditLogs'));
+const IntegrationManagement = lazy(() => import('@/pages/admin-portal/IntegrationManagement'));
+const SystemSettings = lazy(() => import('@/pages/admin-portal/SystemSettings'));
+const AuditLogs = lazy(() => import('@/pages/admin-portal/AuditLogs'));
 
 // Admin routes configuration
 export const adminRoutes = [
