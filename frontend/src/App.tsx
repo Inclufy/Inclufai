@@ -324,7 +324,7 @@ const AppHeader = () => {
 };
 
 // ============================================
-// Copilot Edge Labels — always visible on right edge
+// Copilot Edge Labels — fixed on right edge, always visible
 // ============================================
 const CopilotEdgeLabels = () => {
   const { isOpen, openWithTab, close, requestedTab } = useCopilot();
@@ -344,24 +344,25 @@ const CopilotEdgeLabels = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-2 z-40"
-         style={{ position: 'relative', right: 0 }}>
+    <div
+      className="fixed right-0 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-50"
+    >
       {labels.map(({ label, tab }) => (
         <button
           key={tab}
           onClick={() => handleClick(tab)}
           className={`
-            px-1 py-3 text-xs font-semibold cursor-pointer border-none rounded-l-md
-            transition-colors duration-200
+            px-1.5 py-3 text-[11px] font-bold cursor-pointer border-none
+            transition-all duration-200 shadow-lg
             ${isOpen && requestedTab === tab
-              ? 'bg-purple-700 text-white'
-              : 'bg-purple-600 text-white hover:bg-purple-700'}
+              ? 'bg-purple-800 text-white rounded-l-md'
+              : 'bg-purple-600 text-white hover:bg-purple-700 rounded-l-md'}
           `}
           style={{
             writingMode: 'vertical-rl',
             textOrientation: 'mixed',
-            letterSpacing: '0.05em',
-            minHeight: '80px',
+            letterSpacing: '0.08em',
+            minHeight: '70px',
           }}
           title={label}
         >
