@@ -1208,3 +1208,377 @@ const OnboardingWizard = () => {
 };
 
 export default OnboardingWizard;
+
+// ============================================
+// Compact Setup Wizard Panel — for AI Copilot sidebar
+// ============================================
+export const SetupWizardPanel = ({ onComplete }: { onComplete?: () => void }) => {
+  const { language } = useLanguage();
+  const lang = language === 'nl' ? 'nl' : 'en';
+  const t = translations[lang];
+
+  const [currentStep, setCurrentStep] = useState(0);
+  const [data, setData] = useState<OnboardingData>({
+    organizationName: '',
+    organizationSize: '',
+    primaryPurpose: '',
+    secondaryPurposes: [],
+    maturityLevel: '',
+    governanceNeeds: [],
+    portfolioManagement: true,
+    boardStructure: '',
+    stakeholderManagement: true,
+    reportingFrequency: '',
+    programMethodologies: [],
+    programScale: '',
+    programGoals: [],
+    projectMethodologies: [],
+    projectTypes: [],
+    teamSize: '',
+    learningInterests: [],
+    learningFormat: [],
+    learningGoal: '',
+    certificationInterests: [],
+    certificationTimeline: '',
+    currentCertifications: [],
+  });
+
+  const totalSteps = 7;
+
+  const updateData = (field: keyof OnboardingData, value: any) => {
+    setData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleNext = () => {
+    if (currentStep < totalSteps - 1) setCurrentStep((s) => s + 1);
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 0) setCurrentStep((s) => s - 1);
+  };
+
+  const handleComplete = () => {
+    localStorage.setItem('onboarding_completed', 'true');
+    localStorage.setItem('onboarding_data', JSON.stringify(data));
+    onComplete?.();
+  };
+
+  const handleSkip = () => {
+    localStorage.setItem('onboarding_completed', 'true');
+    localStorage.setItem('onboarding_skipped', 'true');
+    onComplete?.();
+  };
+
+  const isLastStep = currentStep === totalSteps - 1;
+
+  // Compact chip selector for sidebar
+  const SidebarChipSelector = ({
+    options,
+    selected,
+    onSelect,
+    multi = false,
+  }: {
+    options: string[];
+    selected: string | string[];
+    onSelect: (value: string | string[]) => void;
+    multi?: boolean;
+  }) => {
+    const handleClick = (option: string) => {
+      if (multi) {
+        const arr = selected as string[];
+        if (arr.includes(option)) onSelect(arr.filter((s) => s !== option));
+        else onSelect([...arr, option]);
+      } else {
+        onSelect(option);
+      }
+    };
+    const isSelected = (option: string) =>
+      multi ? (selected as string[]).includes(option) : selected === option;
+
+    return (
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((option) => (
+          <button
+            key={option}
+            type="button"
+            onClick={() => handleClick(option)}
+            className={cn(
+              'px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border',
+              isSelected(option)
+                ? 'bg-purple-600 border-purple-500 text-white shadow-sm'
+                : 'bg-background border-border text-foreground hover:bg-accent/50'
+            )}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  // Compact methodology selector for sidebar
+  const SidebarMethodologySelector = ({
+    options,
+    selected,
+    onSelect,
+  }: {
+    options: typeof programMethodologyOptions;
+    selected: string[];
+    onSelect: (ids: string[]) => void;
+  }) => {
+    const toggle = (id: string) => {
+      if (selected.includes(id)) onSelect(selected.filter((s) => s !== id));
+      else onSelect([...selected, id]);
+    };
+
+    return (
+      <div className="space-y-1.5">
+        {options.map((opt) => {
+          const Icon = opt.icon;
+          const isActive = selected.includes(opt.id);
+          return (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => toggle(opt.id)}
+              className={cn(
+                'w-full flex items-center gap-2.5 p-2.5 rounded-lg border text-left transition-all',
+                isActive
+                  ? 'bg-purple-600/20 border-purple-500/50'
+                  : 'bg-background border-border hover:bg-accent/50'
+              )}
+            >
+              <div className={cn('p-1.5 rounded-md flex-shrink-0', opt.bgColor)}>
+                <Icon className={cn('w-3.5 h-3.5', opt.color)} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-xs font-semibold">{opt.name}</span>
+                <p className="text-[10px] text-muted-foreground truncate">{opt.description[lang]}</p>
+              </div>
+              {isActive && <CheckCircle2 className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Yes/No selector
+  const YesNoSelector = ({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) => (
+    <div className="flex gap-2">
+      {[{ label: t.yes, val: true }, { label: t.no, val: false }].map((opt) => (
+        <button
+          key={String(opt.val)}
+          type="button"
+          onClick={() => onChange(opt.val)}
+          className={cn(
+            'px-4 py-1.5 rounded-lg text-xs font-medium transition-all border',
+            value === opt.val
+              ? 'bg-purple-600 border-purple-500 text-white'
+              : 'bg-background border-border text-foreground hover:bg-accent/50'
+          )}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+
+  // Step content renderers
+  const renderStepContent = () => {
+    const labelCls = "block text-xs font-medium text-foreground mb-2";
+    switch (currentStep) {
+      case 0: return (
+        <div className="space-y-4">
+          <div className="bg-purple-600/10 border border-purple-500/20 rounded-lg p-3">
+            <div className="flex items-start gap-2">
+              <Sparkles className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
+              <p className="text-[11px] text-muted-foreground">
+                {lang === 'nl'
+                  ? 'Door uw doel te delen, kunnen wij de juiste modules en leertrajecten voor u activeren.'
+                  : 'By sharing your purpose, we can activate the right modules and learning paths for you.'}
+              </p>
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>{t.step1.organizationName} <span className="text-purple-500">*</span></label>
+            <input
+              value={data.organizationName}
+              onChange={(e) => updateData('organizationName', e.target.value)}
+              placeholder={t.step1.organizationNamePlaceholder}
+              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground"
+            />
+          </div>
+          <div>
+            <label className={labelCls}>{t.step1.organizationSize}</label>
+            <SidebarChipSelector options={organizationSizes[lang]} selected={data.organizationSize} onSelect={(v) => updateData('organizationSize', v as string)} />
+          </div>
+          <div>
+            <label className={labelCls}>{t.step1.primaryPurpose} <span className="text-purple-500">*</span></label>
+            <SidebarChipSelector options={primaryPurposes[lang]} selected={data.primaryPurpose} onSelect={(v) => updateData('primaryPurpose', v as string)} />
+          </div>
+          <div>
+            <label className={labelCls}>{t.step1.secondaryPurposes}</label>
+            <SidebarChipSelector options={primaryPurposes[lang].filter((p) => p !== data.primaryPurpose)} selected={data.secondaryPurposes} onSelect={(v) => updateData('secondaryPurposes', v as string[])} multi />
+          </div>
+          <div>
+            <label className={labelCls}>{t.step1.maturityLevel}</label>
+            <SidebarChipSelector options={maturityLevels[lang]} selected={data.maturityLevel} onSelect={(v) => updateData('maturityLevel', v as string)} />
+          </div>
+        </div>
+      );
+      case 1: return (
+        <div className="space-y-4">
+          <div><label className={labelCls}>{t.step2.governanceNeeds}</label><SidebarChipSelector options={governanceNeedsOptions[lang]} selected={data.governanceNeeds} onSelect={(v) => updateData('governanceNeeds', v as string[])} multi /></div>
+          <div><label className={labelCls}>{t.step2.portfolioManagement}</label><YesNoSelector value={data.portfolioManagement} onChange={(v) => updateData('portfolioManagement', v)} /></div>
+          <div><label className={labelCls}>{t.step2.boardStructure}</label><SidebarChipSelector options={boardStructureOptions[lang]} selected={data.boardStructure} onSelect={(v) => updateData('boardStructure', v as string)} /></div>
+          <div><label className={labelCls}>{t.step2.stakeholderManagement}</label><YesNoSelector value={data.stakeholderManagement} onChange={(v) => updateData('stakeholderManagement', v)} /></div>
+          <div><label className={labelCls}>{t.step2.reportingFrequency}</label><SidebarChipSelector options={reportingFrequencyOptions[lang]} selected={data.reportingFrequency} onSelect={(v) => updateData('reportingFrequency', v as string)} /></div>
+        </div>
+      );
+      case 2: return (
+        <div className="space-y-4">
+          <div><label className={labelCls}>{t.step3.programMethodologies}</label><SidebarMethodologySelector options={programMethodologyOptions} selected={data.programMethodologies} onSelect={(ids) => updateData('programMethodologies', ids)} /></div>
+          <div><label className={labelCls}>{t.step3.programScale}</label><SidebarChipSelector options={programScaleOptions[lang]} selected={data.programScale} onSelect={(v) => updateData('programScale', v as string)} /></div>
+          <div><label className={labelCls}>{t.step3.programGoals}</label><SidebarChipSelector options={programGoalOptions[lang]} selected={data.programGoals} onSelect={(v) => updateData('programGoals', v as string[])} multi /></div>
+        </div>
+      );
+      case 3: return (
+        <div className="space-y-4">
+          <div><label className={labelCls}>{t.step4.projectMethodologies}</label><SidebarMethodologySelector options={projectMethodologyOptions} selected={data.projectMethodologies} onSelect={(ids) => updateData('projectMethodologies', ids)} /></div>
+          <div><label className={labelCls}>{t.step4.projectTypes}</label><SidebarChipSelector options={projectTypeOptions[lang]} selected={data.projectTypes} onSelect={(v) => updateData('projectTypes', v as string[])} multi /></div>
+          <div><label className={labelCls}>{t.step4.teamSize}</label><SidebarChipSelector options={teamSizeOptions[lang]} selected={data.teamSize} onSelect={(v) => updateData('teamSize', v as string)} /></div>
+        </div>
+      );
+      case 4: return (
+        <div className="space-y-4">
+          <div><label className={labelCls}>{t.step5.learningInterests}</label><SidebarChipSelector options={learningInterestOptions[lang]} selected={data.learningInterests} onSelect={(v) => updateData('learningInterests', v as string[])} multi /></div>
+          <div><label className={labelCls}>{t.step5.learningFormat}</label><SidebarChipSelector options={learningFormatOptions[lang]} selected={data.learningFormat} onSelect={(v) => updateData('learningFormat', v as string[])} multi /></div>
+          <div><label className={labelCls}>{t.step5.learningGoal}</label><SidebarChipSelector options={learningGoalOptions[lang]} selected={data.learningGoal} onSelect={(v) => updateData('learningGoal', v as string)} /></div>
+        </div>
+      );
+      case 5: return (
+        <div className="space-y-4">
+          <div><label className={labelCls}>{t.step6.currentCertifications}</label><SidebarChipSelector options={currentCertificationOptions[lang]} selected={data.currentCertifications} onSelect={(v) => updateData('currentCertifications', v as string[])} multi /></div>
+          <div><label className={labelCls}>{t.step6.certificationInterests}</label><SidebarChipSelector options={certificationOptions[lang]} selected={data.certificationInterests} onSelect={(v) => updateData('certificationInterests', v as string[])} multi /></div>
+          <div><label className={labelCls}>{t.step6.certificationTimeline}</label><SidebarChipSelector options={certificationTimelineOptions[lang]} selected={data.certificationTimeline} onSelect={(v) => updateData('certificationTimeline', v as string)} /></div>
+        </div>
+      );
+      case 6: return (
+        <div className="space-y-4">
+          <div className="flex flex-col items-center gap-2 py-2">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center shadow-lg">
+              <Rocket className="w-7 h-7 text-white" />
+            </div>
+          </div>
+          <div className="bg-purple-600/10 border border-purple-500/20 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="w-4 h-4 text-purple-500" />
+              <span className="text-xs font-semibold">{lang === 'nl' ? 'Wat we voor u hebben klaargezet' : "What we've set up for you"}</span>
+            </div>
+            <ul className="space-y-1.5">
+              {t.step7.features.map((feature, i) => (
+                <li key={i} className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <button
+            onClick={handleComplete}
+            className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white rounded-lg py-3 text-sm font-semibold flex items-center justify-center gap-2"
+          >
+            <Rocket className="w-4 h-4" />
+            {t.step7.startButton}
+          </button>
+        </div>
+      );
+      default: return null;
+    }
+  };
+
+  const Icon = stepIcons[currentStep];
+  const currentStepInfo = [t.step1, t.step2, t.step3, t.step4, t.step5, t.step6, t.step7][currentStep];
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-600 to-fuchsia-600 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-white" />
+            <span className="text-white font-bold text-sm">AI Setup Copilot</span>
+          </div>
+          <button onClick={handleSkip} className="text-white/70 hover:text-white text-[11px]">
+            {t.skip}
+          </button>
+        </div>
+        <p className="text-white/70 text-[11px] mt-0.5">
+          {t.stepOf.replace('{current}', String(currentStep + 1)).replace('{total}', String(totalSteps))} · {currentStepInfo.title}
+        </p>
+        {/* Progress bar */}
+        <div className="w-full h-1 bg-white/20 rounded-full mt-2">
+          <div
+            className="h-full bg-white rounded-full transition-all duration-300"
+            style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Step indicators */}
+      <div className="flex items-center justify-center gap-1.5 py-2 border-b border-border">
+        {t.steps.map((_, index) => {
+          const StepIcon = stepIcons[index];
+          const isActive = index === currentStep;
+          const isCompleted = index < currentStep;
+          return (
+            <button
+              key={index}
+              onClick={() => index <= currentStep && setCurrentStep(index)}
+              disabled={index > currentStep}
+              className={cn(
+                'w-7 h-7 rounded-full flex items-center justify-center transition-all',
+                isActive ? 'bg-purple-600 text-white' : isCompleted ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600' : 'bg-muted text-muted-foreground'
+              )}
+            >
+              {isCompleted ? <CheckCircle2 className="w-3.5 h-3.5" /> : <StepIcon className="w-3.5 h-3.5" />}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Step title */}
+      <div className="px-4 pt-3 pb-2 flex items-center gap-2">
+        <Icon className="w-4 h-4 text-purple-500" />
+        <span className="text-xs font-semibold">{currentStepInfo.title}</span>
+      </div>
+
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto px-4 pb-4">
+        {renderStepContent()}
+      </div>
+
+      {/* Navigation footer */}
+      {!isLastStep && (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+          <button
+            onClick={handlePrevious}
+            disabled={currentStep === 0}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            {t.previous}
+          </button>
+          <button
+            onClick={handleSkip}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowRight className="w-3.5 h-3.5" />
+            {t.skip}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};

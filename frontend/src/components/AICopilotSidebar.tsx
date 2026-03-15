@@ -9,6 +9,7 @@ import {
   Sparkles,
   Loader2,
   X,
+  Mic,
   Maximize2,
   Minimize2,
   FolderKanban,
@@ -56,6 +57,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
+import { VoiceChatDialog } from "@/components/dashboards/HomeAIVoiceCards";
+import { SetupWizardPanel } from "@/pages/OnboardingWizard";
 
 /* ─── Types ─── */
 type CopilotTab = "chat" | "guide" | "setup";
@@ -480,6 +483,7 @@ export default function AICopilotSidebar() {
   const [expanded, setExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<CopilotTab>("chat");
   const [isTourOpen, setIsTourOpen] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
 
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -764,51 +768,52 @@ export default function AICopilotSidebar() {
 
         {/* Content */}
         {activeTab === "setup" ? (
-          <ScrollArea className="flex-1">
-            <div className="p-4 space-y-4">
-              <div className="text-center pt-4 pb-2">
-                <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center bg-gradient-to-br from-purple-500 to-fuchsia-600 shadow-lg">
-                  <Sparkles className="h-7 w-7 text-white" />
-                </div>
-                <h3 className="text-sm font-semibold">{isNl ? "AI Setup Copilot" : "AI Setup Copilot"}</h3>
-                <p className="text-[11px] text-muted-foreground mt-1">{isNl ? "Laat AI uw omgeving configureren" : "Let AI configure your environment"}</p>
-              </div>
-              <div className="space-y-2">
-                <button onClick={() => navigate("/setup-onboarding")} className="w-full flex items-center gap-3 p-3 rounded-lg border border-border bg-background hover:bg-accent/50 hover:border-purple-300 transition-all text-left group">
-                  <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{isNl ? "Setup Wizard" : "Setup Wizard"}</p>
-                    <p className="text-[11px] text-muted-foreground">{isNl ? "Stap-voor-stap onboarding" : "Step-by-step onboarding"}</p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-purple-600" />
-                </button>
-                <button onClick={() => navigate("/demo-environment")} className="w-full flex items-center gap-3 p-3 rounded-lg border border-border bg-background hover:bg-accent/50 hover:border-purple-300 transition-all text-left group">
-                  <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
-                    <Play className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{isNl ? "Demo Omgeving" : "Demo Environment"}</p>
-                    <p className="text-[11px] text-muted-foreground">{isNl ? "Genereer demo data" : "Generate demo data"}</p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-purple-600" />
-                </button>
-              </div>
-            </div>
-          </ScrollArea>
+          <SetupWizardPanel onComplete={() => setActiveTab("chat")} />
         ) : activeTab === "guide" ? (
           renderGuideTab()
         ) : (
           <>
             <ScrollArea className="flex-1">
               <div className="p-4">
+                {/* AI Chat + Voice Cards */}
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  <button
+                    onClick={() => inputRef.current?.focus()}
+                    className="rounded-xl overflow-hidden cursor-pointer group transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
+                  >
+                    <div className="bg-gradient-to-br from-purple-500 via-purple-600 to-pink-500 p-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                          <Sparkles className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-white font-bold text-sm leading-tight">AI Chat</p>
+                          <p className="text-white/70 text-[10px]">{isNl ? "Stel je vragen" : "Ask questions"}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setVoiceOpen(true)}
+                    className="rounded-xl overflow-hidden cursor-pointer group transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
+                  >
+                    <div className="bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600 p-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                          <Mic className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-white font-bold text-sm leading-tight">Voice</p>
+                          <p className="text-white/70 text-[10px]">{isNl ? "Praat met PX" : "Talk to PX"}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
                 {messages.length === 0 ? (
                   <div className="space-y-6">
-                    <div className="text-center pt-6 pb-2">
-                      <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-gradient-to-br from-purple-400 to-fuchsia-500 shadow-lg">
-                        <Sparkles className="h-8 w-8 text-white" />
-                      </div>
+                    <div className="text-center pt-2 pb-2">
                       <h3 className="text-base font-semibold text-foreground mb-1">{isNl ? "Hallo! Ik ben uw AI Copilot" : "Hello! I'm your AI Copilot"}</h3>
                       <p className="text-xs text-muted-foreground max-w-[260px] mx-auto">{isNl ? "Ik help u met overzicht van uw projecten en programma's" : "I help you with insights on your projects and programs"}</p>
                     </div>
@@ -887,6 +892,9 @@ export default function AICopilotSidebar() {
       {isTourOpen && guide.tourSteps.length > 0 && (
         <GuidedTour steps={guide.tourSteps} onClose={() => setIsTourOpen(false)} />
       )}
+
+      {/* Voice Chat Dialog */}
+      <VoiceChatDialog open={voiceOpen} onClose={() => setVoiceOpen(false)} isNL={isNl} />
     </>
   );
 }

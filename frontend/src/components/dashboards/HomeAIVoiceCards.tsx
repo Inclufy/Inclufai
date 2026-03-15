@@ -36,7 +36,7 @@ const callAI = async (prompt: string): Promise<string> => {
   return data.ai_response?.content || "";
 };
 
-const VoiceChatDialog = ({ open, onClose, isNL }: VoiceChatDialogProps) => {
+export const VoiceChatDialog = ({ open, onClose, isNL }: VoiceChatDialogProps) => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [aiResponse, setAiResponse] = useState("");
