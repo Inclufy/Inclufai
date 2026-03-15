@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
-type CopilotTab = "chat" | "guide";
+type CopilotTab = "chat" | "guide" | "setup";
 
 interface CopilotContextType {
   isOpen: boolean;

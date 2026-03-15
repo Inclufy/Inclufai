@@ -94,7 +94,6 @@ import NotFound from "./pages/NotFound";
 import IntentSelection from "./pages/IntentSelection";
 import RegistrationConfirmation from "./pages/RegistrationConfirmation";
 import Demo from './pages/Demo';
-import OnboardingWizard from './pages/OnboardingWizard';
 import DemoEnvironment from './pages/DemoEnvironment';
 import SetupOnboarding from './pages/SetupOnboarding';
 
@@ -325,6 +324,55 @@ const AppHeader = () => {
 };
 
 // ============================================
+// Copilot Edge Labels — always visible on right edge
+// ============================================
+const CopilotEdgeLabels = () => {
+  const { isOpen, openWithTab, close, requestedTab } = useCopilot();
+
+  const labels: { label: string; tab: "chat" | "guide" | "setup" }[] = [
+    { label: "AI Copilot", tab: "chat" },
+    { label: "Setup", tab: "setup" },
+    { label: "Gids", tab: "guide" },
+  ];
+
+  const handleClick = (tab: "chat" | "guide" | "setup") => {
+    if (isOpen && requestedTab === tab) {
+      close();
+    } else {
+      openWithTab(tab);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 z-40"
+         style={{ position: 'relative', right: 0 }}>
+      {labels.map(({ label, tab }) => (
+        <button
+          key={tab}
+          onClick={() => handleClick(tab)}
+          className={`
+            px-1 py-3 text-xs font-semibold cursor-pointer border-none rounded-l-md
+            transition-colors duration-200
+            ${isOpen && requestedTab === tab
+              ? 'bg-purple-700 text-white'
+              : 'bg-purple-600 text-white hover:bg-purple-700'}
+          `}
+          style={{
+            writingMode: 'vertical-rl',
+            textOrientation: 'mixed',
+            letterSpacing: '0.05em',
+            minHeight: '80px',
+          }}
+          title={label}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+// ============================================
 // App Layout Component
 // ============================================
 const AppLayout = ({ children }: { children: React.ReactNode }) => (
@@ -336,6 +384,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => (
           <AppHeader />
           <div className="flex-1 flex overflow-hidden">
             <main className="flex-1 overflow-auto">{children}</main>
+            <CopilotEdgeLabels />
             <AICopilotSidebar />
           </div>
         </div>
@@ -352,17 +401,6 @@ const ProtectedPage = ({ children }: { children: React.ReactNode }) => (
     <AppLayout>{children}</AppLayout>
   </ProtectedRoute>
 );
-
-// ============================================
-// Onboarding Check - Redirects first-time users
-// ============================================
-const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
-  const hasCompleted = localStorage.getItem('onboarding_completed');
-  if (!hasCompleted) {
-    return <Navigate to="/onboarding" replace />;
-  }
-  return <>{children}</>;
-};
 
 // ============================================
 // Public Route Component
@@ -443,16 +481,9 @@ const App = () => (
               </Route>
               
               {/* ============================================ */}
-              {/* Onboarding Wizard - First Time Setup         */}
-              {/* ============================================ */}
-              <Route path="/onboarding" element={
-                <ProtectedRoute><OnboardingWizard /></ProtectedRoute>
-              } />
-
-              {/* ============================================ */}
               {/* Protected Routes - Dashboard & Main App      */}
               {/* ============================================ */}
-              <Route path="/dashboard" element={<ProtectedPage><OnboardingCheck><Index /></OnboardingCheck></ProtectedPage>} />
+              <Route path="/dashboard" element={<ProtectedPage><Index /></ProtectedPage>} />
               
               {/* Reports - Role-based AI reports */}
               <Route path="/reports" element={<ProtectedPage><ReportsPage /></ProtectedPage>} />
