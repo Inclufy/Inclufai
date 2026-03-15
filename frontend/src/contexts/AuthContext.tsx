@@ -52,8 +52,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch user data from API
-  const fetchUserData = async (token: string): Promise<User | null> => {
+  // Fetch user data from API with retry for transient server errors
+  const fetchUserData = async (token: string, retries = 2): Promise<User | null> => {
     try {
       const response = await fetch(`${API_BASE_URL}/users/me/`, {
         headers: {
@@ -76,14 +76,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('✅ User authenticated:', userData.email, 'SuperAdmin:', userData.is_superadmin);
         return createUserFromData(userData);
       }
-      
+
+      // 5xx server errors - retry with backoff (e.g. backend restarting)
+      if (response.status >= 500 && retries > 0) {
+        console.warn(`Server error ${response.status} on /users/me/, retrying in ${(3 - retries) * 2}s... (${retries} retries left)`);
+        await new Promise(r => setTimeout(r, (3 - retries) * 2000));
+        return fetchUserData(token, retries - 1);
+      }
+
       // Other errors
       console.error('Failed to fetch user data:', response.status);
       return null;
-      
+
     } catch (error) {
+      // Network error - retry with backoff
+      if (retries > 0) {
+        console.warn(`Network error on /users/me/, retrying... (${retries} retries left)`);
+        await new Promise(r => setTimeout(r, (3 - retries) * 2000));
+        return fetchUserData(token, retries - 1);
+      }
       console.error('Error fetching user data:', error);
-      // Network error - don't clear tokens, just fail silently
       return null;
     }
   };
@@ -106,14 +118,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (userData) {
           console.log('✅ Session restored for:', userData.email);
           setUser(userData);
-        localStorage.setItem('user_role', userData.role || 'admin');
-        localStorage.setItem('user_id', userData.id);
-        if (userData.company) {
-          localStorage.setItem('company_id', userData.company.toString());
-        }
-        localStorage.setItem("user", JSON.stringify(userData));
-        } else {
+          localStorage.setItem('user_role', userData.role || 'admin');
+          localStorage.setItem('user_id', userData.id);
+          if (userData.company) {
+            localStorage.setItem('company_id', userData.company.toString());
+          }
+          localStorage.setItem("user", JSON.stringify(userData));
+        } else if (!localStorage.getItem('access_token')) {
+          // Only log session invalid if tokens were actually cleared (401)
           console.log('❌ Session invalid, cleared auth data');
+        } else {
+          // Tokens still exist but /users/me/ failed (server error) - keep tokens, try again on next load
+          console.warn('⚠️ Could not verify session (server may be temporarily unavailable), keeping tokens');
         }
         
       } catch (error) {

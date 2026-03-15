@@ -12,14 +12,26 @@ class ApiClient {
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
 
-  async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  async request<T>(endpoint: string, options: RequestInit = {}, retries = 1): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...this.getAuthHeaders(),
       ...(options.headers as Record<string, string> || {}),
     };
-    const response = await fetch(url, { ...options, headers });
+
+    let response: Response;
+    try {
+      response = await fetch(url, { ...options, headers });
+    } catch (networkError) {
+      // Network failure - retry once
+      if (retries > 0) {
+        await new Promise(r => setTimeout(r, 2000));
+        return this.request<T>(endpoint, options, retries - 1);
+      }
+      throw new Error('Network error: unable to reach the server');
+    }
+
     if (response.status === 401) {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
@@ -27,6 +39,13 @@ class ApiClient {
       window.location.href = '/login';
       throw new Error('Session expired');
     }
+
+    // Retry once on 502/503/504 (transient server errors)
+    if (response.status >= 502 && response.status <= 504 && retries > 0) {
+      await new Promise(r => setTimeout(r, 2000));
+      return this.request<T>(endpoint, options, retries - 1);
+    }
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.detail || errorData.message || `API Error: ${response.status}`);
@@ -132,9 +151,9 @@ export const programsApi = {
   
   // Program-specific endpoints
   getProjects: (programId: string | number) => api.get<any[]>(`/programs/${programId}/projects/`),
-  addProject: (programId: string | number, projectId: string | number) => 
-    api.post(`/programs/${programId}/projects/`, { project_id: projectId }),
-  removeProject: (programId: string | number, projectId: string | number) => 
+  addProject: (programId: string | number, projectId: string | number) =>
+    api.post(`/programs/${programId}/add_project/`, { project_id: projectId }),
+  removeProject: (programId: string | number, projectId: string | number) =>
     api.delete(`/programs/${programId}/projects/${projectId}/`),
   
   getMetrics: (programId: string | number) => api.get<any>(`/programs/${programId}/metrics/`),

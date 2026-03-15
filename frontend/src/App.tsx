@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Moon, Sun, LogOut, Globe, Loader2 } from "lucide-react";
+import { Moon, Sun, LogOut, Globe, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,10 +17,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LanguageProvider, useLanguage, languages } from "./contexts/LanguageContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import FeatureGuard from '@/components/FeatureGuard';
+import { CopilotProvider, useCopilot } from "@/contexts/CopilotContext";
+import AICopilotSidebar from "@/components/AICopilotSidebar";
 
 import Registrations from '@/pages/admin-portal/Registrations';
 
@@ -92,6 +95,7 @@ import NotFound from "./pages/NotFound";
 import IntentSelection from "./pages/IntentSelection";
 import RegistrationConfirmation from "./pages/RegistrationConfirmation";
 import Demo from './pages/Demo';
+import OnboardingWizard from './pages/OnboardingWizard';
 
 // Program Page Imports
 import ProgramsOverview from "./pages/ProgramsOverview";
@@ -179,6 +183,7 @@ import AgileReleasePlanning from './pages/agile/AgileReleasePlanning';
 import AgileDailyProgress from './pages/agile/AgileDailyProgress';
 import AgileRetrospective from './pages/agile/AgileRetrospective';
 import AgileVelocity from './pages/agile/AgileVelocity';
+import AgileDefinitionOfDone from './pages/agile/AgileDefinitionOfDone';
 
 // Waterfall imports
 import WaterfallOverview from './pages/waterfall/WaterfallOverview';
@@ -206,9 +211,11 @@ import AuditLogs from './pages/admin-portal/AuditLogs';
 import SystemSettings from './pages/admin-portal/SystemSettings';
 import PlanManagement from '@/pages/admin/PlanManagement';
 import TwoFactorAuth from "./pages/settings/TwoFactorAuth";
+import BiometricAuth from "./pages/settings/BiometricAuth";
 import AdminTrainingManagement from '@/pages/admin-portal/AdminTrainingManagement';
 import InvoiceManagement from '@/pages/admin-portal/InvoiceManagement';
 import SubscriptionManagement from '@/pages/admin-portal/SubscriptionManagement';
+import MonitoringDashboard from '@/pages/admin-portal/MonitoringDashboard';
 
 // ============================================
 // Query Client
@@ -255,8 +262,9 @@ const LanguageSelector = () => {
 // ============================================
 const AppHeader = () => {
   const { logout, user } = useAuth();
-  const { t } = useLanguage(); // Now t is a function!
+  const { t } = useLanguage();
   const navigate = useNavigate();
+  const { toggle: toggleCopilot, isOpen: copilotOpen } = useCopilot();
   const toggleTheme = () => document.documentElement.classList.toggle("dark");
 
   return (
@@ -264,27 +272,48 @@ const AppHeader = () => {
       <SidebarTrigger />
       <div className="flex items-center gap-2">
         {user && <span className="text-sm text-muted-foreground mr-2">{user.email}</span>}
-        
+
         {/* Website Button */}
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => navigate('/landing')}
           className="gap-2"
         >
           <Globe className="h-4 w-4" />
           <span className="hidden sm:inline">{t.nav?.home || 'Home'}</span>
         </Button>
-        
+
         {/* Language Selector */}
         <LanguageSelector />
-        
+
         {/* Theme Toggle */}
         <Button variant="ghost" size="icon" onClick={toggleTheme}>
           <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
         </Button>
-        
+
+        {/* AI Copilot Toggle */}
+        <Button
+          variant={copilotOpen ? "default" : "outline"}
+          onClick={toggleCopilot}
+          title="AI Copilot"
+          className={cn(
+            "gap-2 px-3 h-9",
+            copilotOpen
+              ? "bg-gradient-to-br from-purple-600 to-violet-700 text-white hover:from-purple-700 hover:to-violet-800 border-0"
+              : "hover:border-purple-300 dark:hover:border-purple-700"
+          )}
+        >
+          <Sparkles className="h-4 w-4" />
+          <span className="hidden sm:inline text-sm font-medium">AI Copilot</span>
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span className="hidden sm:inline text-xs opacity-80">Online</span>
+        </Button>
+
         {/* Logout */}
         <Button variant="ghost" size="icon" onClick={logout} title={t.nav?.logout || 'Logout'}>
           <LogOut className="h-5 w-5" />
@@ -298,15 +327,20 @@ const AppHeader = () => {
 // App Layout Component
 // ============================================
 const AppLayout = ({ children }: { children: React.ReactNode }) => (
-  <SidebarProvider>
-    <div className="min-h-screen flex w-full">
-      <AppSidebar />
-      <div className="flex-1 flex flex-col">
-        <AppHeader />
-        <main className="flex-1 overflow-auto">{children}</main>
+  <CopilotProvider>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AppSidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <AppHeader />
+          <div className="flex-1 flex overflow-hidden">
+            <main className="flex-1 overflow-auto">{children}</main>
+            <AICopilotSidebar />
+          </div>
+        </div>
       </div>
-    </div>
-  </SidebarProvider>
+    </SidebarProvider>
+  </CopilotProvider>
 );
 
 // ============================================
@@ -317,6 +351,17 @@ const ProtectedPage = ({ children }: { children: React.ReactNode }) => (
     <AppLayout>{children}</AppLayout>
   </ProtectedRoute>
 );
+
+// ============================================
+// Onboarding Check - Redirects first-time users
+// ============================================
+const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
+  const hasCompleted = localStorage.getItem('onboarding_completed');
+  if (!hasCompleted) {
+    return <Navigate to="/onboarding" replace />;
+  }
+  return <>{children}</>;
+};
 
 // ============================================
 // Public Route Component
@@ -391,12 +436,20 @@ const App = () => (
                 <Route path="invoices" element={<InvoiceManagement />} />
                 <Route path="subscriptions" element={<SubscriptionManagement />} />
                 <Route path="demo-requests" element={<DemoRequests />} />
+                <Route path="monitoring" element={<MonitoringDashboard />} />
               </Route>
               
               {/* ============================================ */}
+              {/* Onboarding Wizard - First Time Setup         */}
+              {/* ============================================ */}
+              <Route path="/onboarding" element={
+                <ProtectedRoute><OnboardingWizard /></ProtectedRoute>
+              } />
+
+              {/* ============================================ */}
               {/* Protected Routes - Dashboard & Main App      */}
               {/* ============================================ */}
-              <Route path="/dashboard" element={<ProtectedPage><Index /></ProtectedPage>} />
+              <Route path="/dashboard" element={<ProtectedPage><OnboardingCheck><Index /></OnboardingCheck></ProtectedPage>} />
               
               {/* Reports - Role-based AI reports */}
               <Route path="/reports" element={<ProtectedPage><ReportsPage /></ProtectedPage>} />
@@ -757,6 +810,7 @@ const App = () => (
               <Route path="/projects/:id/agile/daily-progress" element={<ProtectedPage><AgileDailyProgress /></ProtectedPage>} />
               <Route path="/projects/:id/agile/retrospective" element={<ProtectedPage><AgileRetrospective /></ProtectedPage>} />
               <Route path="/projects/:id/agile/velocity" element={<ProtectedPage><AgileVelocity /></ProtectedPage>} />
+              <Route path="/projects/:id/agile/definition-of-done" element={<ProtectedPage><AgileDefinitionOfDone /></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* Waterfall Routes                             */}
@@ -789,6 +843,7 @@ const App = () => (
               <Route path="/profile" element={<ProtectedPage><Profile /></ProtectedPage>} />
               <Route path="/settings" element={<ProtectedPage><Settings /></ProtectedPage>} />
               <Route path="/settings/2fa" element={<ProtectedRoute><TwoFactorAuth /></ProtectedRoute>} />
+              <Route path="/settings/biometric" element={<ProtectedRoute><BiometricAuth /></ProtectedRoute>} />
 
               <Route path="*" element={<NotFound />} />
               {/* Governance */}
